@@ -6,5 +6,6 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["http://localhost:5173"]
     jwt_secret: str = "change-this-in-production"
     jwt_expiry_hours: int = 24
+    ai_model: str = "openrouter/openai/gpt-4o-mini"
 
 settings = Settings()

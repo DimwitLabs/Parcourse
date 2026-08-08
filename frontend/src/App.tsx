@@ -17,7 +17,10 @@ export default function App() {
 
   const [videoUrl, setVideoUrl] = useState("");
   const [transcript, setTranscript] = useState<string | null>(null);
+  const [transcriptText, setTranscriptText] = useState("");
   const [transcriptError, setTranscriptError] = useState<string | null>(null);
+  const [guardrailResult, setGuardrailResult] = useState<string | null>(null);
+  const [guardrailError, setGuardrailError] = useState<string | null>(null);
 
   async function signup() {
     setError(null);
@@ -72,33 +75,37 @@ export default function App() {
     try {
       const res = await fetch(`${API_BASE_URL}/transcript/extract`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ url: videoUrl }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail ?? JSON.stringify(data));
       setTranscript(JSON.stringify(data, null, 2));
+      setTranscriptText(data.segments.map((s: { text: string }) => s.text).join(" "));
     } catch (err) {
       setTranscriptError(String(err));
     }
   }
 
+  async function checkGuardrail() {
+    setGuardrailError(null);
+    setGuardrailResult(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/guardrail/check`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ transcript: transcriptText }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail ?? JSON.stringify(data));
+      setGuardrailResult(JSON.stringify(data, null, 2));
+    } catch (err) {
+      setGuardrailError(String(err));
+    }
+  }
+
   return (
     <div>
-      <div>
-        <p>Paste a YouTube URL</p>
-        <input
-          placeholder="https://www.youtube.com/watch?v=..."
-          value={videoUrl}
-          onChange={(e) => setVideoUrl(e.target.value)}
-        />
-        <button onClick={getTranscript}>get transcript</button>
-        {transcriptError && <p style={{ color: "red" }}>{transcriptError}</p>}
-        {transcript && <pre>{transcript}</pre>}
-      </div>
-
-      <hr />
-
       {stage === "mode" && (
         <div>
           <p>Single user, or multiple people using this?</p>
@@ -152,6 +159,21 @@ export default function App() {
           <p>done.</p>
           <button onClick={fetchMe}>/auth/me</button>
           <pre>{me ?? "(none)"}</pre>
+
+          <hr />
+
+          <p>Paste a YouTube URL</p>
+          <input
+            placeholder="https://www.youtube.com/watch?v=..."
+            value={videoUrl}
+            onChange={(e) => setVideoUrl(e.target.value)}
+          />
+          <button onClick={getTranscript}>get transcript</button>
+          {transcriptError && <p style={{ color: "red" }}>{transcriptError}</p>}
+          {transcript && <pre>{transcript}</pre>}
+          {transcriptText && <button onClick={checkGuardrail}>check guardrail</button>}
+          {guardrailError && <p style={{ color: "red" }}>{guardrailError}</p>}
+          {guardrailResult && <pre>{guardrailResult}</pre>}
         </div>
       )}
 
