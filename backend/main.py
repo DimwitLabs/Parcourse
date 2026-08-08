@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from routers import auth, users
+from routers import auth, transcript, users
 
 app = FastAPI(title="Parcourse API")
 
@@ -16,6 +16,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(transcript.router)
 
 @app.get("/health")
 def health() -> dict[str, str]:

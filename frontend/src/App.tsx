@@ -15,6 +15,10 @@ export default function App() {
   const [me, setMe] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const [videoUrl, setVideoUrl] = useState("");
+  const [transcript, setTranscript] = useState<string | null>(null);
+  const [transcriptError, setTranscriptError] = useState<string | null>(null);
+
   async function signup() {
     setError(null);
     try {
@@ -62,8 +66,39 @@ export default function App() {
     }
   }
 
+  async function getTranscript() {
+    setTranscriptError(null);
+    setTranscript(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/transcript/extract`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: videoUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail ?? JSON.stringify(data));
+      setTranscript(JSON.stringify(data, null, 2));
+    } catch (err) {
+      setTranscriptError(String(err));
+    }
+  }
+
   return (
     <div>
+      <div>
+        <p>Paste a YouTube URL</p>
+        <input
+          placeholder="https://www.youtube.com/watch?v=..."
+          value={videoUrl}
+          onChange={(e) => setVideoUrl(e.target.value)}
+        />
+        <button onClick={getTranscript}>get transcript</button>
+        {transcriptError && <p style={{ color: "red" }}>{transcriptError}</p>}
+        {transcript && <pre>{transcript}</pre>}
+      </div>
+
+      <hr />
+
       {stage === "mode" && (
         <div>
           <p>Single user, or multiple people using this?</p>
