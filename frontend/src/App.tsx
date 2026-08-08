@@ -30,6 +30,8 @@ export default function App() {
   const [courseError, setCourseError] = useState<string | null>(null);
   const [storyboard, setStoryboard] = useState<string | null>(null);
   const [storyboardError, setStoryboardError] = useState<string | null>(null);
+  const [sectionFrames, setSectionFrames] = useState<Record<number, string>>({});
+  const [frameError, setFrameError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/auth/setup-status`)
@@ -154,6 +156,23 @@ export default function App() {
     }
   }
 
+  async function loadSectionFrame(index: number, startSeconds: number) {
+    setFrameError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/storyboard/${videoId}/frame?seconds=${startSeconds}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail ?? JSON.stringify(data));
+      }
+      const blob = await res.blob();
+      setSectionFrames((prev) => ({ ...prev, [index]: URL.createObjectURL(blob) }));
+    } catch (err) {
+      setFrameError(String(err));
+    }
+  }
+
   async function checkGuardrail() {
     setGuardrailError(null);
     setGuardrailResult(null);
@@ -265,6 +284,7 @@ export default function App() {
           {course && (
             <div>
               <img src={course.thumbnail_url} alt="thumbnail" width={320} />
+              {frameError && <p style={{ color: "red" }}>{frameError}</p>}
               {course.sections.map((s, i) => (
                 <div key={i}>
                   <h3>{s.title}</h3>
@@ -272,6 +292,11 @@ export default function App() {
                   <p>
                     {s.start_seconds}s - {s.end_seconds}s
                   </p>
+                  {sectionFrames[i] ? (
+                    <img src={sectionFrames[i]} alt={s.title} width={160} />
+                  ) : (
+                    <button onClick={() => loadSectionFrame(i, s.start_seconds)}>load frame</button>
+                  )}
                 </div>
               ))}
             </div>

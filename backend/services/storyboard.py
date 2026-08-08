@@ -1,4 +1,8 @@
+import io
+
+import requests
 import yt_dlp
+from PIL import Image
 
 
 def get_storyboard_formats(video_id: str) -> list[dict]:
@@ -24,3 +28,45 @@ def get_storyboard_formats(video_id: str) -> list[dict]:
             }
         )
     return result
+
+
+def get_frame_at(video_id: str, seconds: float) -> bytes:
+    boards = get_storyboard_formats(video_id)
+    if not boards:
+        raise ValueError("No storyboard available for this video")
+
+    # finest-grained grid = most cells per sprite
+    board = max(boards, key=lambda b: (b["rows"] or 0) * (b["columns"] or 0))
+    rows, columns = board["rows"], board["columns"]
+
+    elapsed = 0.0
+    fragment = None
+    offset_in_fragment = 0.0
+    for frag in board["fragments"]:
+        duration = frag["duration"] or 0.0
+        if seconds < elapsed + duration or frag is board["fragments"][-1]:
+            fragment = frag
+            offset_in_fragment = seconds - elapsed
+            break
+        elapsed += duration
+
+    if fragment is None:
+        raise ValueError("Could not locate a frame for that timestamp")
+
+    cells_per_fragment = rows * columns
+    cell_duration = (fragment["duration"] or 1.0) / cells_per_fragment
+    cell_index = max(0, min(int(offset_in_fragment / cell_duration), cells_per_fragment - 1))
+    row, col = divmod(cell_index, columns)
+
+    response = requests.get(fragment["url"], timeout=10)
+    response.raise_for_status()
+    sprite = Image.open(io.BytesIO(response.content))
+
+    cell_width = sprite.width // columns
+    cell_height = sprite.height // rows
+    box = (col * cell_width, row * cell_height, (col + 1) * cell_width, (row + 1) * cell_height)
+    cropped = sprite.crop(box)
+
+    buffer = io.BytesIO()
+    cropped.convert("RGB").save(buffer, format="JPEG")
+    return buffer.getvalue()
