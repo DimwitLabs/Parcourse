@@ -10,3 +10,4 @@ email-validator==2.2.0
 alembic==1.13.2
 youtube-transcript-api>=1.1.0
 litellm==1.48.0
+yt-dlp>=2025.6.9
