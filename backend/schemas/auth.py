@@ -35,6 +35,14 @@ class UserResponse(BaseModel):
     created_at: datetime
 
 
+class UserWithUsage(BaseModel):
+    id: uuid.UUID
+    email: str
+    role: UserRole
+    created_at: datetime
+    course_count: int
+
+
 class SetupStatusResponse(BaseModel):
     needs_setup: bool
 
