@@ -23,15 +23,31 @@ export default function App() {
   const [transcriptError, setTranscriptError] = useState<string | null>(null);
   const [guardrailResult, setGuardrailResult] = useState<string | null>(null);
   const [guardrailError, setGuardrailError] = useState<string | null>(null);
+  type MCQ = { id: string; question: string; options: { label: string; text: string }[] };
+  type TheoryQ = { id: string; question: string };
+  type Section = {
+    title: string;
+    summary: string;
+    start_seconds: number;
+    end_seconds: number;
+    mcqs: MCQ[];
+    theory_questions: TheoryQ[];
+  };
   const [course, setCourse] = useState<{
+    id: string;
     thumbnail_url: string;
-    sections: { title: string; summary: string; start_seconds: number; end_seconds: number }[];
+    sections: Section[];
   } | null>(null);
   const [courseError, setCourseError] = useState<string | null>(null);
   const [storyboard, setStoryboard] = useState<string | null>(null);
   const [storyboardError, setStoryboardError] = useState<string | null>(null);
   const [sectionFrames, setSectionFrames] = useState<Record<number, string>>({});
   const [frameError, setFrameError] = useState<string | null>(null);
+
+  const [mcqAnswers, setMcqAnswers] = useState<Record<string, string>>({});
+  const [theoryAnswers, setTheoryAnswers] = useState<Record<string, string>>({});
+  const [quizResult, setQuizResult] = useState<string | null>(null);
+  const [quizError, setQuizError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/auth/setup-status`)
@@ -173,6 +189,34 @@ export default function App() {
     }
   }
 
+  async function submitQuiz() {
+    if (!course) return;
+    setQuizError(null);
+    setQuizResult(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/quiz/score`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          course_id: course.id,
+          mcq_answers: Object.entries(mcqAnswers).map(([question_id, selected_label]) => ({
+            question_id,
+            selected_label,
+          })),
+          theory_answers: Object.entries(theoryAnswers).map(([question_id, answer_text]) => ({
+            question_id,
+            answer_text,
+          })),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail ?? JSON.stringify(data));
+      setQuizResult(JSON.stringify(data, null, 2));
+    } catch (err) {
+      setQuizError(String(err));
+    }
+  }
+
   async function checkGuardrail() {
     setGuardrailError(null);
     setGuardrailResult(null);
@@ -297,8 +341,41 @@ export default function App() {
                   ) : (
                     <button onClick={() => loadSectionFrame(i, s.start_seconds)}>load frame</button>
                   )}
+
+                  {s.mcqs.map((m) => (
+                    <div key={m.id}>
+                      <p>{m.question}</p>
+                      {m.options.map((o) => (
+                        <label key={o.label}>
+                          <input
+                            type="radio"
+                            name={m.id}
+                            checked={mcqAnswers[m.id] === o.label}
+                            onChange={() => setMcqAnswers((prev) => ({ ...prev, [m.id]: o.label }))}
+                          />
+                          {o.label}. {o.text}
+                        </label>
+                      ))}
+                    </div>
+                  ))}
+
+                  {s.theory_questions.map((t) => (
+                    <div key={t.id}>
+                      <p>{t.question}</p>
+                      <textarea
+                        value={theoryAnswers[t.id] ?? ""}
+                        onChange={(e) =>
+                          setTheoryAnswers((prev) => ({ ...prev, [t.id]: e.target.value }))
+                        }
+                      />
+                    </div>
+                  ))}
                 </div>
               ))}
+
+              <button onClick={submitQuiz}>submit quiz</button>
+              {quizError && <p style={{ color: "red" }}>{quizError}</p>}
+              {quizResult && <pre>{quizResult}</pre>}
             </div>
           )}
         </div>
