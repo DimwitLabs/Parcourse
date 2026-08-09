@@ -9,6 +9,7 @@ from models.course_cache import CachedCourse
 from models.user import User
 from schemas.course import CourseGenerateRequest, CourseResponse, CourseResponsePublic
 from services.course import generate
+from services.knowledge_graph import extract_and_merge
 
 router = APIRouter(prefix="/course", tags=["course"])
 
@@ -30,6 +31,12 @@ def generate_course(
     session.add(cached)
     session.commit()
     session.refresh(cached)
+
+    try:
+        extract_and_merge(session, user.id, cached.id, course, course.video_id)
+    except Exception:
+        # Knowledge graph extraction is best-effort — a failure here shouldn't block the course.
+        session.rollback()
 
     return CourseResponsePublic.from_full(course, id=str(cached.id))
 
