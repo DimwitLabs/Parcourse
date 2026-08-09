@@ -8,14 +8,95 @@ class CourseGenerateRequest(BaseModel):
     segments: list[TranscriptSegment]
 
 
+class MCQOption(BaseModel):
+    label: str
+    text: str
+
+
+class MCQQuestion(BaseModel):
+    id: str
+    question: str
+    options: list[MCQOption]
+    correct_label: str
+    explanation: str
+
+
+class TheoryQuestion(BaseModel):
+    id: str
+    question: str
+    reference_answer: str
+
+
 class CourseSection(BaseModel):
     title: str
     summary: str
     start_seconds: float
     end_seconds: float
+    mcqs: list[MCQQuestion]
+    theory_questions: list[TheoryQuestion]
 
 
 class CourseResponse(BaseModel):
     video_id: str
     thumbnail_url: str
     sections: list[CourseSection]
+
+
+class MCQOptionPublic(BaseModel):
+    label: str
+    text: str
+
+
+class MCQQuestionPublic(BaseModel):
+    id: str
+    question: str
+    options: list[MCQOptionPublic]
+
+
+class TheoryQuestionPublic(BaseModel):
+    id: str
+    question: str
+
+
+class CourseSectionPublic(BaseModel):
+    title: str
+    summary: str
+    start_seconds: float
+    end_seconds: float
+    mcqs: list[MCQQuestionPublic]
+    theory_questions: list[TheoryQuestionPublic]
+
+
+class CourseResponsePublic(BaseModel):
+    id: str
+    video_id: str
+    thumbnail_url: str
+    sections: list[CourseSectionPublic]
+
+    @classmethod
+    def from_full(cls, course: CourseResponse, id: str) -> "CourseResponsePublic":
+        return cls(
+            id=id,
+            video_id=course.video_id,
+            thumbnail_url=course.thumbnail_url,
+            sections=[
+                CourseSectionPublic(
+                    title=s.title,
+                    summary=s.summary,
+                    start_seconds=s.start_seconds,
+                    end_seconds=s.end_seconds,
+                    mcqs=[
+                        MCQQuestionPublic(
+                            id=m.id,
+                            question=m.question,
+                            options=[MCQOptionPublic(**o.model_dump()) for o in m.options],
+                        )
+                        for m in s.mcqs
+                    ],
+                    theory_questions=[
+                        TheoryQuestionPublic(id=t.id, question=t.question) for t in s.theory_questions
+                    ],
+                )
+                for s in course.sections
+            ],
+        )
