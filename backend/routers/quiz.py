@@ -1,14 +1,16 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from database import get_session
 from dependencies import get_current_user
 from models.course_cache import CachedCourse
+from models.quiz_attempt import QuizAttempt
 from models.user import User
 from schemas.course import CourseResponse
 from schemas.quiz import QuizResultResponse, QuizSubmitRequest
+from services.api_key import NoApiKeyError, resolve_api_key, resolve_model
 from services.quiz import score_submission
 
 router = APIRouter(prefix="/quiz", tags=["quiz"])
@@ -30,10 +32,44 @@ def score_quiz(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
 
     course = CourseResponse.model_validate_json(cached.course_json)
+    try:
+        api_key = resolve_api_key(session, user)
+    except NoApiKeyError as exc:
+        raise HTTPException(status_code=status.HTTP_412_PRECONDITION_FAILED, detail=str(exc)) from exc
+    model = resolve_model(session)
 
     try:
-        return score_submission(body.course_id, course, body.mcq_answers, body.theory_answers)
+        result = score_submission(body.course_id, course, body.mcq_answers, body.theory_answers, api_key, model)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY, detail=f"AI provider request failed: {exc}"
         ) from exc
+
+    attempt = QuizAttempt(
+        course_id=course_uuid,
+        user_id=user.id,
+        total_score=result.total_score,
+        max_score=result.max_score,
+        percentage=result.percentage,
+        result_json=result.model_dump_json(),
+    )
+    session.add(attempt)
+    session.commit()
+
+    return result
+
+
+@router.get("/attempts/{course_id}", response_model=QuizResultResponse)
+def get_latest_attempt(
+    course_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> QuizResultResponse:
+    attempt = session.exec(
+        select(QuizAttempt)
+        .where(QuizAttempt.course_id == course_id, QuizAttempt.user_id == user.id)
+        .order_by(QuizAttempt.created_at.desc())
+    ).first()
+    if attempt is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No attempt found")
+    return QuizResultResponse.model_validate_json(attempt.result_json)
