@@ -42,3 +42,4 @@ class QuizResultResponse(BaseModel):
     max_score: float
     percentage: float
     results: list[QuestionResult]
+    prose_analysis: str = ""

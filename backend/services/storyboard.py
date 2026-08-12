@@ -1,11 +1,15 @@
 import io
+import logging
 
 import requests
 import yt_dlp
 from PIL import Image
 
+logger = logging.getLogger(__name__)
+
 
 def get_storyboard_formats(video_id: str) -> list[dict]:
+    logger.info("[storyboard]: fetching storyboard formats for video %s", video_id)
     url = f"https://www.youtube.com/watch?v={video_id}"
     with yt_dlp.YoutubeDL({"quiet": True, "skip_download": True}) as ydl:
         info = ydl.extract_info(url, download=False)
@@ -27,12 +31,15 @@ def get_storyboard_formats(video_id: str) -> list[dict]:
                 ],
             }
         )
+    logger.info("[storyboard]: found %d storyboard formats for video %s", len(result), video_id)
     return result
 
 
 def get_frame_at(video_id: str, seconds: float) -> bytes:
+    logger.info("[storyboard]: extracting frame at %.1fs for video %s", seconds, video_id)
     boards = get_storyboard_formats(video_id)
     if not boards:
+        logger.error("[storyboard]: no storyboard available for video %s", video_id)
         raise ValueError("No storyboard available for this video")
 
     # finest-grained grid = most cells per sprite
@@ -51,6 +58,7 @@ def get_frame_at(video_id: str, seconds: float) -> bytes:
         elapsed += duration
 
     if fragment is None:
+        logger.error("[storyboard]: could not locate frame at %.1fs for video %s", seconds, video_id)
         raise ValueError("Could not locate a frame for that timestamp")
 
     cells_per_fragment = rows * columns
@@ -58,6 +66,7 @@ def get_frame_at(video_id: str, seconds: float) -> bytes:
     cell_index = max(0, min(int(offset_in_fragment / cell_duration), cells_per_fragment - 1))
     row, col = divmod(cell_index, columns)
 
+    logger.info("[storyboard]: downloading sprite sheet from fragment URL")
     response = requests.get(fragment["url"], timeout=10)
     response.raise_for_status()
     sprite = Image.open(io.BytesIO(response.content))
@@ -69,4 +78,5 @@ def get_frame_at(video_id: str, seconds: float) -> bytes:
 
     buffer = io.BytesIO()
     cropped.convert("RGB").save(buffer, format="JPEG")
+    logger.info("[storyboard]: extracted frame at %.1fs, cell (%d, %d)", seconds, row, col)
     return buffer.getvalue()

@@ -1,5 +1,9 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
+
+logger = logging.getLogger(__name__)
 
 from database import get_session
 from dependencies import get_current_user
@@ -21,6 +25,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.get("/setup-status", response_model=SetupStatusResponse)
 def setup_status(session: Session = Depends(get_session)) -> SetupStatusResponse:
     has_user = session.exec(select(User)).first() is not None
+    logger.info("[auth]: setup status check — needs_setup=%s", not has_user)
     return SetupStatusResponse(needs_setup=not has_user)
 
 
@@ -40,7 +45,7 @@ def setup(body: SetupRequest, session: Session = Depends(get_session)) -> TokenR
     session.add(InstanceConfig(mode=body.mode))
     session.commit()
     session.refresh(admin)
-
+    logger.info("[auth]: setup completed — admin=%s mode=%s", admin.email, body.mode)
     return TokenResponse(access_token=create_token(admin.id, admin.role.value))
 
 
@@ -48,8 +53,9 @@ def setup(body: SetupRequest, session: Session = Depends(get_session)) -> TokenR
 def login(body: LoginRequest, session: Session = Depends(get_session)) -> TokenResponse:
     user = session.exec(select(User).where(User.email == body.email)).first()
     if user is None or not verify_password(body.password, user.hashed_password):
+        logger.warning("[auth]: failed login attempt for email=%s", body.email)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-
+    logger.info("[auth]: login success — user=%s role=%s", user.email, user.role.value)
     return TokenResponse(access_token=create_token(user.id, user.role.value))
 
 
