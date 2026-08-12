@@ -6,6 +6,7 @@ psycopg[binary]==3.2.2
 passlib[bcrypt]==1.7.4
 bcrypt==4.0.1
 python-jose[cryptography]==3.3.0
+cryptography==43.0.1
 email-validator==2.2.0
 alembic==1.13.2
 youtube-transcript-api>=1.1.0
