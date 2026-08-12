@@ -1,0 +1,92 @@
+import { useEffect, useRef, useState } from "react";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+
+import { useAuth } from "../lib/auth";
+
+export default function AppShell() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    }
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, []);
+
+  const initials = user?.first_name
+    ? (user.first_name[0] + (user.last_name?.[0] ?? "")).toUpperCase()
+    : user?.email.slice(0, 2).toUpperCase() ?? "";
+
+  return (
+    <>
+      <div className="top-nav">
+        <NavLink to="/" className="top-nav-logo">
+          Parcourse
+        </NavLink>
+        <div className="top-nav-links">
+          <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
+            Home
+          </NavLink>
+          <NavLink to="/notebook" className={({ isActive }) => (isActive ? "active" : "")}>
+            Notebook
+          </NavLink>
+          <NavLink to="/graph" className={({ isActive }) => (isActive ? "active" : "")}>
+            Knowledge Graph
+          </NavLink>
+        </div>
+        <div className="top-nav-user" ref={menuRef}>
+          <button className="avatar-button" onClick={() => setMenuOpen((v) => !v)}>
+            <span className="avatar">{initials}</span>
+          </button>
+          {menuOpen && (
+            <div className="user-dropdown">
+              <div className="user-dropdown-header">
+                {user?.first_name && (
+                  <span className="user-dropdown-name">{user.first_name} {user.last_name ?? ""}</span>
+                )}
+                <span className="user-dropdown-email">{user?.email}</span>
+                <span className={`role-pill${user?.role === "admin" ? " admin" : ""}`}>
+                  {user?.role === "admin" ? "Admin" : "User"}
+                </span>
+              </div>
+              <button
+                className="user-dropdown-item"
+                onClick={() => {
+                  setMenuOpen(false);
+                  navigate("/settings");
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Settings
+              </button>
+              {user?.role === "admin" && (
+                <button
+                  className="user-dropdown-item"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate("/admin");
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  Admin
+                </button>
+              )}
+              <button className="user-dropdown-item danger" onClick={logout}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Log out
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="app-shell">
+        <Outlet />
+      </div>
+    </>
+  );
+}
