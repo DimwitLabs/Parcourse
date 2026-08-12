@@ -11,3 +11,5 @@ class InstanceMode(str, Enum):
 class InstanceConfig(SQLModel, table=True):
     id: int = Field(default=1, primary_key=True)
     mode: InstanceMode
+    default_openrouter_key: str | None = Field(default=None)
+    ai_model: str = Field(default="openrouter/openai/gpt-4o-mini")

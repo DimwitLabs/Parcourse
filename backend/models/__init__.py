@@ -8,6 +8,7 @@ from models.knowledge_graph import (
     NodeTier,
     UserKnowledgeProgress,
 )
+from models.quiz_attempt import QuizAttempt
 from models.user import User, UserRole
 
 __all__ = [
@@ -19,6 +20,7 @@ __all__ = [
     "KnowledgeEdge",
     "KnowledgeNode",
     "NodeTier",
+    "QuizAttempt",
     "User",
     "UserKnowledgeProgress",
     "UserRole",

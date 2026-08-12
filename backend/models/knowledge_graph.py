@@ -1,8 +1,8 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import Column, ForeignKey, UniqueConstraint
 from sqlmodel import Field, SQLModel
 
 
@@ -26,7 +26,7 @@ class KnowledgeNode(SQLModel, table=True):
     tier: NodeTier
     label: str = Field(index=True)
     description: str = ""
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class KnowledgeEdge(SQLModel, table=True):
@@ -35,22 +35,22 @@ class KnowledgeEdge(SQLModel, table=True):
     )
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    source_id: uuid.UUID = Field(foreign_key="knowledgenode.id", index=True)
-    target_id: uuid.UUID = Field(foreign_key="knowledgenode.id", index=True)
+    source_id: uuid.UUID = Field(sa_column=Column(ForeignKey("knowledgenode.id", ondelete="CASCADE"), index=True, nullable=False))
+    target_id: uuid.UUID = Field(sa_column=Column(ForeignKey("knowledgenode.id", ondelete="CASCADE"), index=True, nullable=False))
     edge_type: EdgeType
 
 
 class CourseKnowledgeNode(SQLModel, table=True):
-    course_id: uuid.UUID = Field(foreign_key="cachedcourse.id", primary_key=True)
-    node_id: uuid.UUID = Field(foreign_key="knowledgenode.id", primary_key=True)
+    course_id: uuid.UUID = Field(sa_column=Column(ForeignKey("cachedcourse.id", ondelete="CASCADE"), primary_key=True))
+    node_id: uuid.UUID = Field(sa_column=Column(ForeignKey("knowledgenode.id", ondelete="CASCADE"), primary_key=True))
 
 
 class UserKnowledgeProgress(SQLModel, table=True):
     __table_args__ = (UniqueConstraint("user_id", "node_id", name="uq_userknowledgeprogress_user_node"),)
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
-    node_id: uuid.UUID = Field(foreign_key="knowledgenode.id", index=True)
+    user_id: uuid.UUID = Field(sa_column=Column(ForeignKey("user.id", ondelete="CASCADE"), index=True, nullable=False))
+    node_id: uuid.UUID = Field(sa_column=Column(ForeignKey("knowledgenode.id", ondelete="CASCADE"), index=True, nullable=False))
     mastery_score: float = 0.0
     times_encountered: int = 0
-    last_touched_at: datetime = Field(default_factory=datetime.utcnow)
+    last_touched_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

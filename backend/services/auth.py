@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -18,7 +18,7 @@ def verify_password(password: str, hashed_password: str) -> bool:
 
 
 def create_token(user_id: uuid.UUID, role: str) -> str:
-    expire = datetime.utcnow() + timedelta(hours=settings.jwt_expiry_hours)
+    expire = datetime.now(timezone.utc) + timedelta(hours=settings.jwt_expiry_hours)
     payload = {"sub": str(user_id), "role": role, "exp": expire}
     return jwt.encode(payload, settings.jwt_secret, algorithm="HS256")
 
