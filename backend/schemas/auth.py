@@ -11,6 +11,8 @@ class SetupRequest(BaseModel):
     email: EmailStr
     password: str
     mode: InstanceMode
+    first_name: str | None = None
+    last_name: str | None = None
 
 
 class LoginRequest(BaseModel):
@@ -21,6 +23,8 @@ class LoginRequest(BaseModel):
 class CreateUserRequest(BaseModel):
     email: EmailStr
     password: str
+    first_name: str | None = None
+    last_name: str | None = None
 
 
 class TokenResponse(BaseModel):
@@ -33,6 +37,8 @@ class UserResponse(BaseModel):
     email: str
     role: UserRole
     created_at: datetime
+    first_name: str | None = None
+    last_name: str | None = None
 
 
 class UserWithUsage(BaseModel):
@@ -40,6 +46,8 @@ class UserWithUsage(BaseModel):
     email: str
     role: UserRole
     created_at: datetime
+    first_name: str | None = None
+    last_name: str | None = None
     course_count: int
 
 

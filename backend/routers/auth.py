@@ -29,7 +29,13 @@ def setup(body: SetupRequest, session: Session = Depends(get_session)) -> TokenR
     if session.exec(select(User)).first() is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Setup already completed")
 
-    admin = User(email=body.email, hashed_password=hash_password(body.password), role=UserRole.admin)
+    admin = User(
+        email=body.email,
+        hashed_password=hash_password(body.password),
+        role=UserRole.admin,
+        first_name=body.first_name,
+        last_name=body.last_name,
+    )
     session.add(admin)
     session.add(InstanceConfig(mode=body.mode))
     session.commit()
