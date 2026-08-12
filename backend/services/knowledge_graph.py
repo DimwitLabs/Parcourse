@@ -1,10 +1,13 @@
 import json
+import logging
 import uuid
 
 import litellm
 from sqlmodel import Session, select
 
 from config import settings
+
+logger = logging.getLogger(__name__)
 from models.knowledge_graph import (
     CourseKnowledgeNode,
     EdgeType,
@@ -90,6 +93,7 @@ def extract_and_merge(
     api_key: str,
     model: str | None = None,
 ) -> None:
+    logger.info("[knowledge_graph]: extracting and merging for course %s, user %s, video %s", course_id, user_id, video_id)
     category = get_video_category(video_id) or "Education"
     domain = _get_or_create_node(session, NodeTier.domain, category, f"YouTube category: {category}")
 
@@ -97,13 +101,17 @@ def extract_and_merge(
     prompt = _EXTRACTION_PROMPT.format(
         sections_summary=sections_summary, existing_labels=_existing_labels(session)
     )
+    used_model = model or settings.ai_model
+    logger.info("[knowledge_graph]: calling litellm.completion model=%s, api_key length=%d", used_model, len(api_key))
     response = litellm.completion(
-        model=model or settings.ai_model,
+        model=used_model,
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
         temperature=0.2,
         api_key=api_key,
     )
+    usage = getattr(response, "usage", None)
+    logger.info("[knowledge_graph]: litellm.completion succeeded, tokens=%s", usage if usage else "N/A")
     data = json.loads(response.choices[0].message.content)
     extraction = KnowledgeExtraction(**data)
 
@@ -143,3 +151,4 @@ def extract_and_merge(
             session.add(progress)
 
     session.commit()
+    logger.info("[knowledge_graph]: merged %d nodes and %d edges for course %s", len(extraction.nodes), len(extraction.edges), course_id)

@@ -1,4 +1,5 @@
 import json
+import logging
 import uuid
 
 import litellm
@@ -6,6 +7,8 @@ import litellm
 from config import settings
 from schemas.course import CourseResponse, CourseSection, MCQOption, MCQQuestion, TheoryQuestion
 from schemas.transcript import TranscriptSegment
+
+logger = logging.getLogger(__name__)
 
 _PROMPT = """You are building a structured course from a YouTube video transcript.
 
@@ -29,7 +32,7 @@ Return only a JSON object with exactly this field:
     - "question": str
     - "options": a list of 4 objects, each with "label" ("A"/"B"/"C"/"D") and "text"
     - "correct_label": the label of the correct option
-    - "explanation": one sentence explaining why the correct answer is right
+    - "explanation": one sentence explaining why the correct answer is right. Never use em dashes
   - "theory_questions": a list of 1-2 objects, each with:
     - "question": an open-ended question requiring a short written answer
     - "reference_answer": a model answer used later to grade student responses
@@ -43,16 +46,21 @@ def thumbnail_url(video_id: str) -> str:
 
 
 def generate(video_id: str, segments: list[TranscriptSegment], api_key: str, model: str | None = None) -> CourseResponse:
+    logger.info("[course]: generating course for video %s (%d segments)", video_id, len(segments))
     formatted = "\n".join(f"[{s.start:.1f}s] {s.text}" for s in segments)
     prompt = _PROMPT.format(formatted=formatted[:12000])
 
+    used_model = model or settings.ai_model
+    logger.info("[course]: calling litellm.completion model=%s, api_key length=%d", used_model, len(api_key))
     response = litellm.completion(
-        model=model or settings.ai_model,
+        model=used_model,
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
         temperature=0.3,
         api_key=api_key,
     )
+    usage = getattr(response, "usage", None)
+    logger.info("[course]: litellm.completion succeeded, tokens=%s", usage if usage else "N/A")
     data = json.loads(response.choices[0].message.content)
 
     sections = []
@@ -87,4 +95,5 @@ def generate(video_id: str, segments: list[TranscriptSegment], api_key: str, mod
             )
         )
 
+    logger.info("[course]: generated %d sections for video %s", len(sections), video_id)
     return CourseResponse(video_id=video_id, thumbnail_url=thumbnail_url(video_id), sections=sections)
