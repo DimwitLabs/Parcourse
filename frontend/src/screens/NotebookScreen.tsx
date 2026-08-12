@@ -14,6 +14,7 @@ export default function NotebookScreen() {
   const [error, setError] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalAction | null>(null);
   const [busy, setBusy] = useState(false);
+  const [togglingDone, setTogglingDone] = useState<Set<string>>(new Set());
 
   function refresh() {
     apiFetch("/courses", token)
@@ -22,6 +23,31 @@ export default function NotebookScreen() {
   }
 
   useEffect(refresh, [token]);
+
+  async function toggleCourseDone(c: CourseEntry) {
+    const allSectionsDone = c.completed_sections.length === c.sections.length && c.sections.length > 0;
+    setTogglingDone((prev) => new Set([...prev, c.id]));
+    try {
+      if (allSectionsDone) {
+        await Promise.all(
+          c.sections.map((_, i) =>
+            apiFetch(`/course/${c.id}/progress/${i}`, token, { method: "DELETE" })
+          )
+        );
+      } else {
+        await Promise.all(
+          c.sections.map((_, i) =>
+            apiFetch(`/course/${c.id}/progress/${i}`, token, { method: "POST" })
+          )
+        );
+      }
+      refresh();
+    } catch (err) {
+      setError(errMsg(err));
+    } finally {
+      setTogglingDone((prev) => { const next = new Set(prev); next.delete(c.id); return next; });
+    }
+  }
 
   async function deleteCourse(id: string) {
     setBusy(true);
@@ -83,11 +109,25 @@ export default function NotebookScreen() {
       </div>
 
       <div className="notebook-grid">
-        {courses.map((c) => (
-          <div key={c.id} className="notebook-card card">
+        {courses.map((c) => {
+          const progress = c.completed_sections?.length ?? 0;
+          const total = c.sections.length;
+          const allSectionsDone = c.completed_sections.length === total && total > 0;
+          const isComplete = c.has_passed_quiz || allSectionsDone;
+          const isToggling = togglingDone.has(c.id);
+          return (
+          <div key={c.id} className={`notebook-card card${isComplete ? " completed" : ""}`}>
             <Link to={`/course/${c.id}`} className="notebook-card-link">
-              <img className="notebook-thumb" src={c.thumbnail_url} alt="" loading="lazy" />
+              <div className="notebook-thumb-wrap">
+                <img className="notebook-thumb" src={c.thumbnail_url} alt="" loading="lazy" />
+              </div>
+              {!isComplete && total > 0 && (
+                <div className="notebook-progress-bar">
+                  <div className="notebook-progress-fill" style={{ width: `${(progress / total) * 100}%` }} />
+                </div>
+              )}
               <div className="notebook-card-body">
+                <h4 className="notebook-card-title">{c.sections[0]?.title ?? "Untitled course"}</h4>
                 <span className="notebook-section-count">{c.sections.length} sections</span>
                 <ul className="notebook-sections">
                   {c.sections.slice(0, 3).map((s, i) => (
@@ -98,6 +138,23 @@ export default function NotebookScreen() {
               </div>
             </Link>
             <div className="notebook-card-actions">
+              <button
+                className={`icon-btn done-toggle${allSectionsDone ? " done" : ""}`}
+                onClick={() => !isToggling && toggleCourseDone(c)}
+                disabled={isToggling || c.has_passed_quiz}
+                title={allSectionsDone ? "Mark as not done" : "Mark all as done"}
+              >
+                {allSectionsDone ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" fill="var(--color-primary)" />
+                    <polyline points="7,12 10.5,15.5 17,8.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+                  </svg>
+                )}
+              </button>
               <button className="icon-btn" onClick={() => setModal({ course: c, type: "regenerate" })} title="Regenerate course">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
               </button>
@@ -106,7 +163,8 @@ export default function NotebookScreen() {
               </button>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {modal && (
