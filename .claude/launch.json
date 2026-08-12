@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "frontend",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd frontend && node_modules/.bin/vite --host"],
+      "port": 5173,
+      "autoPort": true
+    }
+  ]
+}
