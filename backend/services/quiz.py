@@ -37,7 +37,9 @@ referencing what was correct or missing relative to the reference answer
 """
 
 
-def _grade_theory(question: str, reference_answer: str, student_answer: str) -> TheoryScoreBreakdown:
+def _grade_theory(
+    question: str, reference_answer: str, student_answer: str, api_key: str, model: str | None = None
+) -> TheoryScoreBreakdown:
     if not student_answer.strip():
         return TheoryScoreBreakdown(
             accuracy=0, completeness=0, relevance=0, feedback="No answer submitted."
@@ -50,10 +52,11 @@ def _grade_theory(question: str, reference_answer: str, student_answer: str) -> 
         dimensions=_DIMENSIONS_TEXT,
     )
     response = litellm.completion(
-        model=settings.ai_model,
+        model=model or settings.ai_model,
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
         temperature=0,
+        api_key=api_key,
     )
     data = json.loads(response.choices[0].message.content)
     return TheoryScoreBreakdown(**data)
@@ -64,45 +67,48 @@ def score_submission(
     course: CourseResponse,
     mcq_answers: list[MCQAnswer],
     theory_answers: list[TheoryAnswer],
+    api_key: str,
+    model: str | None = None,
 ) -> QuizResultResponse:
-    mcq_lookup = {m.id: m for s in course.sections for m in s.mcqs}
-    theory_lookup = {t.id: t for s in course.sections for t in s.theory_questions}
+    mcq_answer_lookup = {a.question_id: a for a in mcq_answers}
+    theory_answer_lookup = {a.question_id: a for a in theory_answers}
 
     results: list[QuestionResult] = []
 
-    for answer in mcq_answers:
-        question = mcq_lookup.get(answer.question_id)
-        if question is None:
-            continue
-        is_correct = answer.selected_label == question.correct_label
-        results.append(
-            QuestionResult(
-                question_id=question.id,
-                question_type="mcq",
+    for section in course.sections:
+        for question in section.mcqs:
+            answer = mcq_answer_lookup.get(question.id)
+            if answer is None:
+                results.append(QuestionResult(
+                    question_id=question.id, question_type="mcq",
+                    is_correct=False, score=0.0, max_score=1.0,
+                    feedback="Question was skipped.",
+                ))
+                continue
+            is_correct = answer.selected_label == question.correct_label
+            results.append(QuestionResult(
+                question_id=question.id, question_type="mcq",
                 is_correct=is_correct,
-                score=1.0 if is_correct else 0.0,
-                max_score=1.0,
+                score=1.0 if is_correct else 0.0, max_score=1.0,
                 feedback=question.explanation,
-            )
-        )
+            ))
 
-    for answer in theory_answers:
-        question = theory_lookup.get(answer.question_id)
-        if question is None:
-            continue
-        breakdown = _grade_theory(question.question, question.reference_answer, answer.answer_text)
-        average = round((breakdown.accuracy + breakdown.completeness + breakdown.relevance) / 3, 1)
-        results.append(
-            QuestionResult(
-                question_id=question.id,
-                question_type="theory",
-                is_correct=None,
-                score=average,
-                max_score=5.0,
-                feedback=breakdown.feedback,
-                breakdown=breakdown,
-            )
-        )
+        for question in section.theory_questions:
+            answer = theory_answer_lookup.get(question.id)
+            if answer is None or not answer.answer_text.strip():
+                results.append(QuestionResult(
+                    question_id=question.id, question_type="theory",
+                    is_correct=None, score=0.0, max_score=5.0,
+                    feedback="Question was skipped.",
+                ))
+                continue
+            breakdown = _grade_theory(question.question, question.reference_answer, answer.answer_text, api_key, model)
+            average = round((breakdown.accuracy + breakdown.completeness + breakdown.relevance) / 3, 1)
+            results.append(QuestionResult(
+                question_id=question.id, question_type="theory",
+                is_correct=None, score=average, max_score=5.0,
+                feedback=breakdown.feedback, breakdown=breakdown,
+            ))
 
     total_score = sum(r.score for r in results)
     max_score = sum(r.max_score for r in results)
