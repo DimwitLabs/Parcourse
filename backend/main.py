@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from routers import auth, course, guardrail, knowledge_graph, quiz, storyboard, transcript, users
+from routers import auth, course, guardrail, knowledge_graph, quiz, settings as settings_router, storyboard, transcript, users
 
 app = FastAPI(title="Parcourse API")
 
@@ -22,6 +22,7 @@ app.include_router(course.router)
 app.include_router(storyboard.router)
 app.include_router(quiz.router)
 app.include_router(knowledge_graph.router)
+app.include_router(settings_router.router)
 
 @app.get("/health")
 def health() -> dict[str, str]:
