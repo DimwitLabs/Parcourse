@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import type { Segment } from "../lib/types";
 
 type MCQOption = { label: string; text: string };
 type MCQ = { id: string; question: string; options: MCQOption[] };
@@ -34,6 +36,7 @@ export default function CourseScreen() {
   const [playKey, setPlayKey] = useState(0);
   const [activeSection, setActiveSection] = useState(0);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const videoRef = useRef<HTMLDivElement>(null);
 
   const [openSections, setOpenSections] = useState<Set<number>>(new Set([0]));
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, string>>({});
@@ -42,6 +45,10 @@ export default function CourseScreen() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [quizBarSticky, setQuizBarSticky] = useState(false);
   const [showSkipModal, setShowSkipModal] = useState(false);
+  const [courseAction, setCourseAction] = useState<"delete" | "regenerate" | null>(null);
+  const [actionBusy, setActionBusy] = useState(false);
+  const [doneSections, setDoneSections] = useState<Set<number>>(new Set());
+  const [atBottom, setAtBottom] = useState(false);
   const quizBoxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,6 +56,15 @@ export default function CourseScreen() {
     apiFetch(`/course/${courseId}`, token)
       .then(setCourse)
       .catch((err) => setLoadError(String(err.message ?? err)));
+    apiFetch(`/course/${courseId}/progress`, token)
+      .then((indices: number[]) => setDoneSections(new Set(indices)))
+      .catch(() => {});
+    apiFetch(`/course/${courseId}/draft`, token)
+      .then((draft: { mcq_answers: Record<string, string>; theory_answers: Record<string, string> }) => {
+        if (Object.keys(draft.mcq_answers).length) setMcqAnswers(draft.mcq_answers);
+        if (Object.keys(draft.theory_answers).length) setTheoryAnswers(draft.theory_answers);
+      })
+      .catch(() => {});
   }, [courseId, token]);
 
   useEffect(() => {
@@ -65,7 +81,20 @@ export default function CourseScreen() {
       { rootMargin: "-20% 0px -60% 0px" },
     );
     sectionRefs.current.forEach((el) => el && observer.observe(el));
-    return () => observer.disconnect();
+
+    function onScroll() {
+      const isAtBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 100;
+      setAtBottom(isAtBottom);
+      if (isAtBottom) {
+        const lastVisible = sectionRefs.current.reduce((last, el, i) => {
+          if (el && el.getBoundingClientRect().top < window.innerHeight) return i;
+          return last;
+        }, -1);
+        if (lastVisible !== -1) setActiveSection(lastVisible);
+      }
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { observer.disconnect(); window.removeEventListener("scroll", onScroll); };
   }, [course]);
 
   useEffect(() => {
@@ -95,6 +124,7 @@ export default function CourseScreen() {
     setSubmitting(true);
     setSubmitError(null);
     try {
+      saveDraft();
       const result = await apiFetch("/quiz/score", token, {
         method: "POST",
         body: JSON.stringify({
@@ -114,6 +144,78 @@ export default function CourseScreen() {
       setSubmitError(errMsg(err));
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  function saveDraft(mcq = mcqAnswers, theory = theoryAnswers) {
+    if (!course) return;
+    apiFetch(`/course/${course.id}/draft`, token, {
+      method: "PUT",
+      body: JSON.stringify({ mcq_answers: mcq, theory_answers: theory }),
+    }).catch((err) => {
+      console.warn("[draft] save failed:", err);
+    });
+  }
+
+  async function toggleSectionDone(index: number) {
+    if (!course) return;
+    const isDone = doneSections.has(index);
+    const method = isDone ? "DELETE" : "POST";
+    setDoneSections((prev) => {
+      const next = new Set(prev);
+      if (isDone) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+    try {
+      await apiFetch(`/course/${course.id}/progress/${index}`, token, { method });
+      saveDraft();
+    } catch {
+      setDoneSections((prev) => {
+        const next = new Set(prev);
+        if (isDone) next.add(index);
+        else next.delete(index);
+        return next;
+      });
+    }
+  }
+
+  async function deleteCourse() {
+    if (!course) return;
+    setActionBusy(true);
+    try {
+      await apiFetch(`/course/${course.id}`, token, { method: "DELETE" });
+      toast("Course deleted.", "info");
+      navigate("/notebook");
+    } catch (err) {
+      toast(errMsg(err), "error");
+    } finally {
+      setActionBusy(false);
+      setCourseAction(null);
+    }
+  }
+
+  async function regenerateCourse() {
+    if (!course) return;
+    setActionBusy(true);
+    try {
+      await apiFetch(`/course/${course.id}`, token, { method: "DELETE" });
+      const transcriptData = await apiFetch("/transcript/extract", token, {
+        method: "POST",
+        body: JSON.stringify({ url: `https://www.youtube.com/watch?v=${course.video_id}` }),
+      });
+      const segments: Segment[] = transcriptData.segments;
+      const courseData = await apiFetch("/course/generate", token, {
+        method: "POST",
+        body: JSON.stringify({ video_id: course.video_id, segments }),
+      });
+      toast("Course regenerated!", "success");
+      navigate(`/course/${courseData.id}`);
+    } catch (err) {
+      toast(errMsg(err), "error");
+    } finally {
+      setActionBusy(false);
+      setCourseAction(null);
     }
   }
 
@@ -151,10 +253,10 @@ export default function CourseScreen() {
             {course.sections.map((s, i) => (
               <button
                 key={i}
-                className={`sidebar-item${activeSection === i ? " active" : ""}`}
+                className={`sidebar-item${activeSection === i ? " active" : ""}${doneSections.has(i) ? " done" : ""}`}
                 onClick={() => scrollToSection(i)}
               >
-                <span className="sidebar-item-num">{i + 1}</span>
+                <span className="sidebar-item-num">{doneSections.has(i) ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> : i + 1}</span>
                 <span className="sidebar-item-title">{s.title}</span>
               </button>
             ))}
@@ -166,12 +268,21 @@ export default function CourseScreen() {
               {submitting ? "Grading…" : "Submit Quiz"}
             </button>
           </div>
+
+          <div className="sidebar-actions">
+            <button className="icon-btn" onClick={() => setCourseAction("regenerate")} title="Regenerate course">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            </button>
+            <button className="icon-btn danger" onClick={() => setCourseAction("delete")} title="Delete course">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
         </nav>
       </aside>
 
       <div className="course-main">
         <div className="course-view">
-          <div className="video-frame">
+          <div className="video-frame" ref={videoRef}>
             <iframe
               key={playKey}
               width="100%"
@@ -194,14 +305,14 @@ export default function CourseScreen() {
                 ref={(el) => { sectionRefs.current[i] = el; }}
               >
                 <button className="section-card-toggle" onClick={() => toggleSection(i)}>
-                  <span className="sidebar-item-num">{i + 1}</span>
+                  <span className={`sidebar-item-num${doneSections.has(i) ? " done" : ""}`}>{doneSections.has(i) ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> : i + 1}</span>
                   <h3 className="section-title">{s.title}</h3>
                   <span className={`toggle-chevron${isOpen ? " open" : ""}`}>▾</span>
                 </button>
 
                 {isOpen && (
                   <div className="section-card-body">
-                    <button className="button secondary" onClick={() => { setPlayStart(s.start_seconds); setPlayKey((k) => k + 1); }}>
+                    <button className="button secondary" onClick={() => { setPlayStart(s.start_seconds); setPlayKey((k) => k + 1); videoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }}>
                       ▶ Watch this part
                     </button>
 
@@ -253,24 +364,32 @@ export default function CourseScreen() {
                         />
                       </div>
                     ))}
+
+                    <button
+                      className={`button ${doneSections.has(i) ? "secondary done" : "primary"} section-done-btn`}
+                      onClick={() => toggleSectionDone(i)}
+                    >
+                      {doneSections.has(i) ? <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span className="done-label">Done</span><span className="undone-label">Undo</span></> : "Mark as done"}
+                    </button>
                   </div>
                 )}
               </div>
             );
           })}
 
-          {quizBarSticky && (
-            <div className="submit-bar">
-              <span className="status-message">
-                {answeredQuestions} / {totalQuestions} answered
-              </span>
-              <button className="button primary" onClick={handleSubmitClick} disabled={submitting}>
-                {submitting ? "Grading…" : "Submit Quiz"}
-              </button>
-            </div>
-          )}
         </div>
       </div>
+
+      {quizBarSticky && (
+        <div className={`submit-bar${atBottom ? " full-width" : ""}`}>
+          <span className="status-message">
+            {answeredQuestions} / {totalQuestions} answered
+          </span>
+          <button className="button primary" onClick={handleSubmitClick} disabled={submitting}>
+            {submitting ? "Grading…" : "Submit Quiz"}
+          </button>
+        </div>
+      )}
 
       {showSkipModal && (
         <div className="modal-overlay" onClick={() => setShowSkipModal(false)}>
@@ -287,6 +406,35 @@ export default function CourseScreen() {
               </button>
               <button className="button primary" onClick={submitQuiz}>
                 Submit anyway
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {courseAction && (
+        <div className="modal-overlay" onClick={() => !actionBusy && setCourseAction(null)}>
+          <div className="modal-card card" onClick={(e) => e.stopPropagation()}>
+            <h2 style={{ margin: "0 0 0.5rem", fontSize: "1.25rem", fontWeight: 800 }}>
+              {courseAction === "delete" ? "Delete course" : "Regenerate course"}
+            </h2>
+            <p style={{ margin: "0 0 1.5rem", color: "var(--color-ink-soft)" }}>
+              {courseAction === "delete"
+                ? "This will permanently delete this course and all associated quiz data."
+                : "This will delete the current course and regenerate it from scratch using the same video."}
+            </p>
+            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+              <button className="button secondary" onClick={() => setCourseAction(null)} disabled={actionBusy}>
+                Cancel
+              </button>
+              <button
+                className={`button ${courseAction === "delete" ? "danger" : "primary"}`}
+                onClick={courseAction === "delete" ? deleteCourse : regenerateCourse}
+                disabled={actionBusy}
+              >
+                {actionBusy
+                  ? courseAction === "delete" ? "Deleting…" : "Regenerating…"
+                  : courseAction === "delete" ? "Delete" : "Regenerate"}
               </button>
             </div>
           </div>
