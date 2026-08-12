@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import CustomSelect from "../components/CustomSelect";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
 
@@ -205,24 +206,21 @@ export default function AdminScreen() {
           </p>
         </div>
         <div className="admin-model-row">
-          <select
-            className="model-select"
+          <CustomSelect
             value={currentModel}
-            onChange={(e) => {
-              setCurrentModel(e.target.value);
-              saveModel(e.target.value);
-            }}
             disabled={modelSaving}
-          >
-            <option value="openrouter/openai/gpt-4o-mini">GPT-4o Mini</option>
-            <option value="openrouter/openai/gpt-4o">GPT-4o</option>
-            <option value="openrouter/openai/gpt-4.1-mini">GPT-4.1 Mini</option>
-            <option value="openrouter/openai/gpt-4.1">GPT-4.1</option>
-            <option value="openrouter/anthropic/claude-sonnet-4">Claude Sonnet 4</option>
-            <option value="openrouter/anthropic/claude-haiku-4">Claude Haiku 4</option>
-            <option value="openrouter/google/gemini-2.5-flash">Gemini 2.5 Flash</option>
-            <option value="openrouter/google/gemini-2.5-pro">Gemini 2.5 Pro</option>
-          </select>
+            onChange={(v) => { setCurrentModel(v); saveModel(v); }}
+            options={[
+              { value: "openrouter/openai/gpt-4o-mini", label: "GPT-4o Mini" },
+              { value: "openrouter/openai/gpt-4o", label: "GPT-4o" },
+              { value: "openrouter/openai/gpt-4.1-mini", label: "GPT-4.1 Mini" },
+              { value: "openrouter/openai/gpt-4.1", label: "GPT-4.1" },
+              { value: "openrouter/anthropic/claude-sonnet-4", label: "Claude Sonnet 4" },
+              { value: "openrouter/anthropic/claude-haiku-4", label: "Claude Haiku 4" },
+              { value: "openrouter/google/gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+              { value: "openrouter/google/gemini-2.5-pro", label: "Gemini 2.5 Pro" },
+            ]}
+          />
           {modelSaving && <span className="status-message" style={{ margin: 0 }}>Saving…</span>}
         </div>
       </div>
