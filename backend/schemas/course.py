@@ -103,3 +103,12 @@ class CourseResponsePublic(BaseModel):
                 for s in course.sections
             ],
         )
+
+
+class CourseListEntry(BaseModel):
+    id: str
+    video_id: str
+    thumbnail_url: str
+    sections: list[CourseSectionPublic]
+    completed_sections: list[int] = []
+    has_passed_quiz: bool = False
