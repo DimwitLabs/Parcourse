@@ -30,6 +30,7 @@ class TheoryQuestion(BaseModel):
 class CourseSection(BaseModel):
     title: str
     summary: str
+    key_takeaways: list[str] = []
     start_seconds: float
     end_seconds: float
     mcqs: list[MCQQuestion]
@@ -61,6 +62,7 @@ class TheoryQuestionPublic(BaseModel):
 class CourseSectionPublic(BaseModel):
     title: str
     summary: str
+    key_takeaways: list[str] = []
     start_seconds: float
     end_seconds: float
     mcqs: list[MCQQuestionPublic]
@@ -83,6 +85,7 @@ class CourseResponsePublic(BaseModel):
                 CourseSectionPublic(
                     title=s.title,
                     summary=s.summary,
+                    key_takeaways=s.key_takeaways,
                     start_seconds=s.start_seconds,
                     end_seconds=s.end_seconds,
                     mcqs=[

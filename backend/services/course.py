@@ -22,6 +22,7 @@ Return only a JSON object with exactly this field:
 - "sections": a list of objects, each with:
   - "title": str
   - "summary": str, 2-3 sentences
+  - "key_takeaways": a list of 2-4 short phrases (3-6 words each) capturing the section's core points
   - "start_seconds": float
   - "end_seconds": float
   - "mcqs": a list of 2-3 objects, each with:
@@ -41,15 +42,16 @@ def thumbnail_url(video_id: str) -> str:
     return f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
 
 
-def generate(video_id: str, segments: list[TranscriptSegment]) -> CourseResponse:
+def generate(video_id: str, segments: list[TranscriptSegment], api_key: str, model: str | None = None) -> CourseResponse:
     formatted = "\n".join(f"[{s.start:.1f}s] {s.text}" for s in segments)
     prompt = _PROMPT.format(formatted=formatted[:12000])
 
     response = litellm.completion(
-        model=settings.ai_model,
+        model=model or settings.ai_model,
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
         temperature=0.3,
+        api_key=api_key,
     )
     data = json.loads(response.choices[0].message.content)
 
@@ -77,6 +79,7 @@ def generate(video_id: str, segments: list[TranscriptSegment]) -> CourseResponse
             CourseSection(
                 title=s["title"],
                 summary=s["summary"],
+                key_takeaways=s.get("key_takeaways", []),
                 start_seconds=s["start_seconds"],
                 end_seconds=s["end_seconds"],
                 mcqs=mcqs,

@@ -22,14 +22,15 @@ Return only a JSON object with exactly these fields:
 """
 
 
-def classify(transcript: str) -> GuardrailResult:
+def classify(transcript: str, api_key: str, model: str | None = None) -> GuardrailResult:
     prompt = _PROMPT.format(excerpt=transcript[:6000])
 
     response = litellm.completion(
-        model=settings.ai_model,
+        model=model or settings.ai_model,
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
         temperature=0,
+        api_key=api_key,
     )
     raw = response.choices[0].message.content
     data = json.loads(raw)

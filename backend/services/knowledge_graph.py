@@ -87,6 +87,8 @@ def extract_and_merge(
     course_id: uuid.UUID,
     course: CourseResponse,
     video_id: str,
+    api_key: str,
+    model: str | None = None,
 ) -> None:
     category = get_video_category(video_id) or "Education"
     domain = _get_or_create_node(session, NodeTier.domain, category, f"YouTube category: {category}")
@@ -96,10 +98,11 @@ def extract_and_merge(
         sections_summary=sections_summary, existing_labels=_existing_labels(session)
     )
     response = litellm.completion(
-        model=settings.ai_model,
+        model=model or settings.ai_model,
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
         temperature=0.2,
+        api_key=api_key,
     )
     data = json.loads(response.choices[0].message.content)
     extraction = KnowledgeExtraction(**data)
