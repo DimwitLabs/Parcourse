@@ -60,7 +60,6 @@ export default function AdminScreen() {
       });
       setCurrentModel(data.model);
     } catch {
-      // silently ignore
     } finally {
       setModelSaving(false);
     }

@@ -42,7 +42,6 @@ def get_frame_at(video_id: str, seconds: float) -> bytes:
         logger.error("[storyboard]: no storyboard available for video %s", video_id)
         raise ValueError("No storyboard available for this video")
 
-    # finest-grained grid = most cells per sprite
     board = max(boards, key=lambda b: (b["rows"] or 0) * (b["columns"] or 0))
     rows, columns = board["rows"], board["columns"]
 

@@ -126,7 +126,6 @@ def extract_and_merge(
             continue
         _ensure_edge(session, source.id, target.id, e.edge_type)
 
-    # anchor top-level fields to the domain
     for n in extraction.nodes:
         if n.tier == NodeTier.field:
             _ensure_edge(session, label_to_node[n.label].id, domain.id, EdgeType.belongs_to)

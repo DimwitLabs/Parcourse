@@ -47,8 +47,6 @@ body {
   position: relative;
 }
 
-/* Miro/Figma-style canvas: dot grid + cursor-follow brightening glow */
-
 .canvas-grid {
   position: fixed;
   inset: 0;
@@ -81,8 +79,6 @@ body {
   position: relative;
   z-index: 1;
 }
-
-/* layout */
 
 .top-nav {
   display: flex;
@@ -251,8 +247,6 @@ body {
   font-size: 0.9rem;
 }
 
-/* hero */
-
 .hero {
   text-align: center;
   padding: 2rem 0 3rem;
@@ -290,8 +284,6 @@ body {
   max-width: 32rem;
   margin: 1.25rem auto 0;
 }
-
-/* form */
 
 .url-form {
   display: flex;
@@ -335,8 +327,6 @@ body {
   resize: vertical;
   font-family: inherit;
 }
-
-/* buttons — Material You: tonal fills, full/blobby radius, state-layer hover */
 
 .button {
   font-family: inherit;
@@ -401,8 +391,6 @@ body {
   flex-wrap: wrap;
 }
 
-/* status text */
-
 .status-message {
   text-align: center;
   color: var(--color-ink-soft);
@@ -420,8 +408,6 @@ body {
   padding: 3rem 0;
 }
 
-/* cards — blobby, tonal separation instead of borders */
-
 .card {
   background: var(--color-surface-lowest);
   border-radius: var(--radius-xl);
@@ -433,8 +419,6 @@ body {
 .card.muted {
   background: var(--color-surface-low);
 }
-
-/* auth screens */
 
 .auth-page {
   min-height: 80vh;
@@ -469,8 +453,6 @@ body {
   padding: 0.6rem 0;
   cursor: pointer;
 }
-
-/* decorative accents — the fun, quirky Material You shapes */
 
 .deco-wrap {
   position: relative;
@@ -509,8 +491,6 @@ body {
   left: -1rem;
   transform: rotate(-12deg);
 }
-
-/* AI insight card — sparkle eyebrow, tilted tag, quote-style feedback */
 
 .ai-card {
   position: relative;
@@ -608,8 +588,6 @@ body {
 .ai-card-points li:nth-child(4)::before {
   background: var(--color-secondary);
 }
-
-/* course view */
 
 .course-layout {
   display: grid;
@@ -892,8 +870,6 @@ body {
   font-weight: 700;
 }
 
-/* custom radio */
-
 .mcq-option input[type="radio"],
 .radio-row input[type="radio"] {
   appearance: none;
@@ -996,8 +972,6 @@ body {
 .submit-bar .status-message {
   margin: 0;
 }
-
-/* quiz results — active styles are in the "results screen" section below */
 
 .results-headline {
   font-size: 2rem;
@@ -1102,8 +1076,6 @@ body {
   font-style: italic;
 }
 
-/* admin */
-
 .admin-view {
   display: flex;
   flex-direction: column;
@@ -1179,8 +1151,6 @@ body {
   font-size: 0.9rem;
   white-space: nowrap;
 }
-
-/* knowledge graph */
 
 .graph-view {
   display: flex;
@@ -1380,8 +1350,6 @@ body {
   font-size: 0.75rem;
 }
 
-/* admin model */
-
 .admin-model-section {
   padding: 1.5rem;
 }
@@ -1415,8 +1383,6 @@ body {
   outline: none;
   border-color: var(--color-primary);
 }
-
-/* notebook */
 
 .notebook-view {
   display: flex;
@@ -1513,7 +1479,6 @@ body {
   border-top: 1px solid var(--line);
 }
 
-
 .notebook-progress-bar {
   height: 3px;
   background: var(--color-surface-high);
@@ -1524,8 +1489,6 @@ body {
   background: var(--color-primary);
   transition: width 0.3s ease;
 }
-
-/* page header: title left, subtitle right-aligned on same line */
 
 .page-header {
   display: flex;
@@ -1560,8 +1523,6 @@ body {
   font-size: 0.9rem;
   line-height: 1.5rem;
 }
-
-/* icon button */
 
 .icon-btn {
   appearance: none;
@@ -1603,8 +1564,6 @@ body {
   pointer-events: none;
 }
 
-/* confirm bar (inline warning) */
-
 .confirm-bar {
   display: flex;
   align-items: center;
@@ -1624,8 +1583,6 @@ body {
   color: var(--color-danger);
 }
 
-/* user row actions */
-
 .user-row-actions {
   display: flex;
   align-items: center;
@@ -1637,15 +1594,11 @@ body {
   padding: 4rem 1rem;
 }
 
-/* home: hint */
-
 .home-hint {
   font-size: 0.85rem;
   color: var(--color-ink-faint);
   margin-top: 0.75rem;
 }
-
-/* home: section row heading */
 
 .section-row {
   display: flex;
@@ -1670,8 +1623,6 @@ body {
 .section-row-link:hover {
   text-decoration: underline;
 }
-
-/* home: course card grid */
 
 .course-grid {
   display: grid;
@@ -1749,8 +1700,6 @@ body {
   padding: 0 1rem 1rem;
 }
 
-/* home: stats row */
-
 .stats-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -1780,8 +1729,6 @@ body {
   color: var(--color-ink-faint);
 }
 
-/* admin: role pill */
-
 .role-pill {
   display: inline-block;
   font-size: 0.7rem;
@@ -1798,8 +1745,6 @@ body {
   background: var(--color-tertiary-container);
   color: var(--color-tertiary);
 }
-
-/* admin: KPI row */
 
 .admin-kpi-row {
   display: grid;
@@ -1827,8 +1772,6 @@ body {
   font-size: 0.8rem;
   color: var(--color-ink-faint);
 }
-
-/* settings screen */
 
 .settings-view {
   display: flex;
@@ -1908,8 +1851,6 @@ body {
   }
 }
 
-/* modal overlay */
-
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1927,8 +1868,6 @@ body {
   flex-direction: column;
 }
 
-/* results screen */
-
 .results-view {
   display: flex;
   flex-direction: column;
@@ -1944,7 +1883,6 @@ body {
   padding: 1.5rem 0 0.5rem;
 }
 
-/* Score stage: dashed frame + floating blobs + circle */
 .score-stage {
   position: relative;
   padding: 1.5rem;
@@ -2087,7 +2025,6 @@ body {
   flex-shrink: 0;
 }
 
-/* AI Tutor card — pill label floats above */
 .ai-prose-card {
   position: relative;
   background: var(--color-surface-lowest);
@@ -2224,8 +2161,6 @@ body {
   filter: none;
 }
 
-/* tag variants */
-
 .tag {
   display: inline-block;
   font-size: 0.7rem;
@@ -2256,14 +2191,10 @@ body {
   color: var(--color-danger);
 }
 
-/* text input focus style */
-
 .text-input:focus {
   outline: none;
   border-color: var(--color-primary);
 }
-
-/* eyebrow label */
 
 .eyebrow {
   font-size: 0.7rem;
@@ -2273,8 +2204,6 @@ body {
   color: var(--color-ink-faint);
   margin: 0;
 }
-
-/* toast / snackbar */
 
 .toast-container {
   position: fixed;
@@ -2327,8 +2256,6 @@ body {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-
-/* Generation overlay + pills */
 
 .gen-overlay {
   position: fixed;
@@ -2421,9 +2348,6 @@ body {
   to { transform: rotate(360deg); }
 }
 
-
-/* Score dots on result cards */
-
 .score-dot {
   display: inline-flex;
   align-items: center;
@@ -2444,8 +2368,6 @@ body {
   line-height: 1;
   letter-spacing: -0.02em;
 }
-
-/* Mobile hamburger + nav */
 
 .hamburger-btn {
   display: none;
@@ -2539,8 +2461,6 @@ body {
   .top-nav-links { display: none; }
   .hamburger-btn { display: flex; }
 }
-
-/* custom select */
 
 .custom-select {
   position: relative;
