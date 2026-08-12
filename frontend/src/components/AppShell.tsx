@@ -3,10 +3,17 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../lib/auth";
 
+const NAV_LINKS = [
+  { to: "/", end: true, label: "Home", desc: "Your dashboard and recent courses" },
+  { to: "/notebook", end: false, label: "Notebook", desc: "All courses you've generated" },
+  { to: "/graph", end: false, label: "Knowledge Graph", desc: "See how concepts connect" },
+];
+
 export default function AppShell() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,17 +35,24 @@ export default function AppShell() {
           Parcourse
         </NavLink>
         <div className="top-nav-links">
-          <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
-            Home
-          </NavLink>
-          <NavLink to="/notebook" className={({ isActive }) => (isActive ? "active" : "")}>
-            Notebook
-          </NavLink>
-          <NavLink to="/graph" className={({ isActive }) => (isActive ? "active" : "")}>
-            Knowledge Graph
-          </NavLink>
+          {NAV_LINKS.map(({ to, end, label }) => (
+            <NavLink key={to} to={to} end={end} className={({ isActive }) => (isActive ? "active" : "")}>
+              {label}
+            </NavLink>
+          ))}
         </div>
         <div className="top-nav-user" ref={menuRef}>
+          <button
+            className="hamburger-btn"
+            aria-label="Open navigation"
+            onClick={() => setMobileNavOpen(true)}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
           <button className="avatar-button" onClick={() => setMenuOpen((v) => !v)}>
             <span className="avatar">{initials}</span>
           </button>
@@ -83,6 +97,31 @@ export default function AppShell() {
           )}
         </div>
       </div>
+
+      {mobileNavOpen && (
+        <div className="mobile-nav">
+          <div className="mobile-nav-backdrop" onClick={() => setMobileNavOpen(false)} />
+          <div className="mobile-nav-drawer">
+            <button className="mobile-nav-close" aria-label="Close" onClick={() => setMobileNavOpen(false)}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+            {NAV_LINKS.map(({ to, end, label, desc }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={end}
+                className={({ isActive }) => `mobile-nav-link${isActive ? " active" : ""}`}
+                onClick={() => setMobileNavOpen(false)}
+              >
+                <span className="mobile-nav-link-title">{label}</span>
+                <span className="mobile-nav-link-desc">{desc}</span>
+              </NavLink>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="app-shell">
         <Outlet />

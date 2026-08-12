@@ -14,7 +14,12 @@ export async function apiFetch(path: string, token: string | null, init: Request
     },
   });
   if (res.status === 204) return null;
-  const data = await res.json();
+  const text = await res.text();
+  if (!text) {
+    if (!res.ok) throw new Error(`Request failed (${res.status})`);
+    return null;
+  }
+  const data = JSON.parse(text);
   if (!res.ok) throw new Error(data.detail ?? JSON.stringify(data));
   return data;
 }
