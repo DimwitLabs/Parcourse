@@ -2,19 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../lib/auth";
+import { gravatarUrl, userInitials } from "../lib/gravatar";
 
 const NAV_LINKS = [
   { to: "/", end: true, label: "Home", desc: "Your dashboard and recent courses" },
   { to: "/notebook", end: false, label: "Notebook", desc: "All courses you've generated" },
   { to: "/graph", end: false, label: "Knowledge Graph", desc: "See how concepts connect" },
 ];
-
-async function gravatarUrl(email: string): Promise<string> {
-  const clean = email.trim().toLowerCase();
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(clean));
-  const hash = Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
-  return `https://www.gravatar.com/avatar/${hash}?d=404&s=72`;
-}
 
 export default function AppShell() {
   const { user, logout } = useAuth();
@@ -39,9 +33,7 @@ export default function AppShell() {
     gravatarUrl(user.email).then(setAvatarUrl);
   }, [user?.email]);
 
-  const initials = user?.first_name
-    ? (user.first_name[0] + (user.last_name?.[0] ?? "")).toUpperCase()
-    : user?.email.slice(0, 2).toUpperCase() ?? "";
+  const initials = userInitials(user);
 
   return (
     <>

@@ -9,6 +9,7 @@ import { Link, useSearchParams } from "react-router-dom";
 
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { gravatarUrl, userInitials } from "../lib/gravatar";
 
 type Tier = "you" | "domain" | "field" | "topic" | "skill";
 type CourseRef = { id: string; title: string };
@@ -243,8 +244,16 @@ function exportPng(svgEl: SVGSVGElement) {
 
 export default function KnowledgeGraphScreen() {
   const { token, user } = useAuth();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarErr, setAvatarErr] = useState(false);
   const [params] = useSearchParams();
   const viewingUserId = params.get("user");
+
+  useEffect(() => {
+    if (!user?.email) return;
+    setAvatarErr(false);
+    gravatarUrl(user.email, 160).then(setAvatarUrl);
+  }, [user?.email]);
 
   const [graph, setGraph] = useState<Graph | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -516,7 +525,8 @@ export default function KnowledgeGraphScreen() {
                 const isYou = n.tier === "you";
                 const isPinned = tooltip?.pinned && tooltip.node.id === n.id;
                 const fontSize = FONT_SIZES[n.tier];
-                const lines = wrapText(n.label, n.r, fontSize);
+                const showAvatar = isYou && !!avatarUrl && !avatarErr;
+                const lines = wrapText(isYou ? userInitials(user) || n.label : n.label, n.r, fontSize);
                 const lineHeight = fontSize * 1.32;
                 const textFill = mc === "new" && !isYou ? "var(--color-secondary)" : "white";
                 const clipId = `nc-${n.id}`;
@@ -551,25 +561,39 @@ export default function KnowledgeGraphScreen() {
                         className="graph-node-circle"
                         filter={isYou || isField ? "url(#glow-field)" : mc === "mastered" ? "url(#glow-mastered)" : undefined}
                       />
-                      <text
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        fontSize={fontSize}
-                        fontWeight={FONT_WEIGHT[n.tier]}
-                        fill={textFill}
-                        clipPath={`url(#${clipId})`}
-                        style={{ fontFamily: "inherit", userSelect: "none", pointerEvents: "none" }}
-                      >
-                        {lines.map((line, i) => (
-                          <tspan
-                            key={i}
-                            x={0}
-                            dy={i === 0 ? -(lines.length - 1) * lineHeight / 2 : lineHeight}
-                          >
-                            {line}
-                          </tspan>
-                        ))}
-                      </text>
+                      {showAvatar ? (
+                        <image
+                          href={avatarUrl!}
+                          x={-n.r * 0.84}
+                          y={-n.r * 0.84}
+                          width={n.r * 1.68}
+                          height={n.r * 1.68}
+                          clipPath={`url(#${clipId})`}
+                          preserveAspectRatio="xMidYMid slice"
+                          onError={() => setAvatarErr(true)}
+                          style={{ userSelect: "none", pointerEvents: "none" }}
+                        />
+                      ) : (
+                        <text
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          fontSize={fontSize}
+                          fontWeight={FONT_WEIGHT[n.tier]}
+                          fill={textFill}
+                          clipPath={`url(#${clipId})`}
+                          style={{ fontFamily: "inherit", userSelect: "none", pointerEvents: "none" }}
+                        >
+                          {lines.map((line, i) => (
+                            <tspan
+                              key={i}
+                              x={0}
+                              dy={i === 0 ? -(lines.length - 1) * lineHeight / 2 : lineHeight}
+                            >
+                              {line}
+                            </tspan>
+                          ))}
+                        </text>
+                      )}
                     </g>
                   </g>
                 );
