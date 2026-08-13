@@ -3,7 +3,7 @@ import logging
 from sqlmodel import Session
 
 from config import settings
-from models.instance_config import InstanceConfig
+from models.instance_config import INSTANCE_ID, InstanceConfig
 from models.user import User
 from services.crypto import decrypt
 
@@ -15,7 +15,7 @@ class NoApiKeyError(Exception):
 
 
 def resolve_model(session: Session) -> str:
-    instance = session.get(InstanceConfig, 1)
+    instance = session.get(InstanceConfig, INSTANCE_ID)
     if instance and instance.ai_model:
         logger.info("[api_key]: resolved model from instance config: %s", instance.ai_model)
         return instance.ai_model
@@ -29,7 +29,7 @@ def resolve_api_key(session: Session, user: User) -> str:
         logger.info("[api_key]: using user-level OpenRouter key")
         return decrypt(user.openrouter_key)
 
-    instance = session.get(InstanceConfig, 1)
+    instance = session.get(InstanceConfig, INSTANCE_ID)
     if instance and instance.default_openrouter_key:
         logger.info("[api_key]: using instance-level default OpenRouter key")
         return decrypt(instance.default_openrouter_key)

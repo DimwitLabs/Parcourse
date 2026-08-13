@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 from database import get_session
 from dependencies import get_current_user
-from models.instance_config import InstanceConfig
+from models.instance_config import INSTANCE_ID, InstanceConfig
 from models.user import User, UserRole
 from schemas.auth import (
     ConfigResponse,
@@ -66,7 +66,7 @@ def me(user: User = Depends(get_current_user)) -> UserResponse:
 
 @router.get("/config", response_model=ConfigResponse)
 def get_config(session: Session = Depends(get_session)) -> ConfigResponse:
-    config = session.get(InstanceConfig, 1)
+    config = session.get(InstanceConfig, INSTANCE_ID)
     if config is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not set up yet")
     return ConfigResponse(mode=config.mode)

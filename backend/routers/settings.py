@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 from database import get_session
 from dependencies import get_current_user, require_admin
-from models.instance_config import InstanceConfig
+from models.instance_config import INSTANCE_ID, InstanceConfig
 from models.user import User
 from schemas.auth import UserResponse
 from schemas.settings import ApiKeyStatusResponse, ApiKeyUpdateRequest, ModelResponse, ModelUpdateRequest, ProfileUpdateRequest
@@ -42,7 +42,7 @@ def get_instance_api_key_status(
     session: Session = Depends(get_session),
 ) -> ApiKeyStatusResponse:
     logger.info("[settings]: get instance API key status")
-    instance = session.get(InstanceConfig, 1)
+    instance = session.get(InstanceConfig, INSTANCE_ID)
     return ApiKeyStatusResponse(has_key=bool(instance and instance.default_openrouter_key))
 
 
@@ -53,7 +53,7 @@ def set_instance_api_key(
     session: Session = Depends(get_session),
 ) -> ApiKeyStatusResponse:
     logger.info("[settings]: set instance API key")
-    instance = session.get(InstanceConfig, 1)
+    instance = session.get(InstanceConfig, INSTANCE_ID)
     if instance is None:
         logger.error("[settings]: instance not configured when setting instance key")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Instance not configured")
@@ -70,7 +70,7 @@ def get_model(
     session: Session = Depends(get_session),
 ) -> ModelResponse:
     logger.info("[settings]: get model")
-    instance = session.get(InstanceConfig, 1)
+    instance = session.get(InstanceConfig, INSTANCE_ID)
     return ModelResponse(model=instance.ai_model if instance else "openrouter/openai/gpt-4o-mini")
 
 
@@ -81,7 +81,7 @@ def set_model(
     session: Session = Depends(get_session),
 ) -> ModelResponse:
     logger.info("[settings]: set model to %s", body.model)
-    instance = session.get(InstanceConfig, 1)
+    instance = session.get(InstanceConfig, INSTANCE_ID)
     if instance is None:
         logger.error("[settings]: instance not configured when setting model")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Instance not configured")
