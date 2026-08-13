@@ -1,5 +1,6 @@
 import logging
 import uuid
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
@@ -9,6 +10,7 @@ logger = logging.getLogger(__name__)
 from database import get_session
 from dependencies import get_current_user
 from models.course_cache import CachedCourse
+from models.knowledge_graph import CourseKnowledgeNode, UserKnowledgeProgress
 from models.quiz_attempt import QuizAttempt
 from models.user import User
 from schemas.course import CourseResponse
@@ -62,6 +64,23 @@ def score_quiz(
         result_json=result.model_dump_json(),
     )
     session.add(attempt)
+
+    mastery_score = result.percentage / 100.0
+    links = session.exec(select(CourseKnowledgeNode).where(CourseKnowledgeNode.course_id == course_uuid)).all()
+    for link in links:
+        progress = session.exec(
+            select(UserKnowledgeProgress).where(
+                UserKnowledgeProgress.user_id == user.id,
+                UserKnowledgeProgress.node_id == link.node_id,
+            )
+        ).first()
+        if progress is None:
+            progress = UserKnowledgeProgress(user_id=user.id, node_id=link.node_id, mastery_score=mastery_score)
+        else:
+            progress.mastery_score = max(progress.mastery_score, mastery_score)
+            progress.last_touched_at = datetime.now(timezone.utc)
+        session.add(progress)
+
     session.commit()
 
     return result
