@@ -2396,6 +2396,10 @@ body {
   line-height: 1.4;
 }
 
+.modal-field-hint.is-error {
+  color: var(--color-danger);
+}
+
 .modal-textarea {
   min-height: 5rem;
   resize: vertical;
