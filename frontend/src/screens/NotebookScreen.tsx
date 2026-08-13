@@ -137,7 +137,7 @@ export default function NotebookScreen() {
                 </div>
               )}
               <div className="notebook-card-body">
-                <h4 className="notebook-card-title">{c.sections[0]?.title ?? "Untitled course"}</h4>
+                <h4 className="notebook-card-title">{c.video_title || c.sections[0]?.title || "Untitled course"}</h4>
                 <span className="notebook-section-count">{c.sections.length} sections</span>
                 <ul className="notebook-sections">
                   {c.sections.slice(0, 3).map((s, i) => (

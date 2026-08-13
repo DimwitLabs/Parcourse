@@ -73,7 +73,7 @@ def thumbnail_url(video_id: str) -> str:
     return f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
 
 
-def generate(video_id: str, segments: list[TranscriptSegment], api_key: str, model: str | None = None) -> CourseResponse:
+def generate(video_id: str, segments: list[TranscriptSegment], api_key: str, model: str | None = None, video_title: str = "") -> CourseResponse:
     logger.info("[course]: generating course for video %s (%d segments)", video_id, len(segments))
     if segments:
         logger.info(
@@ -180,4 +180,4 @@ def generate(video_id: str, segments: list[TranscriptSegment], api_key: str, mod
         )
     else:
         logger.warning("[course]: no sections generated for video %s", video_id)
-    return CourseResponse(video_id=video_id, thumbnail_url=thumbnail_url(video_id), sections=sections)
+    return CourseResponse(video_id=video_id, video_title=video_title, thumbnail_url=thumbnail_url(video_id), sections=sections)

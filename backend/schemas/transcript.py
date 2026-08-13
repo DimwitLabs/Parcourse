@@ -13,4 +13,5 @@ class TranscriptSegment(BaseModel):
 
 class TranscriptResponse(BaseModel):
     video_id: str
+    video_title: str = ""
     segments: list[TranscriptSegment]

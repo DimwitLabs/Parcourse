@@ -8,7 +8,7 @@ import { useAuth } from "../lib/auth";
 import type { CourseEntry, Segment } from "../lib/types";
 
 type Step = "idle" | "transcript" | "guardrail" | "guardrail-blocked" | "generating";
-type PendingTranscript = { videoId: string; segments: Segment[] };
+type PendingTranscript = { videoId: string; videoTitle: string; segments: Segment[] };
 
 const FALLBACK_MESSAGES = [
   "Warming up the neurons…",
@@ -66,11 +66,11 @@ export default function HomeScreen() {
     return () => clearInterval(funInterval.current);
   }, [step, funMessages]);
 
-  async function generate(videoId: string, segments: Segment[]) {
+  async function generate(videoId: string, videoTitle: string, segments: Segment[]) {
     setStep("generating");
     const courseData = await apiFetch("/courses/generate", token, {
       method: "POST",
-      body: JSON.stringify({ video_id: videoId, segments }),
+      body: JSON.stringify({ video_id: videoId, video_title: videoTitle, segments }),
     });
     toast("Course ready!", "success");
     navigate(`/course/${courseData.id}`);
@@ -87,7 +87,8 @@ export default function HomeScreen() {
 
       const segments: Segment[] = transcriptData.segments;
       const transcriptText = segments.map((s) => s.text).join(" ");
-      setPending({ videoId: transcriptData.video_id, segments });
+      const videoTitle: string = transcriptData.video_title ?? "";
+      setPending({ videoId: transcriptData.video_id, videoTitle, segments });
 
       setStep("guardrail");
       const guardrailData = await apiFetch("/guardrail/check", token, {
@@ -105,7 +106,7 @@ export default function HomeScreen() {
         return;
       }
 
-      await generate(transcriptData.video_id, segments);
+      await generate(transcriptData.video_id, videoTitle, segments);
     } catch (err) {
       toast(errMsg(err), "error");
       setStep("idle");
@@ -115,7 +116,7 @@ export default function HomeScreen() {
   async function proceedAnyway() {
     if (!pending) return;
     try {
-      await generate(pending.videoId, pending.segments);
+      await generate(pending.videoId, pending.videoTitle, pending.segments);
     } catch (err) {
       toast(errMsg(err), "error");
       setStep("idle");
@@ -231,7 +232,7 @@ export default function HomeScreen() {
                 <div className="course-card-thumb">
                   <img src={c.thumbnail_url} alt="" loading="lazy" />
                 </div>
-                <h4 className="course-card-title">{c.sections[0]?.title ?? "Untitled course"}</h4>
+                <h4 className="course-card-title">{c.video_title || c.sections[0]?.title || "Untitled course"}</h4>
                 <p className="course-card-meta">{c.sections.length} sections</p>
               </Link>
             ))}

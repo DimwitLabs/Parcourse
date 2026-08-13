@@ -5,6 +5,7 @@ from schemas.transcript import TranscriptSegment
 
 class CourseGenerateRequest(BaseModel):
     video_id: str
+    video_title: str = ""
     segments: list[TranscriptSegment]
 
 
@@ -39,6 +40,7 @@ class CourseSection(BaseModel):
 
 class CourseResponse(BaseModel):
     video_id: str
+    video_title: str = ""
     thumbnail_url: str
     sections: list[CourseSection]
 
@@ -72,6 +74,7 @@ class CourseSectionPublic(BaseModel):
 class CourseResponsePublic(BaseModel):
     id: str
     video_id: str
+    video_title: str = ""
     thumbnail_url: str
     sections: list[CourseSectionPublic]
 
@@ -80,6 +83,7 @@ class CourseResponsePublic(BaseModel):
         return cls(
             id=id,
             video_id=course.video_id,
+            video_title=course.video_title,
             thumbnail_url=course.thumbnail_url,
             sections=[
                 CourseSectionPublic(
@@ -108,6 +112,7 @@ class CourseResponsePublic(BaseModel):
 class CourseListEntry(BaseModel):
     id: str
     video_id: str
+    video_title: str = ""
     thumbnail_url: str
     sections: list[CourseSectionPublic]
     completed_sections: list[int] = []

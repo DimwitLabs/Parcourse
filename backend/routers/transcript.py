@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 from dependencies import get_current_user
 from models.user import User
 from schemas.transcript import TranscriptRequest, TranscriptResponse, TranscriptSegment
-from services.youtube import extract_video_id, fetch_transcript
+from services.youtube import extract_video_id, fetch_transcript, fetch_video_title
 
 router = APIRouter(prefix="/transcript", tags=["transcript"])
 
@@ -23,4 +23,5 @@ def extract(body: TranscriptRequest, _: User = Depends(get_current_user)) -> Tra
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
 
     logger.info("[transcript]: extracted %d segments for video_id=%s", len(segments), video_id)
-    return TranscriptResponse(video_id=video_id, segments=[TranscriptSegment(**s) for s in segments])
+    video_title = fetch_video_title(video_id)
+    return TranscriptResponse(video_id=video_id, video_title=video_title, segments=[TranscriptSegment(**s) for s in segments])
