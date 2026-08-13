@@ -4,7 +4,7 @@ import {
   forceManyBody,
   forceSimulation,
 } from "d3-force";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { apiFetch } from "../lib/api";
@@ -81,18 +81,20 @@ const YOU_NODE: Node = {
   id: YOU_ID,
   tier: "you",
   label: "You",
-  description: "Your learning journey — every course, concept, and connection starts here.",
+  description: "Cogito, ergo sum",
   mastery_score: 1,
   times_encountered: 0,
   courses: [],
 };
+
+type LiveSim = ReturnType<typeof forceSimulation<SimNode>>;
 
 function runSimulation(
   nodes: Node[],
   edges: Edge[],
   width: number,
   height: number
-): { nodes: SimNode[]; edges: SimEdge[] } {
+): { sim: LiveSim; nodes: SimNode[]; edges: SimEdge[] } {
   const youSimNode: SimNode = { ...YOU_NODE, x: 0, y: 0, vx: 0, vy: 0, r: NODE_RADIUS.you, fx: 0, fy: 0 };
 
   const byId = new Map(nodes.map((n) => [n.id, n]));
@@ -116,7 +118,6 @@ function runSimulation(
       edge_type: e.edge_type,
     }));
 
-  // Connect all field nodes to "You"
   for (const n of regularSimNodes) {
     if (n.tier === "field") {
       simEdges.push({ source: youSimNode, target: n, edge_type: "belongs_to" });
@@ -139,12 +140,14 @@ function runSimulation(
         .strength(0.45)
     )
     .force("charge", forceManyBody<SimNode>().strength((n) => tierCharge[n.tier]))
-    .force("collide", forceCollide<SimNode>((n) => n.r + 14).strength(0.85))
+    .force("collide", forceCollide<SimNode>((n) => n.r + 8).strength(1.0))
+    .alphaDecay(0.02)
     .stop();
 
-  for (let i = 0; i < 320; i++) sim.tick();
+  // Pre-settle into a reasonable layout, then hand back for live running
+  for (let i = 0; i < 100; i++) sim.tick();
 
-  return { nodes: simNodes, edges: simEdges };
+  return { sim, nodes: simNodes, edges: simEdges };
 }
 
 const FONT_SIZES: Record<Tier, number> = { you: 14, domain: 14, field: 13, topic: 11, skill: 9 };
@@ -249,12 +252,16 @@ export default function KnowledgeGraphScreen() {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [tooltip, setTooltip] = useState<{ node: Node; x: number; y: number; pinned: boolean } | null>(null);
-  const [sim, setSim] = useState<{ nodes: SimNode[]; edges: SimEdge[] } | null>(null);
+  const [simData, setSimData] = useState<{ nodes: SimNode[]; edges: SimEdge[] } | null>(null);
+  const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
+  const simInstanceRef = useRef<LiveSim | null>(null);
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const isPanning = useRef(false);
   const panStart = useRef({ x: 0, y: 0 });
+  const draggingNode = useRef<SimNode | null>(null);
+  const dragStartClient = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     const path =
@@ -267,21 +274,46 @@ export default function KnowledgeGraphScreen() {
   }, [token, viewingUserId, user]);
 
   useEffect(() => {
-    if (!graph || graph.nodes.length === 0) return;
+    if (!graph) return;
+
+    // Stop previous simulation
+    simInstanceRef.current?.stop();
+
     const filtered = graph.nodes.filter((n) => tierIncluded(n.tier, granularity));
     const filteredIds = new Set(filtered.map((n) => n.id));
     const filteredEdges = graph.edges.filter(
       (e) => filteredIds.has(e.source_id) && filteredIds.has(e.target_id)
     );
-    const result = runSimulation(filtered, filteredEdges, 900, 700);
-    setSim(result);
+
+    const { sim, nodes, edges } = runSimulation(filtered, filteredEdges, 900, 700);
+    simInstanceRef.current = sim;
+
+    // D3 mutates node objects in place — React reads live positions on each forceUpdate
+    setSimData({ nodes, edges });
     setPan({ x: 0, y: 0 });
     setZoom(1);
+
+    // Start simulation — it decays naturally to rest; drag will reheat it
+    sim.alphaTarget(0).restart();
+
+    // RAF loop: trigger React re-render at ~30fps to pick up D3's position mutations
+    let rafId: number;
+    let last = 0;
+    function loop(t: number) {
+      if (t - last >= 33) { last = t; forceUpdate(); }
+      rafId = requestAnimationFrame(loop);
+    }
+    rafId = requestAnimationFrame(loop);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      sim.stop();
+    };
   }, [graph, granularity]);
 
   useEffect(() => {
     const el = wrapRef.current;
-    if (!el || !sim) return;
+    if (!el || !simData) return;
 
     function onWheel(e: WheelEvent) {
       e.preventDefault();
@@ -318,7 +350,33 @@ export default function KnowledgeGraphScreen() {
       el.removeEventListener("touchstart", onTouchStart);
       el.removeEventListener("touchmove", onTouchMove);
     };
-  }, [sim]);
+  }, [simData]);
+
+  function clientToSvg(clientX: number, clientY: number) {
+    if (!wrapRef.current) return { x: 0, y: 0 };
+    const rect = wrapRef.current.getBoundingClientRect();
+    const W = rect.width;
+    const H = rect.height;
+    // Undo CSS transform: translate(pan.x, pan.y) scale(zoom) with transform-origin: center
+    // native = (client_relative - pan - center) / zoom + center
+    const rx = clientX - rect.left;
+    const ry = clientY - rect.top;
+    const nativeX = (rx - pan.x - W / 2) / zoom + W / 2;
+    const nativeY = (ry - pan.y - H / 2) / zoom + H / 2;
+    // viewBox is -500..500 × -400..400 mapped over W×H pixels
+    return { x: (nativeX / W) * 1000 - 500, y: (nativeY / H) * 800 - 400 };
+  }
+
+  function onNodeMouseDown(e: React.MouseEvent, n: SimNode) {
+    if (n.tier === "you") return;
+    e.stopPropagation();
+    dragStartClient.current = { x: e.clientX, y: e.clientY };
+    draggingNode.current = n;
+    n.fx = n.x;
+    n.fy = n.y;
+    simInstanceRef.current?.alphaTarget(0.3).restart();
+    setTooltip(null);
+  }
 
   function onCanvasMouseDown(e: React.MouseEvent) {
     if ((e.target as Element).closest(".graph-node-group")) return;
@@ -327,10 +385,24 @@ export default function KnowledgeGraphScreen() {
     panStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
   }
   function onMouseMove(e: React.MouseEvent) {
+    if (draggingNode.current) {
+      const { x, y } = clientToSvg(e.clientX, e.clientY);
+      draggingNode.current.fx = x;
+      draggingNode.current.fy = y;
+      return;
+    }
     if (!isPanning.current) return;
     setPan({ x: e.clientX - panStart.current.x, y: e.clientY - panStart.current.y });
   }
   function onMouseUp() {
+    if (draggingNode.current) {
+      const node = draggingNode.current;
+      node.fx = null;
+      node.fy = null;
+      draggingNode.current = null;
+      simInstanceRef.current?.alphaTarget(0);
+      return;
+    }
     isPanning.current = false;
   }
 
@@ -343,7 +415,7 @@ export default function KnowledgeGraphScreen() {
     };
   }
   const counts = nodeCounts();
-  const effectiveMastery = sim && graph ? computeEffectiveMastery(sim.nodes, graph.edges) : new Map<string, number>();
+  const effectiveMastery = simData && graph ? computeEffectiveMastery(simData.nodes, graph.edges) : new Map<string, number>();
 
   if (error) return <p className="error-message" style={{ padding: "2rem" }}>{error}</p>;
 
@@ -361,22 +433,8 @@ export default function KnowledgeGraphScreen() {
         <p className="page-header-sub">Every concept you've learned, connected.</p>
       </div>
 
-      {!graph || !sim ? (
+      {!graph || !simData ? (
         <p className="status-message">Loading knowledge graph…</p>
-      ) : graph.nodes.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-state-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="18" cy="5" r="3" />
-              <circle cx="6" cy="12" r="3" />
-              <circle cx="18" cy="19" r="3" />
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-            </svg>
-          </div>
-          <h2 className="empty-state-title">No concepts mapped yet</h2>
-          <p className="empty-state-body">Generate a course to start building your knowledge graph.</p>
-        </div>
       ) : (
         <>
           <div className="graph-toolbar">
@@ -420,6 +478,7 @@ export default function KnowledgeGraphScreen() {
               className="graph-svg"
               style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transformOrigin: "center center", cursor: isPanning.current ? "grabbing" : "grab" }}
               viewBox="-500 -400 1000 800"
+              overflow="visible"
               width="100%"
               height="100%"
             >
@@ -432,9 +491,14 @@ export default function KnowledgeGraphScreen() {
                   <feGaussianBlur stdDeviation="6" result="blur" />
                   <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
                 </filter>
+                {simData.nodes.map((n) => (
+                  <clipPath key={`cp-${n.id}`} id={`nc-${n.id}`}>
+                    <circle r={n.r * 0.84} />
+                  </clipPath>
+                ))}
               </defs>
 
-              {sim.edges.map((e, i) => {
+              {simData.edges.map((e, i) => {
                 const s = e.source;
                 const t = e.target;
                 return (
@@ -446,7 +510,7 @@ export default function KnowledgeGraphScreen() {
                 );
               })}
 
-              {sim.nodes.map((n) => {
+              {simData.nodes.map((n, idx) => {
                 const mc = n.tier === "you" ? "mastered" : masteryClass(effectiveMastery.get(n.id) ?? n.mastery_score);
                 const isField = n.tier === "field";
                 const isYou = n.tier === "you";
@@ -456,16 +520,21 @@ export default function KnowledgeGraphScreen() {
                 const lineHeight = fontSize * 1.32;
                 const textFill = mc === "new" && !isYou ? "var(--color-secondary)" : "white";
                 const clipId = `nc-${n.id}`;
+                const enterDelay = `${Math.min(idx * 0.035, 0.5).toFixed(3)}s`;
                 return (
                   <g
                     key={n.id}
                     transform={`translate(${n.x}, ${n.y})`}
                     className={`graph-node-group ${mc} tier-${n.tier}${isPinned ? " pinned" : ""}`}
-                    onMouseEnter={(e) => { if (!tooltip?.pinned) setTooltip({ node: n, x: e.clientX, y: e.clientY, pinned: false }); }}
-                    onMouseMove={(e) => { if (!tooltip?.pinned) setTooltip({ node: n, x: e.clientX, y: e.clientY, pinned: false }); }}
+                    onMouseDown={(e) => onNodeMouseDown(e, n)}
+                    onMouseEnter={(e) => { if (!tooltip?.pinned && !draggingNode.current) setTooltip({ node: n, x: e.clientX, y: e.clientY, pinned: false }); }}
+                    onMouseMove={(e) => { if (!tooltip?.pinned && !draggingNode.current) setTooltip({ node: n, x: e.clientX, y: e.clientY, pinned: false }); }}
                     onMouseLeave={() => { if (!tooltip?.pinned) setTooltip(null); }}
                     onClick={(e) => {
                       e.stopPropagation();
+                      const dx = e.clientX - dragStartClient.current.x;
+                      const dy = e.clientY - dragStartClient.current.y;
+                      if (dx * dx + dy * dy > 36) return; // was a drag, not a click
                       setTooltip((t) =>
                         t?.pinned && t.node.id === n.id
                           ? null
@@ -473,39 +542,48 @@ export default function KnowledgeGraphScreen() {
                       );
                     }}
                   >
-                    <defs>
-                      <clipPath id={clipId}>
-                        <circle r={n.r * 0.84} />
-                      </clipPath>
-                    </defs>
-                    <circle
-                      r={n.r}
-                      className="graph-node-circle"
-                      filter={isYou || isField ? "url(#glow-field)" : mc === "mastered" ? "url(#glow-mastered)" : undefined}
-                    />
-                    <text
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      fontSize={fontSize}
-                      fontWeight={FONT_WEIGHT[n.tier]}
-                      fill={textFill}
-                      clipPath={`url(#${clipId})`}
-                      style={{ fontFamily: "inherit", userSelect: "none", pointerEvents: "none" }}
+                    <g
+                      className="graph-node-scale-wrap"
+                      style={{ animationDelay: enterDelay }}
                     >
-                      {lines.map((line, i) => (
-                        <tspan
-                          key={i}
-                          x={0}
-                          dy={i === 0 ? -(lines.length - 1) * lineHeight / 2 : lineHeight}
-                        >
-                          {line}
-                        </tspan>
-                      ))}
-                    </text>
+                      <circle
+                        r={n.r}
+                        className="graph-node-circle"
+                        filter={isYou || isField ? "url(#glow-field)" : mc === "mastered" ? "url(#glow-mastered)" : undefined}
+                      />
+                      <text
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fontSize={fontSize}
+                        fontWeight={FONT_WEIGHT[n.tier]}
+                        fill={textFill}
+                        clipPath={`url(#${clipId})`}
+                        style={{ fontFamily: "inherit", userSelect: "none", pointerEvents: "none" }}
+                      >
+                        {lines.map((line, i) => (
+                          <tspan
+                            key={i}
+                            x={0}
+                            dy={i === 0 ? -(lines.length - 1) * lineHeight / 2 : lineHeight}
+                          >
+                            {line}
+                          </tspan>
+                        ))}
+                      </text>
+                    </g>
                   </g>
                 );
               })}
             </svg>
+            {graph.nodes.length === 0 && (
+              <div className="graph-empty-hint">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+                <span>Generate a course to start building your knowledge graph.</span>
+              </div>
+            )}
           </div>
 
           <div className="graph-legend-row">
@@ -541,7 +619,9 @@ export default function KnowledgeGraphScreen() {
             {tooltip.node.tier !== "you" && <span className="graph-tooltip-tier">{tooltip.node.tier}</span>}
           </div>
           {tooltip.node.description && (
-            <p className="graph-tooltip-desc">{tooltip.node.description}</p>
+            <p className="graph-tooltip-desc">
+              {tooltip.node.tier === "you" ? <em>{tooltip.node.description}</em> : tooltip.node.description}
+            </p>
           )}
           {tooltip.node.courses.length > 0 && (
             <div className="graph-tooltip-courses">

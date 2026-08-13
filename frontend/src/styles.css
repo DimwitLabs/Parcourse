@@ -1449,8 +1449,52 @@ body {
   stroke-width: 2;
 }
 
+/* Jiggle Physics — enter animation + hover scale; D3 drives all positional motion */
+@keyframes node-enter {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+
+.graph-node-scale-wrap {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: node-enter 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.graph-node-group:hover .graph-node-scale-wrap {
+  transform: scale(1.1);
+}
+
+.tier-you.graph-node-group:hover .graph-node-scale-wrap {
+  transform: scale(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .graph-node-scale-wrap { animation: none; transition: none; }
+}
+
+.graph-empty-hint {
+  position: absolute;
+  bottom: 1.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-secondary);
+  opacity: 0.6;
+  pointer-events: none;
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
 .graph-node-group {
-  cursor: pointer;
+  cursor: grab;
+}
+
+.graph-node-group:active {
+  cursor: grabbing;
 }
 
 .graph-node-circle {

@@ -30,10 +30,18 @@ course covers the same thing — do not create a near-duplicate with slightly di
 {existing_labels}
 
 Extract the fields, topics, and skills this course teaches, at three levels:
-- "field": a broad area within the domain (e.g., "Web Development", "Machine Learning")
-- "topic": a more specific area within a field (e.g., "Control Flow", "Neural Networks")
-- "skill": a single learnable/testable concept (e.g., "Ternary Operator", "Backpropagation") \
-— this is the finest grain. Do not go smaller than this (e.g. not individual syntax tokens).
+- "field": the broad conceptual domain (e.g., "Object-Oriented Programming", \
+"Machine Learning", "History", "Culinary Arts"). Always use a conceptual domain — never \
+a language, tool, or technology name at this level.
+- "topic": a specific concept within the field (e.g., "Inheritance", "Control Flow", \
+"The French Revolution"). Topics are language- and tool-agnostic — never include a \
+language or framework name in a topic label.
+- "skill": a single learnable concept at the finest grain. Do not go smaller than a \
+distinct concept. If the course teaches the skill in the context of a specific language, \
+framework, or tool, prefix the label with that context followed by a colon \
+(e.g., "Python: super() and MRO", "Java: abstract classes", "React: useEffect hook", \
+"Photoshop: layer masks"). For skills that are fully universal and transfer across any \
+context, keep the label generic (e.g., "Method Overriding", "Backpropagation").
 
 Return only a JSON object with exactly these fields:
 - "nodes": a list of objects, each with "tier" ("field"/"topic"/"skill"), "label", \
@@ -43,9 +51,6 @@ Return only a JSON object with exactly these fields:
 
 Rules:
 - Prefer reusing an existing label over creating a new one if the concept is the same.
-- Skill-tier labels should be as general/transferable as possible (e.g., "Ternary Operator", \
-not "JavaScript Ternary Operator") unless the concept genuinely does not transfer across \
-contexts (e.g., "Python List Comprehensions").
 - Every skill must have a "belongs_to" edge to a topic, and every topic to a field.
 """
 
@@ -115,6 +120,14 @@ def extract_and_merge(
     label_to_node: dict[str, KnowledgeNode] = {}
     for n in extraction.nodes:
         label_to_node[n.label] = _get_or_create_node(session, n.tier, n.label, n.description)
+
+    # Resolve edge endpoints that reference existing nodes not in this extraction
+    for e in extraction.edges:
+        for lbl in (e.source_label, e.target_label):
+            if lbl not in label_to_node:
+                existing = session.exec(select(KnowledgeNode).where(KnowledgeNode.label == lbl)).first()
+                if existing:
+                    label_to_node[lbl] = existing
 
     for e in extraction.edges:
         source = label_to_node.get(e.source_label)

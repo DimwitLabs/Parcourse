@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
 
 import { toast } from "../components/Toast";
@@ -141,7 +142,7 @@ export default function HomeScreen() {
   return (
     <>
       {busy && <div className="gen-overlay" />}
-      {busy && (
+      {busy && createPortal(
         <div className="gen-pills-panel">
           {GEN_STEPS.map(({ key, label }, i) => {
             const isDone = currentStepIdx > i;
@@ -177,7 +178,8 @@ export default function HomeScreen() {
               </div>
             );
           })}
-        </div>
+        </div>,
+        document.body
       )}
 
       <div className="hero">
