@@ -37,10 +37,42 @@ function tierIncluded(tier: Tier, granularity: Granularity): boolean {
   return TIER_ORDER.indexOf(tier) <= cutoff;
 }
 
-function masteryClass(timesEncountered: number): "mastered" | "learning" | "new" {
-  if (timesEncountered >= 4) return "mastered";
-  if (timesEncountered >= 2) return "learning";
+function masteryClass(score: number): "mastered" | "learning" | "new" {
+  if (score >= 0.9) return "mastered";
+  if (score > 0) return "learning";
   return "new";
+}
+
+function computeEffectiveMastery(nodes: Node[], edges: Edge[]): Map<string, number> {
+  const scoreMap = new Map(nodes.map((n) => [n.id, n.mastery_score]));
+  // children[parentId] = list of child node ids (skill→topic, topic→field via belongs_to)
+  const children = new Map<string, string[]>();
+  for (const e of edges) {
+    if (e.edge_type === "belongs_to") {
+      const list = children.get(e.target_id) ?? [];
+      list.push(e.source_id);
+      children.set(e.target_id, list);
+    }
+  }
+  const effective = new Map<string, number>();
+  const TIER_CALC_ORDER: Tier[] = ["skill", "topic", "field"];
+  const byTier = new Map<Tier, Node[]>();
+  for (const t of TIER_CALC_ORDER) byTier.set(t, []);
+  for (const n of nodes) {
+    if (TIER_CALC_ORDER.includes(n.tier)) byTier.get(n.tier)!.push(n);
+  }
+  for (const tier of TIER_CALC_ORDER) {
+    for (const n of byTier.get(tier)!) {
+      const kids = (children.get(n.id) ?? []).filter((id) => effective.has(id) || scoreMap.has(id));
+      if (kids.length > 0) {
+        const min = kids.reduce((acc, id) => Math.min(acc, effective.get(id) ?? scoreMap.get(id) ?? 0), 1);
+        effective.set(n.id, min);
+      } else {
+        effective.set(n.id, scoreMap.get(n.id) ?? 0);
+      }
+    }
+  }
+  return effective;
 }
 
 type SimNode = Node & { x: number; y: number; vx: number; vy: number; r: number; fx?: number | null; fy?: number | null };
@@ -268,6 +300,7 @@ export default function KnowledgeGraphScreen() {
     };
   }
   const counts = nodeCounts();
+  const effectiveMastery = sim && graph ? computeEffectiveMastery(sim.nodes, graph.edges) : new Map<string, number>();
 
   if (error) return <p className="error-message" style={{ padding: "2rem" }}>{error}</p>;
 
@@ -371,7 +404,7 @@ export default function KnowledgeGraphScreen() {
               })}
 
               {sim.nodes.map((n) => {
-                const mc = n.tier === "you" ? "mastered" : masteryClass(n.times_encountered);
+                const mc = n.tier === "you" ? "mastered" : masteryClass(effectiveMastery.get(n.id) ?? n.mastery_score);
                 const isField = n.tier === "field";
                 const isYou = n.tier === "you";
                 const isPinned = tooltip?.pinned && tooltip.node.id === n.id;
@@ -408,9 +441,15 @@ export default function KnowledgeGraphScreen() {
 
           <div className="graph-legend-row">
             <div className="graph-legend">
-              <span className="legend-item"><span className="legend-dot mastered" /> Mastered</span>
-              <span className="legend-item"><span className="legend-dot learning" /> Learning</span>
-              <span className="legend-item"><span className="legend-dot new" /> New</span>
+              <span className="legend-item" title="Scored 90% or above on this course's quiz">
+                <span className="legend-dot mastered" /> Mastered
+              </span>
+              <span className="legend-item" title="Quiz attempted but scored below 90%">
+                <span className="legend-dot learning" /> Learning
+              </span>
+              <span className="legend-item" title="Course not yet quizzed">
+                <span className="legend-dot new" /> New
+              </span>
             </div>
           </div>
         </>
