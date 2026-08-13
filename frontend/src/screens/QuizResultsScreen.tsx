@@ -108,7 +108,6 @@ export default function QuizResultsScreen() {
   return (
     <div className="results-view">
 
-      {/* Hero */}
       <section className="results-hero">
         <div className="score-stage">
           <div className="score-deco-frame" />
@@ -130,10 +129,8 @@ export default function QuizResultsScreen() {
         <p className="results-subtitle">{subtitle(pct)}</p>
       </section>
 
-      {/* Grid */}
       <div className="results-grid">
 
-        {/* Left: breakdown */}
         <div className="results-col">
           <h2 className="section-heading">Detailed Breakdown</h2>
           {allResults.map((r, idx) => {
@@ -185,7 +182,6 @@ export default function QuizResultsScreen() {
           })}
         </div>
 
-        {/* Right: AI card + retake */}
         <div className="results-col">
           {result.prose_analysis && (
             <div className="ai-prose-card">

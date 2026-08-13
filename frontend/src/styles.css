@@ -1045,7 +1045,6 @@ body {
     padding 0.3s ease;
 }
 
-/* Collapses fully so it leaves no gap above the sidebar actions. */
 .quiz-sidebar-box.fading {
   opacity: 0;
   max-height: 0;
@@ -2698,7 +2697,6 @@ body {
   pointer-events: all;
 }
 
-/* Narrow screens: pinned to the bottom centre of the viewport. */
 .gen-pills-panel {
   position: fixed;
   bottom: 2rem;
@@ -2710,12 +2708,10 @@ body {
   gap: 0.65rem;
   width: 260px;
   max-width: calc(100vw - 2rem);
-  /* The panel sits inside .hero, which centres its text. */
+  /* .hero centres its text. */
   text-align: left;
 }
 
-/* Wide screens: anchored to the right of the input, so it scrolls away with
-   the hero instead of tracking the viewport and riding over the page. */
 @media (min-width: 1280px) {
   .gen-pills-panel {
     position: absolute;

@@ -285,7 +285,6 @@ export default function KnowledgeGraphScreen() {
   useEffect(() => {
     if (!graph) return;
 
-    // Stop previous simulation
     simInstanceRef.current?.stop();
 
     const filtered = graph.nodes.filter((n) => tierIncluded(n.tier, granularity));
@@ -302,7 +301,6 @@ export default function KnowledgeGraphScreen() {
     setPan({ x: 0, y: 0 });
     setZoom(1);
 
-    // Start simulation — it decays naturally to rest; drag will reheat it
     sim.alphaTarget(0).restart();
 
     // RAF loop: trigger React re-render at ~30fps to pick up D3's position mutations
