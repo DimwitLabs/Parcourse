@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { useEscapeKey } from "../lib/useEscapeKey";
 import type { CourseEntry, Segment } from "../lib/types";
 
 type ModalAction = { course: CourseEntry; type: "delete" | "regenerate" };
@@ -16,6 +17,13 @@ export default function NotebookScreen() {
   const [busy, setBusy] = useState(false);
   const [cleanupGraph, setCleanupGraph] = useState(false);
   const [togglingDone, setTogglingDone] = useState<Set<string>>(new Set());
+  const [regenFeedback, setRegenFeedback] = useState("");
+
+  useEffect(() => {
+    if (!modal) setRegenFeedback("");
+  }, [modal]);
+
+  useEscapeKey(!!modal, () => { if (!busy) setModal(null); });
 
   function refresh() {
     apiFetch("/courses", token)
@@ -78,7 +86,12 @@ export default function NotebookScreen() {
       const segments: Segment[] = transcriptData.segments;
       const courseData = await apiFetch("/courses/generate", token, {
         method: "POST",
-        body: JSON.stringify({ video_id: c.video_id, segments }),
+        body: JSON.stringify({
+          video_id: c.video_id,
+          video_title: transcriptData.video_title ?? "",
+          feedback: regenFeedback,
+          segments,
+        }),
       });
 
       setModal(null);
@@ -198,6 +211,22 @@ export default function NotebookScreen() {
                 <span>Also remove knowledge graph entries from this course</span>
               </label>
             )}
+            {modal.type === "regenerate" && (
+              <label className="modal-field">
+                <span className="modal-field-label">What looks wrong?</span>
+                <textarea
+                  className="text-input boxed textarea modal-textarea"
+                  value={regenFeedback}
+                  onChange={(e) => setRegenFeedback(e.target.value)}
+                  placeholder="Sections were too long, the quiz missed the main argument…"
+                  maxLength={1000}
+                  disabled={busy}
+                />
+                <span className="modal-field-hint">
+                  Required. Your feedback feeds straight into the new course generation.
+                </span>
+              </label>
+            )}
             <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "1.5rem" }}>
               <button className="button secondary" onClick={() => setModal(null)} disabled={busy}>
                 Cancel
@@ -209,7 +238,7 @@ export default function NotebookScreen() {
                     ? deleteCourse(modal.course.id)
                     : regenerateCourse(modal.course)
                 }
-                disabled={busy}
+                disabled={busy || (modal.type === "regenerate" && !regenFeedback.trim())}
               >
                 {busy
                   ? modal.type === "delete" ? "Deleting…" : "Regenerating…"

@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { useEscapeKey } from "../lib/useEscapeKey";
 import type { Segment } from "../lib/types";
 
 type MCQOption = { label: string; text: string };
@@ -47,6 +48,7 @@ export default function CourseScreen() {
   const [courseAction, setCourseAction] = useState<"delete" | "regenerate" | null>(null);
   const [actionBusy, setActionBusy] = useState(false);
   const [cleanupGraph, setCleanupGraph] = useState(false);
+  const [regenFeedback, setRegenFeedback] = useState("");
   const [doneSections, setDoneSections] = useState<Set<number>>(new Set());
   const [atBottom, setAtBottom] = useState(false);
   const [barVisible, setBarVisible] = useState(false);
@@ -109,6 +111,16 @@ export default function CourseScreen() {
     observer.observe(el);
     return () => observer.disconnect();
   }, [course]);
+
+  useEffect(() => {
+    if (!courseAction) setRegenFeedback("");
+  }, [courseAction]);
+
+  useEscapeKey(!!courseAction || showSkipModal, () => {
+    if (actionBusy || submitting) return;
+    setCourseAction(null);
+    setShowSkipModal(false);
+  });
 
   function handleSubmitClick() {
     if (!course) return;
@@ -211,7 +223,12 @@ export default function CourseScreen() {
       const segments: Segment[] = transcriptData.segments;
       const courseData = await apiFetch("/courses/generate", token, {
         method: "POST",
-        body: JSON.stringify({ video_id: course.video_id, segments }),
+        body: JSON.stringify({
+          video_id: course.video_id,
+          video_title: transcriptData.video_title ?? "",
+          feedback: regenFeedback,
+          segments,
+        }),
       });
       toast("Course regenerated!", "success");
       navigate(`/course/${courseData.id}`);
@@ -434,6 +451,22 @@ export default function CourseScreen() {
                 <span>Also remove knowledge graph entries from this course</span>
               </label>
             )}
+            {courseAction === "regenerate" && (
+              <label className="modal-field">
+                <span className="modal-field-label">What looks wrong?</span>
+                <textarea
+                  className="text-input boxed textarea modal-textarea"
+                  value={regenFeedback}
+                  onChange={(e) => setRegenFeedback(e.target.value)}
+                  placeholder="Sections were too long, the quiz missed the main argument…"
+                  maxLength={1000}
+                  disabled={actionBusy}
+                />
+                <span className="modal-field-hint">
+                  Required. Your feedback feeds straight into the new course generation.
+                </span>
+              </label>
+            )}
             <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "1.5rem" }}>
               <button className="button secondary" onClick={() => setCourseAction(null)} disabled={actionBusy}>
                 Cancel
@@ -441,7 +474,7 @@ export default function CourseScreen() {
               <button
                 className={`button ${courseAction === "delete" ? "danger" : "primary"}`}
                 onClick={courseAction === "delete" ? deleteCourse : regenerateCourse}
-                disabled={actionBusy}
+                disabled={actionBusy || (courseAction === "regenerate" && !regenFeedback.trim())}
               >
                 {actionBusy
                   ? courseAction === "delete" ? "Deleting…" : "Regenerating…"

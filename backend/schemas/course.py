@@ -6,6 +6,7 @@ from schemas.transcript import TranscriptSegment
 class CourseGenerateRequest(BaseModel):
     video_id: str
     video_title: str = ""
+    feedback: str = ""
     segments: list[TranscriptSegment]
 
 
