@@ -71,7 +71,7 @@ export default function HomeScreen() {
         throw new Error(guardrailData.reason ?? "This video isn't suitable for a course.");
 
       setStep("generating");
-      const courseData = await apiFetch("/course/generate", token, {
+      const courseData = await apiFetch("/courses/generate", token, {
         method: "POST",
         body: JSON.stringify({ video_id: transcriptData.video_id, segments }),
       });

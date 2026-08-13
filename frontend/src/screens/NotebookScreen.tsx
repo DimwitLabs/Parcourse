@@ -31,13 +31,13 @@ export default function NotebookScreen() {
       if (allSectionsDone) {
         await Promise.all(
           c.sections.map((_, i) =>
-            apiFetch(`/course/${c.id}/progress/${i}`, token, { method: "DELETE" })
+            apiFetch(`/courses/${c.id}/progress/${i}`, token, { method: "DELETE" })
           )
         );
       } else {
         await Promise.all(
           c.sections.map((_, i) =>
-            apiFetch(`/course/${c.id}/progress/${i}`, token, { method: "POST" })
+            apiFetch(`/courses/${c.id}/progress/${i}`, token, { method: "POST" })
           )
         );
       }
@@ -52,7 +52,7 @@ export default function NotebookScreen() {
   async function deleteCourse(id: string) {
     setBusy(true);
     try {
-      await apiFetch(`/course/${id}`, token, { method: "DELETE" });
+      await apiFetch(`/courses/${id}`, token, { method: "DELETE" });
       setCourses((prev) => prev?.filter((c) => c.id !== id) ?? null);
       setModal(null);
     } catch (err) {
@@ -65,7 +65,7 @@ export default function NotebookScreen() {
   async function regenerateCourse(c: CourseEntry) {
     setBusy(true);
     try {
-      await apiFetch(`/course/${c.id}`, token, { method: "DELETE" });
+      await apiFetch(`/courses/${c.id}`, token, { method: "DELETE" });
 
       const transcriptData = await apiFetch("/transcript/extract", token, {
         method: "POST",
@@ -73,33 +73,20 @@ export default function NotebookScreen() {
       });
 
       const segments: Segment[] = transcriptData.segments;
-      const courseData = await apiFetch("/course/generate", token, {
+      const courseData = await apiFetch("/courses/generate", token, {
         method: "POST",
         body: JSON.stringify({ video_id: c.video_id, segments }),
       });
 
       setModal(null);
-      navigate(`/course/${courseData.id}`);
+      navigate(`/courses/${courseData.id}`);
     } catch (err) {
       setError(errMsg(err));
       setBusy(false);
     }
   }
 
-  if (error) return <p className="error-message">{error}</p>;
-  if (!courses) return <p className="status-message">Loading your notebook…</p>;
-
-  if (courses.length === 0) {
-    return (
-      <div className="empty-state">
-        <h2 className="results-headline">Your notebook is empty</h2>
-        <p className="hero-subtitle">Paste a YouTube link on the home page to generate your first course.</p>
-        <Link to="/" className="button primary" style={{ display: "inline-block", marginTop: "1rem" }}>
-          Get started
-        </Link>
-      </div>
-    );
-  }
+  if (error) return <p className="error-message" style={{ padding: "2rem" }}>{error}</p>;
 
   return (
     <div className="notebook-view">
@@ -108,7 +95,27 @@ export default function NotebookScreen() {
         <p className="page-header-sub">All the courses you have generated so far.</p>
       </div>
 
-      <div className="notebook-grid">
+      {!courses ? (
+        <p className="status-message">Loading your notebook…</p>
+      ) : courses.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-state-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              <line x1="9" y1="7" x2="15" y2="7" />
+              <line x1="9" y1="11" x2="13" y2="11" />
+            </svg>
+          </div>
+          <h2 className="empty-state-title">Your notebook is empty</h2>
+          <p className="empty-state-body">Paste a YouTube link on the home page to generate your first course.</p>
+          <Link to="/" className="button primary" style={{ display: "inline-block", marginTop: "1.5rem", textDecoration: "none" }}>
+            Get started
+          </Link>
+        </div>
+      ) : null}
+
+      {courses && courses.length > 0 && <div className="notebook-grid">
         {courses.map((c) => {
           const progress = c.completed_sections?.length ?? 0;
           const total = c.sections.length;
@@ -117,7 +124,7 @@ export default function NotebookScreen() {
           const isToggling = togglingDone.has(c.id);
           return (
           <div key={c.id} className={`notebook-card card${isComplete ? " completed" : ""}`}>
-            <Link to={`/course/${c.id}`} className="notebook-card-link">
+            <Link to={`/courses/${c.id}`} className="notebook-card-link">
               <div className="notebook-thumb-wrap">
                 <img className="notebook-thumb" src={c.thumbnail_url} alt="" loading="lazy" />
               </div>
@@ -165,7 +172,7 @@ export default function NotebookScreen() {
           </div>
           );
         })}
-      </div>
+      </div>}
 
       {modal && (
         <div className="modal-overlay" onClick={() => !busy && setModal(null)}>

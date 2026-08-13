@@ -64,7 +64,7 @@ export default function QuizResultsScreen() {
     if (data || !courseId) return;
     Promise.all([
       apiFetch(`/quiz/attempts/${courseId}`, token),
-      apiFetch(`/course/${courseId}`, token),
+      apiFetch(`/courses/${courseId}`, token),
     ])
       .then(([result, course]) => setData({ result, course }))
       .catch(() => setNotFound(true));
@@ -74,7 +74,7 @@ export default function QuizResultsScreen() {
     return (
       <div className="empty-state">
         <p className="status-message">No quiz result found for this course.</p>
-        <button className="button primary" onClick={() => navigate(`/course/${courseId}`)}>
+        <button className="button primary" onClick={() => navigate(`/courses/${courseId}`)}>
           Go to course
         </button>
       </div>
@@ -258,7 +258,7 @@ export default function QuizResultsScreen() {
               try {
                 await Promise.all(
                   data.course.sections.map((_, i) =>
-                    apiFetch(`/course/${courseId}/progress/${i}`, token, { method: "POST" })
+                    apiFetch(`/courses/${courseId}/progress/${i}`, token, { method: "POST" })
                   )
                 );
                 setAllDone(true);
@@ -283,7 +283,7 @@ export default function QuizResultsScreen() {
             )}
           </button>
 
-          <button className="retake-btn" onClick={() => navigate(`/course/${courseId}`)}>
+          <button className="retake-btn" onClick={() => navigate(`/courses/${courseId}`)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
               <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>

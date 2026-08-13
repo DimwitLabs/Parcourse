@@ -53,13 +53,13 @@ export default function CourseScreen() {
 
   useEffect(() => {
     if (!courseId) return;
-    apiFetch(`/course/${courseId}`, token)
+    apiFetch(`/courses/${courseId}`, token)
       .then(setCourse)
       .catch((err) => setLoadError(String(err.message ?? err)));
-    apiFetch(`/course/${courseId}/progress`, token)
+    apiFetch(`/courses/${courseId}/progress`, token)
       .then((indices: number[]) => setDoneSections(new Set(indices)))
       .catch(() => {});
-    apiFetch(`/course/${courseId}/draft`, token)
+    apiFetch(`/courses/${courseId}/draft`, token)
       .then((draft: { mcq_answers: Record<string, string>; theory_answers: Record<string, string> }) => {
         if (Object.keys(draft.mcq_answers).length) setMcqAnswers(draft.mcq_answers);
         if (Object.keys(draft.theory_answers).length) setTheoryAnswers(draft.theory_answers);
@@ -139,7 +139,7 @@ export default function CourseScreen() {
           })),
         }),
       });
-      navigate(`/course/${course.id}/results`, { state: { result, course } });
+      navigate(`/courses/${course.id}/results`, { state: { result, course } });
     } catch (err) {
       setSubmitError(errMsg(err));
     } finally {
@@ -149,7 +149,7 @@ export default function CourseScreen() {
 
   function saveDraft(mcq = mcqAnswers, theory = theoryAnswers) {
     if (!course) return;
-    apiFetch(`/course/${course.id}/draft`, token, {
+    apiFetch(`/courses/${course.id}/draft`, token, {
       method: "PUT",
       body: JSON.stringify({ mcq_answers: mcq, theory_answers: theory }),
     }).catch((err) => {
@@ -168,7 +168,7 @@ export default function CourseScreen() {
       return next;
     });
     try {
-      await apiFetch(`/course/${course.id}/progress/${index}`, token, { method });
+      await apiFetch(`/courses/${course.id}/progress/${index}`, token, { method });
       saveDraft();
     } catch {
       setDoneSections((prev) => {
@@ -184,7 +184,7 @@ export default function CourseScreen() {
     if (!course) return;
     setActionBusy(true);
     try {
-      await apiFetch(`/course/${course.id}`, token, { method: "DELETE" });
+      await apiFetch(`/courses/${course.id}`, token, { method: "DELETE" });
       toast("Course deleted.", "info");
       navigate("/notebook");
     } catch (err) {
@@ -199,18 +199,18 @@ export default function CourseScreen() {
     if (!course) return;
     setActionBusy(true);
     try {
-      await apiFetch(`/course/${course.id}`, token, { method: "DELETE" });
+      await apiFetch(`/courses/${course.id}`, token, { method: "DELETE" });
       const transcriptData = await apiFetch("/transcript/extract", token, {
         method: "POST",
         body: JSON.stringify({ url: `https://www.youtube.com/watch?v=${course.video_id}` }),
       });
       const segments: Segment[] = transcriptData.segments;
-      const courseData = await apiFetch("/course/generate", token, {
+      const courseData = await apiFetch("/courses/generate", token, {
         method: "POST",
         body: JSON.stringify({ video_id: course.video_id, segments }),
       });
       toast("Course regenerated!", "success");
-      navigate(`/course/${courseData.id}`);
+      navigate(`/courses/${courseData.id}`);
     } catch (err) {
       toast(errMsg(err), "error");
     } finally {

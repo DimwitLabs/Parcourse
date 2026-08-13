@@ -27,7 +27,7 @@ class DraftPayload(BaseModel):
     mcq_answers: dict[str, str] = {}
     theory_answers: dict[str, str] = {}
 
-router = APIRouter(prefix="/course", tags=["course"])
+router = APIRouter(prefix="/courses", tags=["courses"])
 
 
 @router.post("/generate", response_model=CourseResponsePublic, status_code=status.HTTP_201_CREATED)
@@ -77,7 +77,7 @@ def generate_course(
     return CourseResponsePublic.from_full(course, id=str(cached.id))
 
 
-@router.get("s", response_model=list[CourseListEntry])
+@router.get("", response_model=list[CourseListEntry])
 def list_courses(
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
