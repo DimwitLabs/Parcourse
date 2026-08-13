@@ -18,7 +18,6 @@ from models.knowledge_graph import (
 )
 from schemas.course import CourseResponse
 from schemas.knowledge_graph import KnowledgeExtraction
-from services.youtube_meta import get_video_category
 
 _EXTRACTION_PROMPT = """You are extracting a knowledge graph from a course generated from a \
 YouTube video.
@@ -94,8 +93,6 @@ def extract_and_merge(
     model: str | None = None,
 ) -> None:
     logger.info("[knowledge_graph]: extracting and merging for course %s, user %s, video %s", course_id, user_id, video_id)
-    category = get_video_category(video_id) or "Education"
-    domain = _get_or_create_node(session, NodeTier.domain, category, f"YouTube category: {category}")
 
     sections_summary = "\n".join(f"- {s.title}: {s.summary}" for s in course.sections)
     prompt = _EXTRACTION_PROMPT.format(
@@ -115,7 +112,7 @@ def extract_and_merge(
     data = json.loads(response.choices[0].message.content)
     extraction = KnowledgeExtraction(**data)
 
-    label_to_node: dict[str, KnowledgeNode] = {domain.label: domain}
+    label_to_node: dict[str, KnowledgeNode] = {}
     for n in extraction.nodes:
         label_to_node[n.label] = _get_or_create_node(session, n.tier, n.label, n.description)
 
@@ -125,10 +122,6 @@ def extract_and_merge(
         if source is None or target is None:
             continue
         _ensure_edge(session, source.id, target.id, e.edge_type)
-
-    for n in extraction.nodes:
-        if n.tier == NodeTier.field:
-            _ensure_edge(session, label_to_node[n.label].id, domain.id, EdgeType.belongs_to)
 
     for node in label_to_node.values():
         if session.get(CourseKnowledgeNode, (course_id, node.id)) is None:
