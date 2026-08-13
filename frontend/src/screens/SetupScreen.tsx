@@ -207,6 +207,7 @@ export default function SetupScreen() {
                 className="text-input"
                 placeholder="email"
                 type="email"
+                autoComplete="off"
                 value={newUserEmail}
                 onChange={(e) => setNewUserEmail(e.target.value)}
                 disabled={busy}
@@ -217,6 +218,7 @@ export default function SetupScreen() {
                 className="text-input"
                 placeholder="password"
                 type="password"
+                autoComplete="new-password"
                 value={newUserPassword}
                 onChange={(e) => setNewUserPassword(e.target.value)}
                 disabled={busy}
