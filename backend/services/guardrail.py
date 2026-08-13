@@ -8,22 +8,27 @@ from schemas.guardrail import GuardrailResult
 
 logger = logging.getLogger(__name__)
 
-_PROMPT = """You are a strict content filter for a course-generation platform. \
-Analyse the transcript and determine if this video would make a structured course \
-with discrete, learnable concepts a student could recall and demonstrate.
+_PROMPT = """You are a content filter for a course-generation platform. \
+Decide whether this video contains enough substantive knowledge that a viewer \
+would come away understanding something they did not before.
 
-Approve only if the content is primarily instructional: tutorials, lectures, \
-explainers, or documentaries that convey concrete knowledge with clear structure.
+Approve broadly: tutorials, lectures, explainers, documentaries, historical \
+accounts, science or nature films, political analysis, philosophy, biography, \
+investigative journalism, or any content whose primary purpose is to inform \
+or educate — regardless of whether it uses a structured "lesson" format. \
+Narrative and storytelling are fine delivery vehicles for real knowledge.
 
-Reject if the transcript primarily consists of: conversation between two or more \
-people (interviews, podcasts, talk shows — even if intellectually interesting); \
-motivational or inspirational speech without concrete technique; personal anecdotes \
-or life stories; entertainment, music, gaming, comedy, or reaction content; news \
-and opinion commentary.
+Reject only content where the substance itself is absent: \
+unstructured conversation with no informational throughline (casual podcasts, \
+talk shows, interviews that are mainly banter); \
+pure motivational or inspirational speech with no factual content; \
+entertainment, music, gaming, comedy, or reaction content; \
+raw news bulletins or opinion commentary with no deeper explanation.
 
-The decisive test: could a student come away able to teach something specific to \
-someone else? If the honest answer is "they'd be inspired but couldn't teach \
-anything concrete," reject it.
+The decisive test: would a curious person finish this video knowing more \
+about the world than when they started? If yes, approve. Reject only when \
+the honest answer is "no — it was entertaining or inspiring but taught \
+nothing factual or conceptual."
 
 Transcript excerpt:
 \"\"\"
