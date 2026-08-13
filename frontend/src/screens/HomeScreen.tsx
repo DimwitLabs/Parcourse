@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
 
 import { toast } from "../components/Toast";
@@ -86,8 +85,8 @@ export default function HomeScreen() {
       });
 
       const segments: Segment[] = transcriptData.segments;
-      const transcriptText = segments.map((s) => s.text).join(" ");
       const videoTitle: string = transcriptData.video_title ?? "";
+      const transcriptText = segments.map((s) => s.text).join(" ");
       setPending({ videoId: transcriptData.video_id, videoTitle, segments });
 
       setStep("guardrail");
@@ -124,6 +123,7 @@ export default function HomeScreen() {
   }
 
   const busy = step !== "idle";
+
   const isDone = (c: CourseEntry) =>
     c.has_passed_quiz || (c.completed_sections.length === c.sections.length && c.sections.length > 0);
   const recentCourses = courses?.filter((c) => !isDone(c)).slice(0, 3) ?? [];
@@ -143,45 +143,6 @@ export default function HomeScreen() {
   return (
     <>
       {busy && <div className="gen-overlay" />}
-      {busy && createPortal(
-        <div className="gen-pills-panel">
-          {GEN_STEPS.map(({ key, label }, i) => {
-            const isDone = currentStepIdx > i;
-            const isActive = !blocked && step === key;
-            const isBlocked = blocked && key === "guardrail";
-            return (
-              <div key={key} className={`gen-pill${isBlocked ? " blocked" : isActive ? " active" : isDone ? " done" : ""}`}>
-                <div className="gen-pill-left">
-                  {isBlocked ? (
-                    <svg className="gen-pill-icon gen-pill-warn" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2L12.5 12H1.5L7 2Z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round"/><line x1="7" y1="6" x2="7" y2="9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="7" cy="10.5" r="0.75" fill="currentColor"/></svg>
-                  ) : isDone ? (
-                    <svg className="gen-pill-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.15"/><polyline points="3.5,7 6,9.5 10.5,4.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  ) : isActive ? (
-                    <span className="gen-pill-spinner" />
-                  ) : (
-                    <span className="gen-pill-dot" />
-                  )}
-                  <span className="gen-pill-label">
-                    {label}
-                    {isBlocked && guardrailReason && (
-                      <span className="gen-pill-sub gen-pill-reason">{guardrailReason}</span>
-                    )}
-                    {isActive && step === "generating" && funMsg && (
-                      <span className="gen-pill-sub">{funMsg}</span>
-                    )}
-                  </span>
-                </div>
-                {isBlocked && (
-                  <button className="gen-pill-override" onClick={proceedAnyway}>
-                    Proceed Anyway
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>,
-        document.body
-      )}
 
       <div className="hero">
         <h1 className="hero-title">
@@ -194,26 +155,67 @@ export default function HomeScreen() {
           that test your thinking, and a knowledge map that grows with every course.
         </p>
 
-        <form
-          className="url-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            createCourse();
-          }}
-        >
-          <input
-            className="text-input"
-            placeholder="youtube.com/watch?v=…"
-            value={videoUrl}
-            onChange={(e) => setVideoUrl(e.target.value)}
-            disabled={busy}
-          />
-          <button className="button primary" type="submit" disabled={busy || !videoUrl}>
-            {busy ? "Working…" : "Create course"}
-          </button>
-        </form>
+        <div className="url-form-wrap">
+          <form
+            className="url-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              createCourse();
+            }}
+          >
+            <input
+              className="text-input"
+              placeholder="youtube.com/watch?v=…"
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
+              disabled={busy}
+            />
+            <button className="button primary" type="submit" disabled={busy || !videoUrl}>
+              {busy ? "Working…" : "Create course"}
+            </button>
+          </form>
 
-        <p className="home-hint">Best with tutorials, lectures and explainers. Five to forty minutes.</p>
+          {busy && (
+            <div className="gen-pills-panel">
+              {GEN_STEPS.map(({ key, label }, i) => {
+                const isDone = currentStepIdx > i;
+                const isActive = !blocked && step === key;
+                const isBlocked = blocked && key === "guardrail";
+                return (
+                  <div key={key} className={`gen-pill${isBlocked ? " blocked" : isActive ? " active" : isDone ? " done" : ""}`}>
+                    <div className="gen-pill-left">
+                      {isBlocked ? (
+                        <svg className="gen-pill-icon gen-pill-warn" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2L12.5 12H1.5L7 2Z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round"/><line x1="7" y1="6" x2="7" y2="9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="7" cy="10.5" r="0.75" fill="currentColor"/></svg>
+                      ) : isDone ? (
+                        <svg className="gen-pill-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.15"/><polyline points="3.5,7 6,9.5 10.5,4.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      ) : isActive ? (
+                        <span className="gen-pill-spinner" />
+                      ) : (
+                        <span className="gen-pill-dot" />
+                      )}
+                      <span className="gen-pill-label">
+                        {label}
+                        {isBlocked && guardrailReason && (
+                          <span className="gen-pill-sub gen-pill-reason">{guardrailReason}</span>
+                        )}
+                        {isActive && step === "generating" && funMsg && (
+                          <span className="gen-pill-sub">{funMsg}</span>
+                        )}
+                      </span>
+                    </div>
+                    {isBlocked && (
+                      <button className="gen-pill-override" type="button" onClick={proceedAnyway}>
+                        Proceed Anyway
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <p className="home-hint">Best with tutorials, lectures and explainers.</p>
       </div>
 
       {recentCourses.length > 0 && (
@@ -250,7 +252,7 @@ export default function HomeScreen() {
           </div>
           <div className="stat-card">
             <b className="stat-big">{totalSections}</b>
-            <span className="stat-label">Sections studied across all your courses.</span>
+            <span className="stat-label">Sections across all your courses.</span>
           </div>
         </div>
       )}

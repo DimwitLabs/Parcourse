@@ -299,6 +299,12 @@ body {
   max-width: 33rem;
 }
 
+.url-form-wrap {
+  position: relative;
+  max-width: 40rem;
+  margin: 2rem auto 0;
+}
+
 .url-form {
   display: flex;
   gap: 0.5rem;
@@ -306,8 +312,6 @@ body {
   border: 1.5px solid var(--color-ink);
   border-radius: var(--radius-full);
   padding: 0.5rem 0.5rem 0.5rem 1.5rem;
-  max-width: 40rem;
-  margin: 2rem auto 0;
   box-shadow: 4px 4px 0 var(--color-secondary-container);
 }
 
@@ -2707,27 +2711,56 @@ body {
   pointer-events: all;
 }
 
+/* Narrow screens: pinned to the bottom centre of the viewport. */
 .gen-pills-panel {
   position: fixed;
-  right: 2.5rem;
-  top: 50%;
-  transform: translateY(-50%);
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 51;
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
   width: 260px;
-  isolation: isolate;
+  max-width: calc(100vw - 2rem);
+  /* The panel sits inside .hero, which centres its text. */
+  text-align: left;
 }
 
-.gen-pills-panel::before {
-  content: '';
-  position: absolute;
-  inset: -3.5rem -3rem;
-  background: radial-gradient(ellipse 80% 80% at 70% 50%, var(--color-paper) 30%, transparent 75%);
-  filter: blur(18px);
-  z-index: -1;
-  pointer-events: none;
+/* Wide screens: anchored to the right of the input, so it scrolls away with
+   the hero instead of tracking the viewport and riding over the page. */
+@media (min-width: 1280px) {
+  .gen-pills-panel {
+    position: absolute;
+    top: 50%;
+    /* Wrapper is 40rem wide and centred, so its right edge sits at
+       50vw + 20rem. Pulling right by (50vw - 22rem) lands the panel 2rem
+       from the viewport edge while staying anchored to the input. */
+    right: calc(22rem - 50vw);
+    left: auto;
+    bottom: auto;
+    transform: translateY(-50%);
+  }
+
+  .gen-pills-panel::before {
+    content: '';
+    position: absolute;
+    inset: -5rem -4rem;
+    background: radial-gradient(ellipse 85% 85% at 50% 50%, var(--color-paper) 35%, rgba(251, 249, 245, 0.6) 62%, transparent 80%);
+    z-index: -1;
+    pointer-events: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .gen-pill:not(.active):not(.blocked) {
+    display: none;
+  }
+
+  .gen-pill {
+    padding: 0.6rem 1rem;
+    font-size: 0.78rem;
+  }
 }
 
 .gen-pill {
