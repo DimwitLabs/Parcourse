@@ -1311,35 +1311,89 @@ body {
   gap: 1rem;
 }
 
-.graph-zoom-controls {
+.graph-toolbar-right {
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
-.graph-zoom-controls .button {
-  padding: 0.6rem 1.1rem;
+.graph-granularity-pills {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--color-surface-low);
+  border-radius: var(--radius-full);
+  padding: 0.25rem;
+}
+
+.graph-pill {
+  appearance: none;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  padding: 0.35rem 1rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.graph-pill:hover {
+  color: var(--color-ink);
+}
+
+.graph-pill.active {
+  background: var(--color-surface-lowest);
+  color: var(--color-primary);
+  box-shadow: 0 1px 4px rgba(27, 28, 26, 0.1);
+}
+
+.graph-zoom-controls,
+.graph-export-controls {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.graph-zoom-controls .button,
+.graph-export-controls .button {
+  padding: 0.5rem 0.9rem;
+  font-size: 0.82rem;
 }
 
 .graph-canvas-wrap {
-  overflow: auto;
-  max-height: 32rem;
+  overflow: hidden;
+  height: 62vh;
+  min-height: 420px;
   border-radius: var(--radius-xl);
   background: var(--color-surface-low);
-  background-image: radial-gradient(rgba(27, 28, 26, 0.06) 1px, transparent 1px);
-  background-size: 20px 20px;
+  background-image: radial-gradient(rgba(27, 28, 26, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
   touch-action: none;
+  position: relative;
 }
 
 .graph-svg {
   display: block;
-  margin: 0 auto;
-  transform-origin: center;
-  transition: transform 0.15s ease;
+  width: 100%;
+  height: 100%;
+  transform-origin: center center;
 }
 
 .graph-edge {
   stroke: var(--color-secondary);
-  stroke-opacity: 0.25;
+  stroke-opacity: 0.2;
+  stroke-width: 1.5;
+}
+
+.graph-edge-related_to {
+  stroke-dasharray: 5 4;
+  stroke-opacity: 0.15;
+}
+
+.graph-edge-prerequisite_of {
+  stroke-opacity: 0.3;
   stroke-width: 2;
 }
 
@@ -1348,11 +1402,11 @@ body {
 }
 
 .graph-node-circle {
-  transition: filter 0.15s ease;
+  transition: filter 0.15s ease, r 0.15s ease;
 }
 
 .graph-node-group:hover .graph-node-circle {
-  filter: brightness(1.08);
+  filter: brightness(1.12) saturate(1.1);
 }
 
 .graph-node-group.mastered .graph-node-circle {
@@ -1367,6 +1421,14 @@ body {
   fill: var(--color-secondary-container);
 }
 
+.graph-node-group.tier-field.mastered .graph-node-circle {
+  fill: var(--color-primary);
+}
+
+.graph-node-group.tier-field.new .graph-node-circle {
+  fill: #c6dab8;
+}
+
 .graph-node-group .graph-node-label {
   width: 100%;
   height: 100%;
@@ -1374,48 +1436,105 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  line-height: 1.15;
-  padding: 0.4rem;
+  line-height: 1.2;
+  padding: 0.35rem;
   color: white;
+  user-select: none;
+}
+
+.graph-node-group .graph-node-label.tier-field {
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.graph-node-group .graph-node-label.tier-topic {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.graph-node-group .graph-node-label.tier-skill {
+  font-size: 0.62rem;
+  font-weight: 600;
 }
 
 .graph-node-group.new .graph-node-label {
   color: var(--color-secondary);
 }
 
+.graph-legend-row {
+  display: flex;
+  justify-content: center;
+}
+
 .graph-tooltip {
   position: fixed;
   z-index: 20;
   background: var(--color-surface-lowest);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   padding: 1rem 1.25rem;
-  max-width: 16rem;
-  box-shadow: 0 8px 32px rgba(27, 28, 26, 0.18);
+  max-width: 18rem;
+  box-shadow: 0 8px 40px rgba(27, 28, 26, 0.2);
   pointer-events: none;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.5rem;
+}
+
+.graph-tooltip-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.graph-tooltip-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-ink);
 }
 
 .graph-tooltip-tier {
   font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: var(--color-ink-soft);
 }
 
-.graph-tooltip p {
-  margin: 0.2rem 0 0;
-  font-size: 0.85rem;
+.graph-tooltip-desc {
+  margin: 0;
+  font-size: 0.84rem;
   color: var(--color-ink-soft);
+  line-height: 1.5;
 }
 
-.graph-tooltip-count {
-  font-size: 0.75rem;
-  color: var(--color-primary);
+.graph-tooltip-courses {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  border-top: 1px solid var(--color-surface-high);
+  padding-top: 0.5rem;
+}
+
+.graph-tooltip-courses-label {
+  font-size: 0.72rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-soft);
+}
+
+.graph-tooltip-course-link {
+  font-size: 0.82rem;
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+  pointer-events: auto;
+}
+
+.graph-tooltip-course-link:hover {
+  text-decoration: underline;
 }
 
 .graph-columns {
