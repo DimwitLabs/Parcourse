@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import Avatar from "../components/Avatar";
+import PasswordField from "../components/PasswordField";
 import CustomSelect from "../components/CustomSelect";
+import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
+import { generatePassword, passwordError } from "../lib/password";
 import { useAuth } from "../lib/auth";
+import { useEscapeKey } from "../lib/useEscapeKey";
 
 type UserWithUsage = {
   id: string;
@@ -28,14 +33,45 @@ export default function AdminScreen() {
   const [newPassword, setNewPassword] = useState("");
   const [newFirstName, setNewFirstName] = useState("");
   const [newLastName, setNewLastName] = useState("");
-  const [addError, setAddError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const [currentModel, setCurrentModel] = useState("");
   const [modelSaving, setModelSaving] = useState(false);
 
+  useEscapeKey(showAdd, () => { if (!busy) setShowAdd(false); });
+
   const [confirm, setConfirm] = useState<ConfirmAction | null>(null);
   const [actionBusy, setActionBusy] = useState(false);
+
+  const [pwdUser, setPwdUser] = useState<UserWithUsage | null>(null);
+  const [newUserPwd, setNewUserPwd] = useState("");
+
+  useEscapeKey(!!pwdUser, () => { if (!actionBusy) setPwdUser(null); });
+
+  useEffect(() => {
+    setNewUserPwd(pwdUser ? generatePassword() : "");
+  }, [pwdUser]);
+
+  useEffect(() => {
+    if (showAdd) setNewPassword(generatePassword());
+  }, [showAdd]);
+
+  async function resetPassword() {
+    if (!pwdUser) return;
+    setActionBusy(true);
+    try {
+      await apiFetch(`/users/${pwdUser.id}/reset-password`, token, {
+        method: "POST",
+        body: JSON.stringify({ password: newUserPwd }),
+      });
+      toast(`Password updated for ${pwdUser.email}`, "success");
+      setPwdUser(null);
+    } catch (err) {
+      toast(errMsg(err), "error");
+    } finally {
+      setActionBusy(false);
+    }
+  }
 
   function refresh() {
     apiFetch("/users", token)
@@ -66,7 +102,6 @@ export default function AdminScreen() {
   }
 
   async function addUser() {
-    setAddError(null);
     setBusy(true);
     try {
       await apiFetch("/users", token, {
@@ -83,9 +118,10 @@ export default function AdminScreen() {
       setNewFirstName("");
       setNewLastName("");
       setShowAdd(false);
+      toast(`${newEmail} added`, "success");
       refresh();
     } catch (err) {
-      setAddError(errMsg(err));
+      toast(errMsg(err), "error");
     } finally {
       setBusy(false);
     }
@@ -155,44 +191,70 @@ export default function AdminScreen() {
         <div className="modal-overlay" onClick={() => setShowAdd(false)}>
           <div className="modal-card card" onClick={(e) => e.stopPropagation()}>
             <h2 style={{ margin: "0 0 1rem", fontSize: "1.25rem", fontWeight: 800 }}>Add user</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+            <div className="modal-form">
+              <div className="modal-form-row">
+                <input
+                  className="text-input boxed"
+                  placeholder="First name"
+                  autoComplete="off"
+                  value={newFirstName}
+                  onChange={(e) => setNewFirstName(e.target.value)}
+                />
+                <input
+                  className="text-input boxed"
+                  placeholder="Last name"
+                  autoComplete="off"
+                  value={newLastName}
+                  onChange={(e) => setNewLastName(e.target.value)}
+                />
+              </div>
               <input
                 className="text-input boxed"
-                placeholder="First name"
-                value={newFirstName}
-                onChange={(e) => setNewFirstName(e.target.value)}
-                style={{ marginBottom: 0 }}
+                placeholder="Email"
+                type="email"
+                autoComplete="off"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
               />
-              <input
-                className="text-input boxed"
-                placeholder="Last name"
-                value={newLastName}
-                onChange={(e) => setNewLastName(e.target.value)}
-                style={{ marginBottom: 0 }}
+              <PasswordField
+                value={newPassword}
+                onChange={setNewPassword}
+                disabled={busy}
+                hint="Name is optional. Share this password with the user, they will be asked to change it on first sign in."
               />
             </div>
-            <input
-              className="text-input boxed"
-              placeholder="email"
-              value={newEmail}
-              onChange={(e) => setNewEmail(e.target.value)}
-            />
-            <input
-              className="text-input boxed"
-              placeholder="password"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "1.25rem" }}>
               <button className="button secondary" onClick={() => setShowAdd(false)}>
                 Cancel
               </button>
-              <button className="button primary" onClick={addUser} disabled={busy}>
+              <button className="button primary" onClick={addUser} disabled={busy || !newEmail || !!passwordError(newPassword)}>
                 {busy ? "Adding…" : "Add"}
               </button>
             </div>
-            {addError && <p className="error-message">{addError}</p>}
+          </div>
+        </div>
+      )}
+
+      {pwdUser && (
+        <div className="modal-overlay" onClick={() => !actionBusy && setPwdUser(null)}>
+          <div className="modal-card card" onClick={(e) => e.stopPropagation()}>
+            <h2 style={{ margin: "0 0 0.5rem", fontSize: "1.25rem", fontWeight: 800 }}>Set new password</h2>
+            <p style={{ margin: "0 0 1rem", color: "var(--color-ink-soft)" }}>
+              Sets a new password for {pwdUser.email}. Their courses, progress and quiz history are untouched.
+            </p>
+            <PasswordField value={newUserPwd} onChange={setNewUserPwd} disabled={actionBusy} />
+            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "1.5rem" }}>
+              <button className="button secondary" onClick={() => setPwdUser(null)} disabled={actionBusy}>
+                Cancel
+              </button>
+              <button
+                className="button primary"
+                onClick={resetPassword}
+                disabled={actionBusy || !!passwordError(newUserPwd)}
+              >
+                {actionBusy ? "Saving…" : "Set password"}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -230,7 +292,7 @@ export default function AdminScreen() {
           const isSelf = u.id === me?.id;
           return (
             <div className="user-row" key={u.id}>
-              <div className="user-avatar">{(u.first_name ? u.first_name[0] + (u.last_name?.[0] ?? "") : u.email.slice(0, 2)).toUpperCase()}</div>
+              <Avatar user={u} size={80} className="user-avatar" />
               <div className="user-info">
                 {u.first_name && <span className="user-row-name">{u.first_name} {u.last_name ?? ""}</span>}
                 <span className="user-row-email">{u.email}</span>
@@ -265,6 +327,9 @@ export default function AdminScreen() {
                 <div className="user-row-actions">
                   <button className="icon-btn" onClick={() => navigate(`/graph?user=${u.id}`)} title="Knowledge graph">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="6" y1="8" x2="6" y2="16"/><line x1="18" y1="8" x2="18" y2="16"/><line x1="8" y1="7.5" x2="16" y2="16.5"/></svg>
+                  </button>
+                  <button className="icon-btn" onClick={() => setPwdUser(u)} title="Set new password">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                   </button>
                   {!isSelf && (
                     <>
