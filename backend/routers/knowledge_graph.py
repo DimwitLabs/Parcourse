@@ -40,7 +40,9 @@ def _build_graph(session: Session, user_id: uuid.UUID) -> KnowledgeGraphResponse
     course_title: dict[uuid.UUID, str] = {}
     for c in courses:
         try:
-            course_title[c.id] = json.loads(c.course_json).get("title", "Untitled")
+            data = json.loads(c.course_json)
+            sections = data.get("sections") or []
+            course_title[c.id] = sections[0]["title"] if sections else "Untitled"
         except Exception:
             course_title[c.id] = "Untitled"
     node_courses: dict[uuid.UUID, list[CourseRef]] = {n.id: [] for n in nodes}
