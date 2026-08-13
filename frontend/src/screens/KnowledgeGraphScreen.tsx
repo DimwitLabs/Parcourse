@@ -184,7 +184,7 @@ export default function KnowledgeGraphScreen() {
       el.removeEventListener("touchstart", onTouchStart);
       el.removeEventListener("touchmove", onTouchMove);
     };
-  }, []);
+  }, [layout]);
 
   if (error) return <p className="error-message" style={{ padding: "2rem" }}>{error}</p>;
 
