@@ -1274,11 +1274,39 @@ body {
 }
 
 .legend-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.4rem;
   font-size: 0.85rem;
   color: var(--color-ink-soft);
+  cursor: default;
+}
+
+.legend-tip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-surface-lowest);
+  border: 1px solid var(--color-surface-high);
+  border-radius: var(--radius-md);
+  padding: 0.45rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--color-ink);
+  white-space: nowrap;
+  box-shadow: 0 6px 24px rgba(27, 28, 26, 0.15);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  transform: translateX(-50%) translateY(4px);
+  z-index: 30;
+}
+
+.legend-item:hover .legend-tip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 .legend-dot {
@@ -1532,7 +1560,7 @@ body {
 .graph-tooltip-close {
   position: absolute;
   top: 0.5rem;
-  right: 0.6rem;
+  right: 1.25rem;
   appearance: none;
   border: none;
   background: none;

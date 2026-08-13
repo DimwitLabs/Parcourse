@@ -1,5 +1,4 @@
 import {
-  forceCenter,
   forceCollide,
   forceLink,
   forceManyBody,
@@ -148,9 +147,50 @@ function runSimulation(
   return { nodes: simNodes, edges: simEdges };
 }
 
+const FONT_SIZES: Record<Tier, number> = { you: 14, domain: 14, field: 13, topic: 11, skill: 9 };
+const FONT_WEIGHT: Record<Tier, number> = { you: 800, domain: 700, field: 800, topic: 700, skill: 600 };
+
+function wrapText(text: string, r: number, fontSize: number): string[] {
+  const maxChars = Math.max(4, Math.floor((r * 1.55) / (fontSize * 0.58)));
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let current = "";
+  for (const word of words) {
+    const next = current ? current + " " + word : word;
+    if (next.length <= maxChars) {
+      current = next;
+    } else {
+      if (current) lines.push(current);
+      current = word.length > maxChars ? word.slice(0, maxChars - 1) + "…" : word;
+    }
+  }
+  if (current) lines.push(current);
+  if (lines.length > 3) {
+    lines.splice(3);
+    lines[2] = lines[2].replace(/..$/, "…");
+  }
+  return lines;
+}
+
+function inlineStylesToClone(original: SVGSVGElement, clone: SVGSVGElement) {
+  const origEls = Array.from(original.querySelectorAll("*"));
+  const cloneEls = Array.from(clone.querySelectorAll("*"));
+  const PROPS = ["fill", "stroke", "stroke-width", "stroke-opacity", "stroke-dasharray", "opacity", "font-size", "font-weight", "font-family"];
+  origEls.forEach((orig, i) => {
+    const clEl = cloneEls[i] as SVGElement | null;
+    if (!clEl || !("style" in clEl)) return;
+    const cs = window.getComputedStyle(orig);
+    for (const prop of PROPS) {
+      const val = cs.getPropertyValue(prop);
+      if (val) clEl.setAttribute(prop, val);
+    }
+  });
+}
+
 function exportSvg(svgEl: SVGSVGElement) {
   const clone = svgEl.cloneNode(true) as SVGSVGElement;
   clone.removeAttribute("style");
+  inlineStylesToClone(svgEl, clone);
   const blob = new Blob([clone.outerHTML], { type: "image/svg+xml" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -163,6 +203,7 @@ function exportSvg(svgEl: SVGSVGElement) {
 function exportPng(svgEl: SVGSVGElement) {
   const clone = svgEl.cloneNode(true) as SVGSVGElement;
   clone.removeAttribute("style");
+  inlineStylesToClone(svgEl, clone);
   const bbox = svgEl.getBBox();
   const pad = 40;
   const w = bbox.width + pad * 2;
@@ -171,8 +212,9 @@ function exportPng(svgEl: SVGSVGElement) {
   clone.setAttribute("height", String(h));
   clone.setAttribute("viewBox", `${bbox.x - pad} ${bbox.y - pad} ${w} ${h}`);
 
-  const blob = new Blob([clone.outerHTML], { type: "image/svg+xml" });
-  const url = URL.createObjectURL(blob);
+  const serialized = new XMLSerializer().serializeToString(clone);
+  const svgBlob = new Blob([serialized], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(svgBlob);
   const img = new Image();
   img.onload = () => {
     const canvas = document.createElement("canvas");
@@ -180,7 +222,8 @@ function exportPng(svgEl: SVGSVGElement) {
     canvas.height = h * 2;
     const ctx = canvas.getContext("2d")!;
     ctx.scale(2, 2);
-    ctx.fillStyle = "#1b1c1a";
+    const bg = window.getComputedStyle(document.documentElement).getPropertyValue("--color-surface-low").trim() || "#1b1c1a";
+    ctx.fillStyle = bg;
     ctx.fillRect(0, 0, w, h);
     ctx.drawImage(img, 0, 0, w, h);
     canvas.toBlob((b) => {
@@ -408,6 +451,11 @@ export default function KnowledgeGraphScreen() {
                 const isField = n.tier === "field";
                 const isYou = n.tier === "you";
                 const isPinned = tooltip?.pinned && tooltip.node.id === n.id;
+                const fontSize = FONT_SIZES[n.tier];
+                const lines = wrapText(n.label, n.r, fontSize);
+                const lineHeight = fontSize * 1.32;
+                const textFill = mc === "new" && !isYou ? "var(--color-secondary)" : "white";
+                const clipId = `nc-${n.id}`;
                 return (
                   <g
                     key={n.id}
@@ -425,14 +473,35 @@ export default function KnowledgeGraphScreen() {
                       );
                     }}
                   >
+                    <defs>
+                      <clipPath id={clipId}>
+                        <circle r={n.r * 0.84} />
+                      </clipPath>
+                    </defs>
                     <circle
                       r={n.r}
                       className="graph-node-circle"
-                      filter={isYou ? "url(#glow-field)" : isField ? "url(#glow-field)" : mc === "mastered" ? "url(#glow-mastered)" : undefined}
+                      filter={isYou || isField ? "url(#glow-field)" : mc === "mastered" ? "url(#glow-mastered)" : undefined}
                     />
-                    <foreignObject x={-n.r} y={-n.r} width={n.r * 2} height={n.r * 2}>
-                      <div className={`graph-node-label tier-${n.tier}`}>{n.label}</div>
-                    </foreignObject>
+                    <text
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fontSize={fontSize}
+                      fontWeight={FONT_WEIGHT[n.tier]}
+                      fill={textFill}
+                      clipPath={`url(#${clipId})`}
+                      style={{ fontFamily: "inherit", userSelect: "none", pointerEvents: "none" }}
+                    >
+                      {lines.map((line, i) => (
+                        <tspan
+                          key={i}
+                          x={0}
+                          dy={i === 0 ? -(lines.length - 1) * lineHeight / 2 : lineHeight}
+                        >
+                          {line}
+                        </tspan>
+                      ))}
+                    </text>
                   </g>
                 );
               })}
@@ -441,14 +510,17 @@ export default function KnowledgeGraphScreen() {
 
           <div className="graph-legend-row">
             <div className="graph-legend">
-              <span className="legend-item" title="Scored 90% or above on this course's quiz">
+              <span className="legend-item">
                 <span className="legend-dot mastered" /> Mastered
+                <span className="legend-tip">Scored 90% or above on this course's quiz</span>
               </span>
-              <span className="legend-item" title="Quiz attempted but scored below 90%">
+              <span className="legend-item">
                 <span className="legend-dot learning" /> Learning
+                <span className="legend-tip">Quiz attempted but scored below 90%</span>
               </span>
-              <span className="legend-item" title="Course not yet quizzed">
+              <span className="legend-item">
                 <span className="legend-dot new" /> New
+                <span className="legend-tip">Course not yet quizzed</span>
               </span>
             </div>
           </div>
