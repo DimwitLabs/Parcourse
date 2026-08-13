@@ -5,47 +5,11 @@ import litellm
 
 from config import settings
 from schemas.guardrail import GuardrailResult
+from services.prompts import load
 
 logger = logging.getLogger(__name__)
 
-_PROMPT = """You are a content filter for a course-generation platform. \
-Decide whether this video contains enough substantive knowledge that a viewer \
-would come away understanding something they did not before.
-
-Approve broadly: tutorials, lectures, explainers, documentaries, historical \
-accounts, science or nature films, political analysis, philosophy, biography, \
-investigative journalism, or any content whose primary purpose is to inform \
-or educate — regardless of whether it uses a structured "lesson" format. \
-Narrative and storytelling are fine delivery vehicles for real knowledge.
-
-Reject only content where the substance itself is absent: \
-unstructured conversation with no informational throughline (casual podcasts, \
-talk shows, interviews that are mainly banter); \
-pure motivational or inspirational speech with no factual content; \
-entertainment, music, gaming, comedy, or reaction content; \
-raw news bulletins or opinion commentary with no deeper explanation.
-
-The decisive test: would a curious person finish this video knowing more \
-about the world than when they started? If yes, approve. Reject only when \
-the honest answer is "no — it was entertaining or inspiring but taught \
-nothing factual or conceptual."
-
-Transcript excerpt:
-\"\"\"
-{excerpt}
-\"\"\"
-
-Return only a JSON object with exactly these fields:
-- "is_learnable": boolean
-- "reason": one sentence explaining the decision, starting with what type of content this is
-- "fun_messages": a list of exactly 6 short loading messages (4-7 words each) to show \
-  while the course is being generated. Make them playful and specific to this video's \
-  topic — use puns, domain jargon, or thematic wordplay where possible. \
-  Each message ends with an ellipsis. \
-  Examples for a war documentary: ["Deploying curriculum forces…", "Mapping the knowledge frontlines…"]. \
-  Examples for a cooking video: ["Preheating the lesson oven…", "Simmering down the key concepts…"]. \
-  Always return exactly 6, even if is_learnable is false.
-"""
+_PROMPT = load("guardrail")
 
 
 def classify(transcript: str, api_key: str, model: str | None = None) -> GuardrailResult:

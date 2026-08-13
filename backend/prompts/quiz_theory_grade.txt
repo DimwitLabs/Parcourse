@@ -1,0 +1,16 @@
+You are grading a student's answer to an open-ended question.
+
+Question: {question}
+
+Reference answer: {reference_answer}
+
+Student's answer: {student_answer}
+
+Score the student's answer on three dimensions, each from 0 to 5:
+{dimensions}
+
+Return only a JSON object with exactly these fields:
+- "accuracy": integer 0-5
+- "completeness": integer 0-5
+- "relevance": integer 0-5
+- "feedback": one or two sentences of specific, constructive feedback for the student, referencing what was correct or missing relative to the reference answer. Never use em dashes; use commas, periods, or semicolons instead

@@ -9,6 +9,7 @@ import litellm
 from config import settings
 from schemas.course import CourseResponse, CourseSection, MCQOption, MCQQuestion, TheoryQuestion
 from schemas.transcript import TranscriptSegment
+from services.prompts import load
 
 logger = logging.getLogger(__name__)
 
@@ -28,52 +29,33 @@ def _format_transcript(segments: list[TranscriptSegment]) -> str:
         for t, texts in sorted(buckets.items())
     )
 
-_PROMPT = """You are building a structured course from a YouTube video transcript.
+_PROMPT = load("course")
 
-Total video duration: {total_minutes:.1f} minutes ({total_seconds:.0f} seconds).
 
-Transcript (each line is a 30-second chunk prefixed with its start time in seconds):
-\"\"\"
-{formatted}
-\"\"\"
+_MAX_FEEDBACK_CHARS = 1000
+_MAX_TITLE_CHARS = 200
 
-Break this into {min_sections}–{max_sections} logical sections that build on each other.
 
-Rules for section boundaries:
-- The first section MUST start at 0s and the last section MUST end at exactly {total_seconds:.0f}s.
-- Every section should cover roughly {approx_seconds:.0f} seconds (~{approx_minutes:.0f} minutes). \
-  No section may be shorter than {min_section_seconds:.0f}s or longer than {max_section_seconds:.0f}s.
-- The last section must NOT be a catch-all for the remainder of the video. \
-  All sections, including the last, must be approximately equal in length.
-- Use the transcript chunk timestamps only as a guide — section boundaries do not need \
-  to fall exactly on 30-second marks.
+def _sanitize_feedback(feedback: str) -> str:
+    """Collapse the delimiter so a note cannot close the quoted block early, and
+    cap the length so a large paste cannot crowd out the transcript."""
+    return feedback.strip().replace('"""', '"')[:_MAX_FEEDBACK_CHARS]
 
-For each section also write 2-3 multiple-choice questions and 1-2 open-ended theory \
-questions that test understanding of that section's content.
 
-Return only a JSON object with exactly this field:
-- "sections": a list of objects, each with:
-  - "title": str
-  - "summary": str, 2-3 sentences
-  - "key_takeaways": a list of 2-4 short phrases (3-6 words each) capturing the section's core points
-  - "start_seconds": float
-  - "end_seconds": float
-  - "mcqs": a list of 2-3 objects, each with:
-    - "question": str
-    - "options": a list of 4 objects, each with "label" ("A"/"B"/"C"/"D") and "text"
-    - "correct_label": the label of the correct option
-    - "explanation": one sentence explaining why the correct answer is right. Never use em dashes
-  - "theory_questions": a list of 1-2 objects, each with:
-    - "question": an open-ended question requiring a short written answer
-    - "reference_answer": a model answer used later to grade student responses
-"""
+def _sanitize_title(title: str) -> str:
+    """Titles come from YouTube, so collapse all whitespace to keep them to a
+    single line. That alone stops a crafted title adding prompt structure."""
+    return " ".join(title.split())[:_MAX_TITLE_CHARS]
+
+
+_FEEDBACK_TEMPLATE = load("course_feedback")
 
 
 def thumbnail_url(video_id: str) -> str:
     return f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
 
 
-def generate(video_id: str, segments: list[TranscriptSegment], api_key: str, model: str | None = None, video_title: str = "") -> CourseResponse:
+def generate(video_id: str, segments: list[TranscriptSegment], api_key: str, model: str | None = None, video_title: str = "", feedback: str = "") -> CourseResponse:
     logger.info("[course]: generating course for video %s (%d segments)", video_id, len(segments))
     if segments:
         logger.info(
@@ -91,7 +73,6 @@ def generate(video_id: str, segments: list[TranscriptSegment], api_key: str, mod
     min_sections = max(3, target - 1)
     max_sections = min(16, target + 2)
 
-    # Duration guidance for even distribution
     approx_seconds = total_seconds / target
     approx_minutes = approx_seconds / 60
     min_section_seconds = approx_seconds * 0.4   # allow down to 40% of average
@@ -107,7 +88,16 @@ def generate(video_id: str, segments: list[TranscriptSegment], api_key: str, mod
         min_sections,
         max_sections,
     )
+    # Both are substituted values, so any braces inside them are never re-parsed.
+    clean_title = _sanitize_title(video_title)
+    title_block = f"\nVideo title: {clean_title}\n" if clean_title else ""
+    clean_feedback = _sanitize_feedback(feedback)
+    feedback_block = _FEEDBACK_TEMPLATE.format(feedback=clean_feedback) if clean_feedback else ""
+    if feedback_block:
+        logger.info("[course]: regenerating with learner feedback (%d chars)", len(clean_feedback))
     prompt = _PROMPT.format(
+        title_block=title_block,
+        feedback_block=feedback_block,
         formatted=formatted,
         total_seconds=total_seconds,
         total_minutes=total_minutes,

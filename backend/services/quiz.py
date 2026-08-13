@@ -6,6 +6,7 @@ import litellm
 from config import settings
 from schemas.course import CourseResponse
 from schemas.quiz import MCQAnswer, QuestionResult, QuizResultResponse, TheoryAnswer, TheoryScoreBreakdown
+from services.prompts import load
 
 logger = logging.getLogger(__name__)
 
@@ -20,25 +21,7 @@ _DIMENSIONS = [
 
 _DIMENSIONS_TEXT = "\n".join(f"- {name}: {description}" for name, description in _DIMENSIONS)
 
-_THEORY_GRADE_PROMPT = """You are grading a student's answer to an open-ended question.
-
-Question: {question}
-
-Reference answer: {reference_answer}
-
-Student's answer: {student_answer}
-
-Score the student's answer on three dimensions, each from 0 to 5:
-{dimensions}
-
-Return only a JSON object with exactly these fields:
-- "accuracy": integer 0-5
-- "completeness": integer 0-5
-- "relevance": integer 0-5
-- "feedback": one or two sentences of specific, constructive feedback for the student, \
-referencing what was correct or missing relative to the reference answer. \
-Never use em dashes; use commas, periods, or semicolons instead
-"""
+_THEORY_GRADE_PROMPT = load("quiz_theory_grade")
 
 
 def _grade_theory(
@@ -72,23 +55,7 @@ def _grade_theory(
     return TheoryScoreBreakdown(**data)
 
 
-_PROSE_ANALYSIS_PROMPT = """You are a thoughtful tutor reviewing a student's quiz performance on a course.
-
-Course topic context (section titles):
-{section_titles}
-
-Quiz results summary:
-{results_summary}
-
-Questions attempted: {answered_count} of {total_count} total.
-
-Write 2-3 sentences of personalised feedback addressed directly to the student ("you").
-Focus on which CONCEPTS or TOPICS they engaged with, and which specific areas they should revisit — using the actual subject matter from the section titles, not just numbers.
-Be warm but honest. If most questions were skipped or unanswered, acknowledge that honestly and encourage them to try more questions before drawing conclusions.
-Only use positive praise like "strong understanding" or "great grasp" when the results genuinely show it. If the attempt was incomplete or mostly incorrect, be supportive but truthful.
-Do not mention scores or percentages.
-Never use em dashes; use commas, periods, or semicolons instead.
-Return only the plain prose text, no JSON, no quotes, no labels."""
+_PROSE_ANALYSIS_PROMPT = load("quiz_prose_analysis")
 
 
 def _generate_prose_analysis(

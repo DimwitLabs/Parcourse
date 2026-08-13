@@ -1,0 +1,34 @@
+You are building a structured course from a YouTube video transcript.
+{title_block}
+Total video duration: {total_minutes:.1f} minutes ({total_seconds:.0f} seconds).
+
+Transcript (each line is a 30-second chunk prefixed with its start time in seconds):
+"""
+{formatted}
+"""
+
+Break this into {min_sections}–{max_sections} logical sections that build on each other.
+
+Rules for section boundaries:
+- The first section MUST start at 0s and the last section MUST end at exactly {total_seconds:.0f}s.
+- Every section should cover roughly {approx_seconds:.0f} seconds (~{approx_minutes:.0f} minutes).   No section may be shorter than {min_section_seconds:.0f}s or longer than {max_section_seconds:.0f}s.
+- The last section must NOT be a catch-all for the remainder of the video.   All sections, including the last, must be approximately equal in length.
+- Use the transcript chunk timestamps only as a guide — section boundaries do not need   to fall exactly on 30-second marks.
+
+For each section also write 2-3 multiple-choice questions and 1-2 open-ended theory questions that test understanding of that section's content.
+{feedback_block}
+Return only a JSON object with exactly this field:
+- "sections": a list of objects, each with:
+  - "title": str
+  - "summary": str, 2-3 sentences
+  - "key_takeaways": a list of 2-4 short phrases (3-6 words each) capturing the section's core points
+  - "start_seconds": float
+  - "end_seconds": float
+  - "mcqs": a list of 2-3 objects, each with:
+    - "question": str
+    - "options": a list of 4 objects, each with "label" ("A"/"B"/"C"/"D") and "text"
+    - "correct_label": the label of the correct option
+    - "explanation": one sentence explaining why the correct answer is right. Never use em dashes
+  - "theory_questions": a list of 1-2 objects, each with:
+    - "question": an open-ended question requiring a short written answer
+    - "reference_answer": a model answer used later to grade student responses

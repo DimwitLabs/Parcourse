@@ -18,41 +18,9 @@ from models.knowledge_graph import (
 )
 from schemas.course import CourseResponse
 from schemas.knowledge_graph import KnowledgeExtraction
+from services.prompts import load
 
-_EXTRACTION_PROMPT = """You are extracting a knowledge graph from a course generated from a \
-YouTube video.
-
-Course sections:
-{sections_summary}
-
-Existing topics and skills already in the knowledge graph (reuse these exact labels if this \
-course covers the same thing — do not create a near-duplicate with slightly different wording):
-{existing_labels}
-
-Extract the fields, topics, and skills this course teaches, at three levels:
-- "field": the broad conceptual domain (e.g., "Object-Oriented Programming", \
-"Machine Learning", "History", "Culinary Arts"). Always use a conceptual domain — never \
-a language, tool, or technology name at this level.
-- "topic": a specific concept within the field (e.g., "Inheritance", "Control Flow", \
-"The French Revolution"). Topics are language- and tool-agnostic — never include a \
-language or framework name in a topic label.
-- "skill": a single learnable concept at the finest grain. Do not go smaller than a \
-distinct concept. If the course teaches the skill in the context of a specific language, \
-framework, or tool, prefix the label with that context followed by a colon \
-(e.g., "Python: super() and MRO", "Java: abstract classes", "React: useEffect hook", \
-"Photoshop: layer masks"). For skills that are fully universal and transfer across any \
-context, keep the label generic (e.g., "Method Overriding", "Backpropagation").
-
-Return only a JSON object with exactly these fields:
-- "nodes": a list of objects, each with "tier" ("field"/"topic"/"skill"), "label", \
-"description" (one sentence)
-- "edges": a list of objects, each with "source_label", "target_label", "edge_type" \
-("belongs_to"/"related_to"/"prerequisite_of")
-
-Rules:
-- Prefer reusing an existing label over creating a new one if the concept is the same.
-- Every skill must have a "belongs_to" edge to a topic, and every topic to a field.
-"""
+_EXTRACTION_PROMPT = load("knowledge_graph_extraction")
 
 _EXPOSURE_MASTERY = 0.2
 
@@ -121,7 +89,6 @@ def extract_and_merge(
     for n in extraction.nodes:
         label_to_node[n.label] = _get_or_create_node(session, n.tier, n.label, n.description)
 
-    # Resolve edge endpoints that reference existing nodes not in this extraction
     for e in extraction.edges:
         for lbl in (e.source_label, e.target_label):
             if lbl not in label_to_node:
