@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import CanvasBackground from "../components/CanvasBackground";
 import { errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
 
@@ -24,28 +25,49 @@ export default function LoginScreen() {
   }
 
   return (
-    <div className="auth-page">
-      <form className="card auth-card" onSubmit={submit}>
-        <h1 className="auth-title">Welcome back</h1>
-        <p className="auth-subtitle">Log in to continue your courses.</p>
-        <input
-          className="text-input boxed"
-          placeholder="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          className="text-input boxed"
-          placeholder="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button className="button primary" type="submit" disabled={busy}>
-          {busy ? "Logging in…" : "Log in"}
-        </button>
-        {error && <p className="error-message">{error}</p>}
-      </form>
+    <div className="login-page">
+      <CanvasBackground />
+
+      <div className="login-brand">
+        <img src="/parcourse.svg" height="44" alt="" aria-hidden="true" />
+        <span>Parcourse</span>
+      </div>
+
+      <div className="hero" style={{ padding: "0", marginBottom: "0" }}>
+        <h1 className="hero-title">Welcome <span className="accent">back.</span></h1>
+        <p className="hero-subtitle">
+          Your courses are waiting. All learning begins with a simple question.
+        </p>
+
+        <form className="login-form" onSubmit={submit}>
+          <div className="login-input-pill">
+            <input
+              className="text-input"
+              placeholder="email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={busy}
+            />
+          </div>
+          <div className="login-input-pill">
+            <input
+              className="text-input"
+              placeholder="password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={busy}
+            />
+          </div>
+          <button className="button primary login-submit" type="submit" disabled={busy || !email || !password}>
+            {busy ? "Logging in…" : "Log in"}
+          </button>
+          {error && <p className="error-message" style={{ margin: "0.25rem 0 0", textAlign: "center" }}>{error}</p>}
+        </form>
+      </div>
     </div>
   );
 }
