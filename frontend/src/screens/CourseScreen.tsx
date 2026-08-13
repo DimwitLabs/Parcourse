@@ -140,7 +140,7 @@ export default function CourseScreen() {
           })),
         }),
       });
-      navigate(`/courses/${course.id}/results`, { state: { result, course } });
+      navigate(`/course/${course.id}/results`, { state: { result, course } });
     } catch (err) {
       setSubmitError(errMsg(err));
     } finally {
@@ -213,7 +213,7 @@ export default function CourseScreen() {
         body: JSON.stringify({ video_id: course.video_id, segments }),
       });
       toast("Course regenerated!", "success");
-      navigate(`/courses/${courseData.id}`);
+      navigate(`/course/${courseData.id}`);
     } catch (err) {
       toast(errMsg(err), "error");
     } finally {

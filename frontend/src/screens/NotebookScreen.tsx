@@ -82,7 +82,7 @@ export default function NotebookScreen() {
       });
 
       setModal(null);
-      navigate(`/courses/${courseData.id}`);
+      navigate(`/course/${courseData.id}`);
     } catch (err) {
       setError(errMsg(err));
       setBusy(false);
@@ -127,7 +127,7 @@ export default function NotebookScreen() {
           const isToggling = togglingDone.has(c.id);
           return (
           <div key={c.id} className={`notebook-card card${isComplete ? " completed" : ""}`}>
-            <Link to={`/courses/${c.id}`} className="notebook-card-link">
+            <Link to={`/course/${c.id}`} className="notebook-card-link">
               <div className="notebook-thumb-wrap">
                 <img className="notebook-thumb" src={c.thumbnail_url} alt="" loading="lazy" />
               </div>
