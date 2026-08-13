@@ -11,7 +11,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../lib/auth";
 
-type Tier = "domain" | "field" | "topic" | "skill";
+type Tier = "you" | "domain" | "field" | "topic" | "skill";
 type CourseRef = { id: string; title: string };
 type Node = {
   id: string;
@@ -27,10 +27,12 @@ type Graph = { nodes: Node[]; edges: Edge[] };
 
 type Granularity = "field" | "topic" | "skill";
 
-const TIER_ORDER: Tier[] = ["domain", "field", "topic", "skill"];
-const NODE_RADIUS: Record<Tier, number> = { domain: 56, field: 48, topic: 34, skill: 24 };
+const YOU_ID = "__you__";
+const TIER_ORDER: Tier[] = ["you", "domain", "field", "topic", "skill"];
+const NODE_RADIUS: Record<Tier, number> = { you: 52, domain: 56, field: 44, topic: 30, skill: 20 };
 
 function tierIncluded(tier: Tier, granularity: Granularity): boolean {
+  if (tier === "you" || tier === "domain") return true;
   const cutoff = TIER_ORDER.indexOf(granularity as Tier);
   return TIER_ORDER.indexOf(tier) <= cutoff;
 }
@@ -41,8 +43,18 @@ function masteryClass(timesEncountered: number): "mastered" | "learning" | "new"
   return "new";
 }
 
-type SimNode = Node & { x: number; y: number; vx: number; vy: number; r: number };
+type SimNode = Node & { x: number; y: number; vx: number; vy: number; r: number; fx?: number | null; fy?: number | null };
 type SimEdge = { source: SimNode; target: SimNode; edge_type: string };
+
+const YOU_NODE: Node = {
+  id: YOU_ID,
+  tier: "you",
+  label: "You",
+  description: "Your learning journey — every course, concept, and connection starts here.",
+  mastery_score: 1,
+  times_encountered: 0,
+  courses: [],
+};
 
 function runSimulation(
   nodes: Node[],
@@ -50,15 +62,19 @@ function runSimulation(
   width: number,
   height: number
 ): { nodes: SimNode[]; edges: SimEdge[] } {
+  const youSimNode: SimNode = { ...YOU_NODE, x: 0, y: 0, vx: 0, vy: 0, r: NODE_RADIUS.you, fx: 0, fy: 0 };
+
   const byId = new Map(nodes.map((n) => [n.id, n]));
-  const simNodes: SimNode[] = nodes.map((n) => ({
+  const regularSimNodes: SimNode[] = nodes.map((n) => ({
     ...n,
-    x: (Math.random() - 0.5) * width * 0.6,
-    y: (Math.random() - 0.5) * height * 0.6,
+    x: (Math.random() - 0.5) * width * 0.5,
+    y: (Math.random() - 0.5) * height * 0.5,
     vx: 0,
     vy: 0,
     r: NODE_RADIUS[n.tier],
   }));
+
+  const simNodes: SimNode[] = [youSimNode, ...regularSimNodes];
   const simNodeById = new Map(simNodes.map((n) => [n.id, n]));
 
   const simEdges: SimEdge[] = edges
@@ -69,7 +85,14 @@ function runSimulation(
       edge_type: e.edge_type,
     }));
 
-  const tierCharge: Record<Tier, number> = { domain: -800, field: -600, topic: -400, skill: -200 };
+  // Connect all field nodes to "You"
+  for (const n of regularSimNodes) {
+    if (n.tier === "field") {
+      simEdges.push({ source: youSimNode, target: n, edge_type: "belongs_to" });
+    }
+  }
+
+  const tierCharge: Record<Tier, number> = { you: -1200, domain: -800, field: -600, topic: -350, skill: -180 };
 
   const sim = forceSimulation<SimNode>(simNodes)
     .force(
@@ -79,16 +102,16 @@ function runSimulation(
         .distance((e) => {
           const s = e.source as SimNode;
           const t = e.target as SimNode;
-          return s.r + t.r + 60;
+          const base = s.r + t.r + 55;
+          return s.tier === "you" || t.tier === "you" ? base + 30 : base;
         })
-        .strength(0.4)
+        .strength(0.45)
     )
     .force("charge", forceManyBody<SimNode>().strength((n) => tierCharge[n.tier]))
-    .force("center", forceCenter(0, 0).strength(0.05))
-    .force("collide", forceCollide<SimNode>((n) => n.r + 12).strength(0.8))
+    .force("collide", forceCollide<SimNode>((n) => n.r + 14).strength(0.85))
     .stop();
 
-  for (let i = 0; i < 300; i++) sim.tick();
+  for (let i = 0; i < 320; i++) sim.tick();
 
   return { nodes: simNodes, edges: simEdges };
 }
@@ -150,7 +173,7 @@ export default function KnowledgeGraphScreen() {
   const [granularity, setGranularity] = useState<Granularity>("topic");
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [hover, setHover] = useState<{ node: Node; x: number; y: number } | null>(null);
+  const [tooltip, setTooltip] = useState<{ node: Node; x: number; y: number; pinned: boolean } | null>(null);
   const [sim, setSim] = useState<{ nodes: SimNode[]; edges: SimEdge[] } | null>(null);
 
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -222,8 +245,9 @@ export default function KnowledgeGraphScreen() {
     };
   }, [sim]);
 
-  function onMouseDown(e: React.MouseEvent) {
+  function onCanvasMouseDown(e: React.MouseEvent) {
     if ((e.target as Element).closest(".graph-node-group")) return;
+    setTooltip((t) => (t?.pinned ? null : t));
     isPanning.current = true;
     panStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
   }
@@ -235,6 +259,16 @@ export default function KnowledgeGraphScreen() {
     isPanning.current = false;
   }
 
+  function nodeCounts(): Record<Granularity, number> {
+    if (!graph) return { field: 0, topic: 0, skill: 0 };
+    return {
+      field: graph.nodes.filter((n) => n.tier === "field").length,
+      topic: graph.nodes.filter((n) => n.tier === "field" || n.tier === "topic").length,
+      skill: graph.nodes.filter((n) => n.tier !== "domain" && n.tier !== "you").length,
+    };
+  }
+  const counts = nodeCounts();
+
   if (error) return <p className="error-message" style={{ padding: "2rem" }}>{error}</p>;
 
   const GRANULARITY_PILLS: { value: Granularity; label: string }[] = [
@@ -242,6 +276,7 @@ export default function KnowledgeGraphScreen() {
     { value: "topic", label: "Topics" },
     { value: "skill", label: "Skills" },
   ];
+
 
   return (
     <div className="graph-view">
@@ -270,14 +305,17 @@ export default function KnowledgeGraphScreen() {
         <>
           <div className="graph-toolbar">
             <div className="graph-granularity-pills">
-              {GRANULARITY_PILLS.map(({ value, label }) => (
-                <button
-                  key={value}
-                  className={`graph-pill${granularity === value ? " active" : ""}`}
-                  onClick={() => setGranularity(value)}
-                >
-                  {label}
-                </button>
+              {GRANULARITY_PILLS.map(({ value, label }, i) => (
+                <span key={value} className="graph-pill-wrap">
+                  {i > 0 && <span className="graph-pill-arrow">›</span>}
+                  <button
+                    className={`graph-pill${granularity === value ? " active" : ""}`}
+                    onClick={() => setGranularity(value)}
+                  >
+                    {label}
+                    <span className="graph-pill-count">{counts[value]}</span>
+                  </button>
+                </span>
               ))}
             </div>
             <div className="graph-toolbar-right">
@@ -296,7 +334,7 @@ export default function KnowledgeGraphScreen() {
           <div
             className="graph-canvas-wrap"
             ref={wrapRef}
-            onMouseDown={onMouseDown}
+            onMouseDown={onCanvasMouseDown}
             onMouseMove={onMouseMove}
             onMouseUp={onMouseUp}
             onMouseLeave={onMouseUp}
@@ -333,21 +371,31 @@ export default function KnowledgeGraphScreen() {
               })}
 
               {sim.nodes.map((n) => {
-                const mc = masteryClass(n.times_encountered);
+                const mc = n.tier === "you" ? "mastered" : masteryClass(n.times_encountered);
                 const isField = n.tier === "field";
+                const isYou = n.tier === "you";
+                const isPinned = tooltip?.pinned && tooltip.node.id === n.id;
                 return (
                   <g
                     key={n.id}
                     transform={`translate(${n.x}, ${n.y})`}
-                    className={`graph-node-group ${mc} tier-${n.tier}`}
-                    onMouseEnter={(e) => setHover({ node: n, x: e.clientX, y: e.clientY })}
-                    onMouseMove={(e) => setHover({ node: n, x: e.clientX, y: e.clientY })}
-                    onMouseLeave={() => setHover(null)}
+                    className={`graph-node-group ${mc} tier-${n.tier}${isPinned ? " pinned" : ""}`}
+                    onMouseEnter={(e) => { if (!tooltip?.pinned) setTooltip({ node: n, x: e.clientX, y: e.clientY, pinned: false }); }}
+                    onMouseMove={(e) => { if (!tooltip?.pinned) setTooltip({ node: n, x: e.clientX, y: e.clientY, pinned: false }); }}
+                    onMouseLeave={() => { if (!tooltip?.pinned) setTooltip(null); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setTooltip((t) =>
+                        t?.pinned && t.node.id === n.id
+                          ? null
+                          : { node: n, x: e.clientX, y: e.clientY, pinned: true }
+                      );
+                    }}
                   >
                     <circle
                       r={n.r}
                       className="graph-node-circle"
-                      filter={isField ? "url(#glow-field)" : mc === "mastered" ? "url(#glow-mastered)" : undefined}
+                      filter={isYou ? "url(#glow-field)" : isField ? "url(#glow-field)" : mc === "mastered" ? "url(#glow-mastered)" : undefined}
                     />
                     <foreignObject x={-n.r} y={-n.r} width={n.r * 2} height={n.r * 2}>
                       <div className={`graph-node-label tier-${n.tier}`}>{n.label}</div>
@@ -368,23 +416,26 @@ export default function KnowledgeGraphScreen() {
         </>
       )}
 
-      {hover && (
+      {tooltip && (
         <div
-          className="graph-tooltip"
-          style={{ left: hover.x + 20, top: hover.y + 16 }}
-          onMouseEnter={() => setHover(null)}
+          className={`graph-tooltip${tooltip.pinned ? " pinned" : ""}`}
+          style={{ left: tooltip.x + 20, top: tooltip.y + 16 }}
+          onMouseEnter={() => { if (!tooltip.pinned) setTooltip(null); }}
         >
-          <div className="graph-tooltip-header">
-            <strong className="graph-tooltip-label">{hover.node.label}</strong>
-            <span className="graph-tooltip-tier">{hover.node.tier}</span>
-          </div>
-          {hover.node.description && (
-            <p className="graph-tooltip-desc">{hover.node.description}</p>
+          {tooltip.pinned && (
+            <button className="graph-tooltip-close" onClick={() => setTooltip(null)} aria-label="Close">×</button>
           )}
-          {hover.node.courses.length > 0 && (
+          <div className="graph-tooltip-header">
+            <strong className="graph-tooltip-label">{tooltip.node.label}</strong>
+            {tooltip.node.tier !== "you" && <span className="graph-tooltip-tier">{tooltip.node.tier}</span>}
+          </div>
+          {tooltip.node.description && (
+            <p className="graph-tooltip-desc">{tooltip.node.description}</p>
+          )}
+          {tooltip.node.courses.length > 0 && (
             <div className="graph-tooltip-courses">
               <span className="graph-tooltip-courses-label">Seen in</span>
-              {hover.node.courses.map((c) => (
+              {tooltip.node.courses.map((c) => (
                 <Link key={c.id} to={`/course/${c.id}`} className="graph-tooltip-course-link">
                   {c.title}
                 </Link>

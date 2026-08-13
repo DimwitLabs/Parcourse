@@ -1320,10 +1320,25 @@ body {
 
 .graph-granularity-pills {
   display: flex;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 0;
   background: var(--color-surface-low);
   border-radius: var(--radius-full);
   padding: 0.25rem;
+}
+
+.graph-pill-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.graph-pill-arrow {
+  color: var(--color-ink-faint);
+  font-size: 0.8rem;
+  line-height: 1;
+  padding: 0 0.1rem;
+  user-select: none;
 }
 
 .graph-pill {
@@ -1334,10 +1349,13 @@ body {
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--color-ink-soft);
-  padding: 0.35rem 1rem;
+  padding: 0.35rem 0.85rem;
   border-radius: var(--radius-full);
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .graph-pill:hover {
@@ -1348,6 +1366,12 @@ body {
   background: var(--color-surface-lowest);
   color: var(--color-primary);
   box-shadow: 0 1px 4px rgba(27, 28, 26, 0.1);
+}
+
+.graph-pill-count {
+  font-size: 0.72rem;
+  font-weight: 500;
+  opacity: 0.6;
 }
 
 .graph-zoom-controls,
@@ -1421,6 +1445,24 @@ body {
   fill: var(--color-secondary-container);
 }
 
+.graph-node-group.tier-you .graph-node-circle {
+  fill: var(--color-primary);
+  stroke: white;
+  stroke-width: 2.5;
+}
+
+.graph-node-group.tier-you .graph-node-label {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.graph-node-group.pinned .graph-node-circle {
+  stroke: var(--color-primary);
+  stroke-width: 2.5;
+  stroke-dasharray: 4 3;
+}
+
 .graph-node-group.tier-field.mastered .graph-node-circle {
   fill: var(--color-primary);
 }
@@ -1480,6 +1522,31 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.graph-tooltip.pinned {
+  pointer-events: auto;
+  border: 1.5px solid var(--color-primary);
+}
+
+.graph-tooltip-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.6rem;
+  appearance: none;
+  border: none;
+  background: none;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  padding: 0.1rem 0.3rem;
+  border-radius: var(--radius-sm);
+}
+
+.graph-tooltip-close:hover {
+  color: var(--color-ink);
+  background: var(--color-surface-low);
 }
 
 .graph-tooltip-header {
