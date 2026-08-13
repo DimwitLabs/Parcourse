@@ -450,7 +450,13 @@ export default function KnowledgeGraphScreen() {
             <div className="graph-granularity-pills">
               {GRANULARITY_PILLS.map(({ value, label }, i) => (
                 <span key={value} className="graph-pill-wrap">
-                  {i > 0 && <span className="graph-pill-arrow">›</span>}
+                  {i > 0 && (
+                    <span className="graph-pill-arrow" aria-hidden="true">
+                      <svg width="6" height="9" viewBox="0 0 6 9" fill="none">
+                        <path d="M1 1.5l3.5 3L1 7.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </span>
+                  )}
                   <button
                     className={`graph-pill${granularity === value ? " active" : ""}`}
                     onClick={() => setGranularity(value)}

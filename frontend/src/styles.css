@@ -1371,8 +1371,6 @@ body {
   border-radius: 50%;
   background: var(--color-primary);
   color: white;
-  font-size: 0.7rem;
-  font-weight: 700;
   margin: 0 0.2rem;
   user-select: none;
   flex-shrink: 0;
