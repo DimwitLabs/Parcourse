@@ -501,6 +501,23 @@ body {
   margin-top: 0.25rem;
 }
 
+.link-button {
+  appearance: none;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.link-button:hover {
+  color: var(--color-ink);
+}
+
 .setup-radio-pill {
   display: flex;
   align-items: center;

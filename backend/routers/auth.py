@@ -10,6 +10,7 @@ from dependencies import get_current_user
 from models.instance_config import INSTANCE_ID, InstanceConfig
 from models.user import User, UserRole
 from schemas.auth import (
+    ChangePasswordRequest,
     ConfigResponse,
     LoginRequest,
     SetupRequest,
@@ -62,6 +63,20 @@ def login(body: LoginRequest, session: Session = Depends(get_session)) -> TokenR
 @router.get("/me", response_model=UserResponse)
 def me(user: User = Depends(get_current_user)) -> UserResponse:
     return UserResponse(**user.model_dump())
+
+
+@router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT)
+def change_password(
+    body: ChangePasswordRequest,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> None:
+    logger.info("[auth]: password change requested for user_id=%s", user.id)
+    user.hashed_password = hash_password(body.password)
+    user.must_change_password = False
+    session.add(user)
+    session.commit()
+    logger.info("[auth]: password changed for user_id=%s", user.id)
 
 
 @router.get("/config", response_model=ConfigResponse)

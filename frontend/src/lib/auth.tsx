@@ -4,7 +4,7 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localho
 
 const TOKEN_KEY = "parcourse_token";
 
-export type UserInfo = { id: string; email: string; role: "admin" | "student"; first_name?: string; last_name?: string };
+export type UserInfo = { id: string; email: string; role: "admin" | "student"; first_name?: string; last_name?: string; must_change_password?: boolean };
 
 type AuthState = {
   status: "loading" | "signed-out" | "signed-in";
@@ -13,6 +13,7 @@ type AuthState = {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   setSession: (token: string, user: UserInfo) => void;
+  setUser: (user: UserInfo) => void;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -74,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ status, token, user, login, logout, setSession }}>
+    <AuthContext.Provider value={{ status, token, user, login, logout, setSession, setUser }}>
       {children}
     </AuthContext.Provider>
   );

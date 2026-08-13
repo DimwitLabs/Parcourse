@@ -65,6 +65,11 @@ class UserResponse(BaseModel):
     created_at: datetime
     first_name: str | None = None
     last_name: str | None = None
+    must_change_password: bool = False
+
+
+class ChangePasswordRequest(BaseModel):
+    password: PasswordStr
 
 
 class UserWithUsage(BaseModel):
