@@ -8,3 +8,4 @@ class GuardrailRequest(BaseModel):
 class GuardrailResult(BaseModel):
     is_learnable: bool
     reason: str
+    fun_messages: list[str] = []

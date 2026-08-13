@@ -9,7 +9,7 @@ import type { CourseEntry, Segment } from "../lib/types";
 type Step = "idle" | "transcript" | "guardrail" | "guardrail-blocked" | "generating";
 type PendingTranscript = { videoId: string; segments: Segment[] };
 
-const FUN_MESSAGES = [
+const FALLBACK_MESSAGES = [
   "Warming up the neurons…",
   "Reading between the frames…",
   "Brewing a fresh batch of knowledge…",
@@ -28,6 +28,7 @@ export default function HomeScreen() {
   const [videoUrl, setVideoUrl] = useState("");
   const [step, setStep] = useState<Step>("idle");
   const [funMsg, setFunMsg] = useState("");
+  const [funMessages, setFunMessages] = useState<string[]>(FALLBACK_MESSAGES);
   const [guardrailReason, setGuardrailReason] = useState<string | null>(null);
   const [pending, setPending] = useState<PendingTranscript | null>(null);
   const funInterval = useRef<ReturnType<typeof setInterval>>();
@@ -42,17 +43,17 @@ export default function HomeScreen() {
   useEffect(() => {
     if (step === "generating") {
       let idx = 0;
-      setFunMsg(FUN_MESSAGES[0]);
+      setFunMsg(funMessages[0]);
       funInterval.current = setInterval(() => {
-        idx = (idx + 1) % FUN_MESSAGES.length;
-        setFunMsg(FUN_MESSAGES[idx]);
+        idx = (idx + 1) % funMessages.length;
+        setFunMsg(funMessages[idx]);
       }, 4000);
     } else {
       clearInterval(funInterval.current);
       setFunMsg("");
     }
     return () => clearInterval(funInterval.current);
-  }, [step]);
+  }, [step, funMessages]);
 
   async function generate(videoId: string, segments: Segment[]) {
     setStep("generating");
@@ -65,6 +66,7 @@ export default function HomeScreen() {
   }
 
   async function createCourse() {
+    setFunMessages(FALLBACK_MESSAGES);
     try {
       setStep("transcript");
       const transcriptData = await apiFetch("/transcript/extract", token, {
@@ -81,6 +83,10 @@ export default function HomeScreen() {
         method: "POST",
         body: JSON.stringify({ transcript: transcriptText }),
       });
+
+      if (guardrailData.fun_messages?.length >= 3) {
+        setFunMessages(guardrailData.fun_messages);
+      }
 
       if (!guardrailData.is_learnable) {
         setGuardrailReason(guardrailData.reason ?? "This video isn't suitable for a course.");

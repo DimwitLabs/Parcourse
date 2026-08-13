@@ -38,6 +38,13 @@ Transcript excerpt:
 Return only a JSON object with exactly these fields:
 - "is_learnable": boolean
 - "reason": one sentence explaining the decision, starting with what type of content this is
+- "fun_messages": a list of exactly 6 short loading messages (4-7 words each) to show \
+  while the course is being generated. Make them playful and specific to this video's \
+  topic — use puns, domain jargon, or thematic wordplay where possible. \
+  Each message ends with an ellipsis. \
+  Examples for a war documentary: ["Deploying curriculum forces…", "Mapping the knowledge frontlines…"]. \
+  Examples for a cooking video: ["Preheating the lesson oven…", "Simmering down the key concepts…"]. \
+  Always return exactly 6, even if is_learnable is false.
 """
 
 
