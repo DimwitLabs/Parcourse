@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
+import Avatar from "./Avatar";
 import { useAuth } from "../lib/auth";
-import { gravatarUrl, userInitials } from "../lib/gravatar";
 
 const NAV_LINKS = [
   { to: "/", end: true, label: "Home", desc: "Your dashboard and recent courses" },
@@ -15,8 +15,6 @@ export default function AppShell() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [avatarErr, setAvatarErr] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -26,14 +24,6 @@ export default function AppShell() {
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);
   }, []);
-
-  useEffect(() => {
-    if (!user?.email) return;
-    setAvatarErr(false);
-    gravatarUrl(user.email).then(setAvatarUrl);
-  }, [user?.email]);
-
-  const initials = userInitials(user);
 
   return (
     <>
@@ -61,11 +51,7 @@ export default function AppShell() {
             </svg>
           </button>
           <button className="avatar-button" onClick={() => setMenuOpen((v) => !v)}>
-            {avatarUrl && !avatarErr ? (
-              <img className="avatar" src={avatarUrl} alt={initials} onError={() => setAvatarErr(true)} />
-            ) : (
-              <span className="avatar">{initials}</span>
-            )}
+            <Avatar user={user} className="avatar" />
           </button>
           {menuOpen && (
             <div className="user-dropdown">

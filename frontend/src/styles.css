@@ -169,6 +169,7 @@ body {
   font-size: 0.8rem;
   font-weight: 800;
   flex-shrink: 0;
+  object-fit: cover;
   transition: background 0.15s ease;
 }
 

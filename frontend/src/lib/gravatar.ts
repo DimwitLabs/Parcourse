@@ -1,5 +1,3 @@
-import type { UserInfo } from "./auth";
-
 /** Gravatar URL for an email. Uses d=404 so a missing avatar fails and callers
  *  can fall back to initials. */
 export async function gravatarUrl(email: string, size = 72): Promise<string> {
@@ -9,7 +7,9 @@ export async function gravatarUrl(email: string, size = 72): Promise<string> {
   return `https://www.gravatar.com/avatar/${hash}?d=404&s=${size}`;
 }
 
-export function userInitials(user?: UserInfo | null): string {
+type NamedUser = { email: string; first_name?: string | null; last_name?: string | null };
+
+export function userInitials(user?: NamedUser | null): string {
   if (!user) return "";
   if (user.first_name) return (user.first_name[0] + (user.last_name?.[0] ?? "")).toUpperCase();
   return user.email.slice(0, 2).toUpperCase();
