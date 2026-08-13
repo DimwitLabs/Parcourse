@@ -95,8 +95,7 @@ export default function SetupScreen() {
       <CanvasBackground />
 
       <div className="login-brand">
-        <img src="/parcourse.svg" height="44" alt="" aria-hidden="true" />
-        <span>Parcourse</span>
+        <img src="/parcourse-wordmark.svg" alt="Parcourse" height="44" />
       </div>
 
       {stage === "mode" && (
