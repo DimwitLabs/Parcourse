@@ -14,6 +14,7 @@ export default function NotebookScreen() {
   const [error, setError] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalAction | null>(null);
   const [busy, setBusy] = useState(false);
+  const [cleanupGraph, setCleanupGraph] = useState(false);
   const [togglingDone, setTogglingDone] = useState<Set<string>>(new Set());
 
   function refresh() {
@@ -52,9 +53,11 @@ export default function NotebookScreen() {
   async function deleteCourse(id: string) {
     setBusy(true);
     try {
-      await apiFetch(`/courses/${id}`, token, { method: "DELETE" });
+      const qs = cleanupGraph ? "?cleanup_graph=true" : "";
+      await apiFetch(`/courses/${id}${qs}`, token, { method: "DELETE" });
       setCourses((prev) => prev?.filter((c) => c.id !== id) ?? null);
       setModal(null);
+      setCleanupGraph(false);
     } catch (err) {
       setError(errMsg(err));
     } finally {
@@ -180,12 +183,22 @@ export default function NotebookScreen() {
             <h2 style={{ margin: "0 0 0.5rem", fontSize: "1.25rem", fontWeight: 800 }}>
               {modal.type === "delete" ? "Delete course" : "Regenerate course"}
             </h2>
-            <p style={{ margin: "0 0 1.5rem", color: "var(--color-ink-soft)" }}>
+            <p style={{ margin: "0 0 1rem", color: "var(--color-ink-soft)" }}>
               {modal.type === "delete"
                 ? "This will permanently delete this course and all associated quiz data."
                 : "This will delete the current course and regenerate it from scratch using the same video."}
             </p>
-            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+            {modal.type === "delete" && (
+              <label className="modal-checkbox-row">
+                <input
+                  type="checkbox"
+                  checked={cleanupGraph}
+                  onChange={(e) => setCleanupGraph(e.target.checked)}
+                />
+                <span>Also remove knowledge graph entries from this course</span>
+              </label>
+            )}
+            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "1.5rem" }}>
               <button className="button secondary" onClick={() => setModal(null)} disabled={busy}>
                 Cancel
               </button>

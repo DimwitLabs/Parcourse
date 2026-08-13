@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 from database import get_session
 from dependencies import get_current_user
 from models.course_cache import CachedCourse
-from models.knowledge_graph import CourseKnowledgeNode
+from models.knowledge_graph import CourseKnowledgeNode, UserKnowledgeProgress
 from models.quiz_attempt import QuizAttempt
 from models.quiz_draft import QuizDraft
 from models.section_progress import SectionProgress
@@ -140,15 +140,36 @@ def get_course(
 @router.delete("/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_course(
     course_id: uuid.UUID,
+    cleanup_graph: bool = False,
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ) -> None:
-    logger.info("[course]: delete course_id=%s by user %s", course_id, user.id)
+    logger.info("[course]: delete course_id=%s by user %s, cleanup_graph=%s", course_id, user.id, cleanup_graph)
     cached = session.get(CachedCourse, course_id)
     if cached is None or cached.user_id != user.id:
         logger.warning("[course]: course not found for deletion course_id=%s", course_id)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
-    for link in session.exec(select(CourseKnowledgeNode).where(CourseKnowledgeNode.course_id == course_id)).all():
+
+    links = session.exec(select(CourseKnowledgeNode).where(CourseKnowledgeNode.course_id == course_id)).all()
+
+    if cleanup_graph:
+        for link in links:
+            progress = session.exec(
+                select(UserKnowledgeProgress).where(
+                    UserKnowledgeProgress.user_id == user.id,
+                    UserKnowledgeProgress.node_id == link.node_id,
+                )
+            ).first()
+            if progress is None:
+                continue
+            progress.times_encountered -= 1
+            if progress.times_encountered <= 0:
+                session.delete(progress)
+            else:
+                session.add(progress)
+        session.flush()
+
+    for link in links:
         session.delete(link)
     for attempt in session.exec(select(QuizAttempt).where(QuizAttempt.course_id == course_id)).all():
         session.delete(attempt)

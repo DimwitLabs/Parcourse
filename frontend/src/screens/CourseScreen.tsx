@@ -47,6 +47,7 @@ export default function CourseScreen() {
   const [showSkipModal, setShowSkipModal] = useState(false);
   const [courseAction, setCourseAction] = useState<"delete" | "regenerate" | null>(null);
   const [actionBusy, setActionBusy] = useState(false);
+  const [cleanupGraph, setCleanupGraph] = useState(false);
   const [doneSections, setDoneSections] = useState<Set<number>>(new Set());
   const [atBottom, setAtBottom] = useState(false);
   const quizBoxRef = useRef<HTMLDivElement>(null);
@@ -184,7 +185,8 @@ export default function CourseScreen() {
     if (!course) return;
     setActionBusy(true);
     try {
-      await apiFetch(`/courses/${course.id}`, token, { method: "DELETE" });
+      const qs = cleanupGraph ? "?cleanup_graph=true" : "";
+      await apiFetch(`/courses/${course.id}${qs}`, token, { method: "DELETE" });
       toast("Course deleted.", "info");
       navigate("/notebook");
     } catch (err) {
@@ -192,6 +194,7 @@ export default function CourseScreen() {
     } finally {
       setActionBusy(false);
       setCourseAction(null);
+      setCleanupGraph(false);
     }
   }
 
@@ -418,12 +421,22 @@ export default function CourseScreen() {
             <h2 style={{ margin: "0 0 0.5rem", fontSize: "1.25rem", fontWeight: 800 }}>
               {courseAction === "delete" ? "Delete course" : "Regenerate course"}
             </h2>
-            <p style={{ margin: "0 0 1.5rem", color: "var(--color-ink-soft)" }}>
+            <p style={{ margin: "0 0 1rem", color: "var(--color-ink-soft)" }}>
               {courseAction === "delete"
                 ? "This will permanently delete this course and all associated quiz data."
                 : "This will delete the current course and regenerate it from scratch using the same video."}
             </p>
-            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+            {courseAction === "delete" && (
+              <label className="modal-checkbox-row">
+                <input
+                  type="checkbox"
+                  checked={cleanupGraph}
+                  onChange={(e) => setCleanupGraph(e.target.checked)}
+                />
+                <span>Also remove knowledge graph entries from this course</span>
+              </label>
+            )}
+            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "1.5rem" }}>
               <button className="button secondary" onClick={() => setCourseAction(null)} disabled={actionBusy}>
                 Cancel
               </button>
