@@ -123,7 +123,7 @@ export default function HomeScreen() {
   }
 
   const busy = step !== "idle";
-  const isDone = (c: (typeof courses)[number]) =>
+  const isDone = (c: CourseEntry) =>
     c.has_passed_quiz || (c.completed_sections.length === c.sections.length && c.sections.length > 0);
   const recentCourses = courses?.filter((c) => !isDone(c)).slice(0, 3) ?? [];
   const totalSections = courses?.reduce((n, c) => n + c.sections.length, 0) ?? 0;
