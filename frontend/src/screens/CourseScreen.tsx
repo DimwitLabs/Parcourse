@@ -43,14 +43,15 @@ export default function CourseScreen() {
   const [theoryAnswers, setTheoryAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [quizBarSticky, setQuizBarSticky] = useState(false);
   const [showSkipModal, setShowSkipModal] = useState(false);
   const [courseAction, setCourseAction] = useState<"delete" | "regenerate" | null>(null);
   const [actionBusy, setActionBusy] = useState(false);
   const [cleanupGraph, setCleanupGraph] = useState(false);
   const [doneSections, setDoneSections] = useState<Set<number>>(new Set());
   const [atBottom, setAtBottom] = useState(false);
+  const [barVisible, setBarVisible] = useState(false);
   const quizBoxRef = useRef<HTMLDivElement>(null);
+  const submitBarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!courseId) return;
@@ -99,11 +100,11 @@ export default function CourseScreen() {
   }, [course]);
 
   useEffect(() => {
-    const el = quizBoxRef.current;
+    const el = submitBarRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      ([entry]) => setQuizBarSticky(!entry.isIntersecting),
-      { threshold: 0 },
+      ([entry]) => setBarVisible(entry.isIntersecting),
+      { threshold: 0.1 },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -265,9 +266,9 @@ export default function CourseScreen() {
             ))}
           </div>
 
-          <div className="quiz-sidebar-box" ref={quizBoxRef}>
-            <span className="quiz-sidebar-count">{answeredQuestions} / {totalQuestions} answered</span>
-            <button className="button primary" onClick={handleSubmitClick} disabled={submitting} style={{ width: "100%", justifyContent: "center" }}>
+          <div className={`quiz-sidebar-box${barVisible ? " fading" : ""}`} ref={quizBoxRef}>
+            <div className="quiz-sidebar-count">{answeredQuestions}/{totalQuestions} answered</div>
+            <button className="button primary" style={{ width: "100%" }} onClick={handleSubmitClick} disabled={submitting}>
               {submitting ? "Grading…" : "Submit Quiz"}
             </button>
           </div>
@@ -380,19 +381,16 @@ export default function CourseScreen() {
             );
           })}
 
+          <div className="submit-bar card" ref={submitBarRef}>
+            <span className="status-message">
+              {answeredQuestions} / {totalQuestions} answered
+            </span>
+            <button className="button primary" onClick={handleSubmitClick} disabled={submitting}>
+              {submitting ? "Grading…" : "Submit Quiz"}
+            </button>
+          </div>
         </div>
       </div>
-
-      {quizBarSticky && (
-        <div className={`submit-bar${atBottom ? " full-width" : ""}`}>
-          <span className="status-message">
-            {answeredQuestions} / {totalQuestions} answered
-          </span>
-          <button className="button primary" onClick={handleSubmitClick} disabled={submitting}>
-            {submitting ? "Grading…" : "Submit Quiz"}
-          </button>
-        </div>
-      )}
 
       {showSkipModal && (
         <div className="modal-overlay" onClick={() => setShowSkipModal(false)}>
