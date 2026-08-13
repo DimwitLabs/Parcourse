@@ -9,11 +9,20 @@ const NAV_LINKS = [
   { to: "/graph", end: false, label: "Knowledge Graph", desc: "See how concepts connect" },
 ];
 
+async function gravatarUrl(email: string): Promise<string> {
+  const clean = email.trim().toLowerCase();
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(clean));
+  const hash = Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return `https://www.gravatar.com/avatar/${hash}?d=404&s=72`;
+}
+
 export default function AppShell() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarErr, setAvatarErr] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -23,6 +32,12 @@ export default function AppShell() {
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);
   }, []);
+
+  useEffect(() => {
+    if (!user?.email) return;
+    setAvatarErr(false);
+    gravatarUrl(user.email).then(setAvatarUrl);
+  }, [user?.email]);
 
   const initials = user?.first_name
     ? (user.first_name[0] + (user.last_name?.[0] ?? "")).toUpperCase()
@@ -54,7 +69,11 @@ export default function AppShell() {
             </svg>
           </button>
           <button className="avatar-button" onClick={() => setMenuOpen((v) => !v)}>
-            <span className="avatar">{initials}</span>
+            {avatarUrl && !avatarErr ? (
+              <img className="avatar" src={avatarUrl} alt={initials} onError={() => setAvatarErr(true)} />
+            ) : (
+              <span className="avatar">{initials}</span>
+            )}
           </button>
           {menuOpen && (
             <div className="user-dropdown">
