@@ -13,7 +13,7 @@ from models.knowledge_graph import CourseKnowledgeNode, UserKnowledgeProgress
 from models.quiz_attempt import QuizAttempt
 from models.section_progress import SectionProgress
 from models.user import User, UserRole
-from schemas.auth import CreateUserRequest, UserResponse, UserWithUsage
+from schemas.auth import CreateUserRequest, ResetPasswordRequest, UserResponse, UserWithUsage
 from services.auth import hash_password
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -51,6 +51,7 @@ def create_user(
         role=UserRole.student,
         first_name=body.first_name,
         last_name=body.last_name,
+        must_change_password=True,
     )
     session.add(user)
     session.commit()
@@ -95,6 +96,25 @@ def delete_user(
     session.delete(user)
     session.commit()
     logger.info("[users]: deleted user user_id=%s", user_id)
+
+
+@router.post("/{user_id}/reset-password", status_code=status.HTTP_204_NO_CONTENT)
+def reset_user_password(
+    user_id: uuid.UUID,
+    body: ResetPasswordRequest,
+    _: User = Depends(require_admin),
+    session: Session = Depends(get_session),
+) -> None:
+    logger.info("[users]: reset password requested for user_id=%s", user_id)
+    user = session.get(User, user_id)
+    if user is None:
+        logger.warning("[users]: user not found for password reset, user_id=%s", user_id)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    user.hashed_password = hash_password(body.password)
+    user.must_change_password = True
+    session.add(user)
+    session.commit()
+    logger.info("[users]: password reset complete for user_id=%s", user_id)
 
 
 @router.post("/{user_id}/reset-progress", status_code=status.HTTP_204_NO_CONTENT)
