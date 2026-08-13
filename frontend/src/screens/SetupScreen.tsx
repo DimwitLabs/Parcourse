@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import CanvasBackground from "../components/CanvasBackground";
 import { toast } from "../components/Toast";
+import PasswordField from "../components/PasswordField";
 import { apiFetch, errMsg } from "../lib/api";
+import { PASSWORD_RULE, generatePassword, passwordError } from "../lib/password";
 import { useAuth } from "../lib/auth";
 
 type Stage = "mode" | "signup" | "api-key" | "add-user";
@@ -10,6 +12,10 @@ type Stage = "mode" | "signup" | "api-key" | "add-user";
 export default function SetupScreen() {
   const { setSession } = useAuth();
   const [stage, setStage] = useState<Stage>("mode");
+
+  useEffect(() => {
+    if (stage === "add-user") setNewUserPassword(generatePassword());
+  }, [stage]);
   const [mode, setMode] = useState<"single" | "multi">("single");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -78,7 +84,7 @@ export default function SetupScreen() {
       toast(`${newUserEmail} added`, "success");
       setAddedUsers((prev) => [...prev, newUserEmail]);
       setNewUserEmail("");
-      setNewUserPassword("");
+      setNewUserPassword(generatePassword());
     } catch (err) {
       toast(errMsg(err), "error");
     } finally {
@@ -134,7 +140,7 @@ export default function SetupScreen() {
             <div className="login-input-pill">
               <input
                 className="text-input"
-                placeholder="email"
+                placeholder="Email"
                 type="email"
                 autoComplete="email"
                 value={email}
@@ -145,7 +151,7 @@ export default function SetupScreen() {
             <div className="login-input-pill">
               <input
                 className="text-input"
-                placeholder="password"
+                placeholder="Password"
                 type="password"
                 autoComplete="new-password"
                 value={password}
@@ -153,7 +159,12 @@ export default function SetupScreen() {
                 disabled={busy}
               />
             </div>
-            <button className="button primary login-submit" type="submit" disabled={busy || !email || !password}>
+            <span className="modal-field-hint">{PASSWORD_RULE}</span>
+            <button
+              className="button primary login-submit"
+              type="submit"
+              disabled={busy || !email || !!passwordError(password)}
+            >
               {busy ? "Creating…" : "Create account"}
             </button>
           </form>
@@ -205,7 +216,7 @@ export default function SetupScreen() {
             <div className="login-input-pill">
               <input
                 className="text-input"
-                placeholder="email"
+                placeholder="Email"
                 type="email"
                 autoComplete="off"
                 value={newUserEmail}
@@ -213,21 +224,15 @@ export default function SetupScreen() {
                 disabled={busy}
               />
             </div>
-            <div className="login-input-pill">
-              <input
-                className="text-input"
-                placeholder="password"
-                type="password"
-                autoComplete="new-password"
-                value={newUserPassword}
-                onChange={(e) => setNewUserPassword(e.target.value)}
-                disabled={busy}
-              />
-            </div>
+            <PasswordField
+              value={newUserPassword}
+              onChange={setNewUserPassword}
+              disabled={busy}
+            />
             <button
               className="button primary login-submit"
               onClick={addUser}
-              disabled={busy || !newUserEmail || !newUserPassword}
+              disabled={busy || !newUserEmail || !!passwordError(newUserPassword)}
             >
               {busy ? "Adding…" : "Add user"}
             </button>

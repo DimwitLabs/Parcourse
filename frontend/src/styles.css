@@ -366,6 +366,7 @@ body {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   transition: background 0.15s ease, transform 0.1s ease;
 }
@@ -2366,6 +2367,24 @@ body {
   gap: 0.65rem;
 }
 
+.profile-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.profile-row .text-input.boxed {
+  margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .modal-form-row,
+  .profile-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .modal-field {
   display: flex;
   flex-direction: column;
@@ -2382,6 +2401,29 @@ body {
   flex: 1;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   letter-spacing: 0.02em;
+}
+
+/* Onboarding: the generated password sits among pill inputs, so it wears the
+   same shell with its buttons tucked inside. */
+.login-form .password-field {
+  background: var(--color-surface-lowest);
+  border: 1.5px solid var(--color-ink);
+  border-radius: var(--radius-full);
+  padding: 0.85rem 1rem 0.85rem 1.75rem;
+  box-shadow: 4px 4px 0 var(--color-secondary-container);
+  gap: 0.15rem;
+}
+
+.login-form .password-field .text-input.boxed {
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  font-size: 1.05rem;
+}
+
+.login-form .modal-field-hint {
+  text-align: left;
+  padding: 0 0.35rem;
 }
 
 .modal-field-label {

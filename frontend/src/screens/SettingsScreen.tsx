@@ -163,23 +163,19 @@ export default function SettingsScreen() {
                 <p className="settings-section-desc">
                   Your name is used to personalise AI feedback throughout the app.
                 </p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                <div className="profile-row">
                   <input
                     className="text-input boxed"
                     placeholder="First name"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    style={{ marginBottom: 0 }}
                   />
                   <input
                     className="text-input boxed"
                     placeholder="Last name"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    style={{ marginBottom: 0 }}
                   />
-                </div>
-                <div style={{ display: "flex", justifyContent: "flex-end" }}>
                   <button className="button primary" onClick={saveProfile} disabled={profileSaving}>
                     {profileSaving ? "Saving…" : "Save"}
                   </button>

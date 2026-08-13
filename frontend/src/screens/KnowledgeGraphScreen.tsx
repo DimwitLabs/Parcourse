@@ -29,7 +29,7 @@ type Granularity = "field" | "topic" | "skill";
 
 const YOU_ID = "__you__";
 const TIER_ORDER: Tier[] = ["you", "domain", "field", "topic", "skill"];
-const NODE_RADIUS: Record<Tier, number> = { you: 52, domain: 56, field: 44, topic: 30, skill: 20 };
+const NODE_RADIUS: Record<Tier, number> = { you: 68, domain: 72, field: 58, topic: 40, skill: 26 };
 
 function tierIncluded(tier: Tier, granularity: Granularity): boolean {
   if (tier === "you" || tier === "domain") return true;
