@@ -108,33 +108,11 @@ export default function SettingsScreen() {
         <div className="settings-pane">
           {tab === "api-key" && (
             <>
-              <div className="card settings-section">
-                <h2 className="settings-section-title">Your API Key</h2>
-                <p className="settings-section-desc">
-                  Bring your own OpenRouter key. This overrides the instance default.
-                </p>
-                <p className="status-message" style={{ margin: 0, textAlign: "left" }}>
-                  Status: {hasKey ? "Key is set" : "No key"}
-                </p>
-                <div style={{ display: "flex", gap: "0.5rem" }}>
-                  <input
-                    className="text-input boxed"
-                    placeholder="sk-or-…"
-                    value={keyInput}
-                    onChange={(e) => setKeyInput(e.target.value)}
-                    style={{ flex: 1, marginBottom: 0 }}
-                  />
-                  <button className="button primary" onClick={saveKey} disabled={keySaving}>
-                    {keySaving ? "Saving…" : "Save"}
-                  </button>
-                </div>
-              </div>
-
-              {user?.role === "admin" && (
+              {user?.role === "admin" ? (
                 <div className="card settings-section">
-                  <h2 className="settings-section-title">Instance Default Key</h2>
+                  <h2 className="settings-section-title">Instance API Key</h2>
                   <p className="settings-section-desc">
-                    Fallback key used when a user hasn't set their own.
+                    Used for all course generation, grading, and analysis. Users without their own key fall back to this.
                   </p>
                   <p className="status-message" style={{ margin: 0, textAlign: "left" }}>
                     Status: {hasInstanceKey ? "Key is set" : "No key"}
@@ -149,6 +127,28 @@ export default function SettingsScreen() {
                     />
                     <button className="button primary" onClick={saveInstanceKey} disabled={instanceSaving}>
                       {instanceSaving ? "Saving…" : "Save"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="card settings-section">
+                  <h2 className="settings-section-title">Your API Key</h2>
+                  <p className="settings-section-desc">
+                    Bring your own OpenRouter key. This overrides the instance default.
+                  </p>
+                  <p className="status-message" style={{ margin: 0, textAlign: "left" }}>
+                    Status: {hasKey ? "Key is set" : "No key"}
+                  </p>
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <input
+                      className="text-input boxed"
+                      placeholder="sk-or-…"
+                      value={keyInput}
+                      onChange={(e) => setKeyInput(e.target.value)}
+                      style={{ flex: 1, marginBottom: 0 }}
+                    />
+                    <button className="button primary" onClick={saveKey} disabled={keySaving}>
+                      {keySaving ? "Saving…" : "Save"}
                     </button>
                   </div>
                 </div>
@@ -194,7 +194,7 @@ export default function SettingsScreen() {
                 <p style={{ margin: "0.5rem 0 0" }}>
                   <b>Role:</b>{" "}
                   <span className={`role-pill${user?.role === "admin" ? " admin" : ""}`}>
-                    {user?.role}
+                    {user?.role === "admin" ? "Admin" : "User"}
                   </span>
                 </p>
               </div>
