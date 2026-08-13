@@ -48,7 +48,7 @@ def thumbnail_url(video_id: str) -> str:
 def generate(video_id: str, segments: list[TranscriptSegment], api_key: str, model: str | None = None) -> CourseResponse:
     logger.info("[course]: generating course for video %s (%d segments)", video_id, len(segments))
     formatted = "\n".join(f"[{s.start:.1f}s] {s.text}" for s in segments)
-    prompt = _PROMPT.format(formatted=formatted[:12000])
+    prompt = _PROMPT.format(formatted=formatted)
 
     used_model = model or settings.ai_model
     logger.info("[course]: calling litellm.completion model=%s, api_key length=%d", used_model, len(api_key))
