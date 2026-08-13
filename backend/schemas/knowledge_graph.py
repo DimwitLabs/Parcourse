@@ -20,6 +20,11 @@ class KnowledgeExtraction(BaseModel):
     edges: list[ExtractedEdge]
 
 
+class CourseRef(BaseModel):
+    id: str
+    title: str
+
+
 class NodeOut(BaseModel):
     id: str
     tier: NodeTier
@@ -27,6 +32,7 @@ class NodeOut(BaseModel):
     description: str
     mastery_score: float
     times_encountered: int
+    courses: list[CourseRef] = []
 
 
 class EdgeOut(BaseModel):

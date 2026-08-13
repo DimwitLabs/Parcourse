@@ -1,3 +1,4 @@
+import json
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -5,9 +6,10 @@ from sqlmodel import Session, select
 
 from database import get_session
 from dependencies import get_current_user, require_admin
-from models.knowledge_graph import KnowledgeEdge, KnowledgeNode, UserKnowledgeProgress
+from models.course_cache import CachedCourse
+from models.knowledge_graph import CourseKnowledgeNode, KnowledgeEdge, KnowledgeNode, UserKnowledgeProgress
 from models.user import User
-from schemas.knowledge_graph import EdgeOut, KnowledgeGraphResponse, NodeOut
+from schemas.knowledge_graph import CourseRef, EdgeOut, KnowledgeGraphResponse, NodeOut
 
 router = APIRouter(prefix="/knowledge-graph", tags=["knowledge-graph"])
 
@@ -29,6 +31,25 @@ def _build_graph(session: Session, user_id: uuid.UUID) -> KnowledgeGraphResponse
         )
     ).all()
 
+    node_ids = [n.id for n in nodes]
+    links = session.exec(
+        select(CourseKnowledgeNode).where(CourseKnowledgeNode.node_id.in_(node_ids))
+    ).all()
+    course_ids = list({lnk.course_id for lnk in links})
+    courses = session.exec(select(CachedCourse).where(CachedCourse.id.in_(course_ids))).all()
+    course_title: dict[uuid.UUID, str] = {}
+    for c in courses:
+        try:
+            course_title[c.id] = json.loads(c.course_json).get("title", "Untitled")
+        except Exception:
+            course_title[c.id] = "Untitled"
+    node_courses: dict[uuid.UUID, list[CourseRef]] = {n.id: [] for n in nodes}
+    for lnk in links:
+        if lnk.node_id in node_courses and lnk.course_id in course_title:
+            node_courses[lnk.node_id].append(
+                CourseRef(id=str(lnk.course_id), title=course_title[lnk.course_id])
+            )
+
     return KnowledgeGraphResponse(
         nodes=[
             NodeOut(
@@ -38,6 +59,7 @@ def _build_graph(session: Session, user_id: uuid.UUID) -> KnowledgeGraphResponse
                 description=n.description,
                 mastery_score=progress_by_node[n.id].mastery_score,
                 times_encountered=progress_by_node[n.id].times_encountered,
+                courses=node_courses.get(n.id, []),
             )
             for n in nodes
         ],
