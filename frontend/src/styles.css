@@ -1068,6 +1068,14 @@ body {
   transition: border-radius 0.25s ease;
 }
 
+@media (max-width: 860px) {
+  .submit-bar {
+    position: static;
+    border-radius: var(--radius-lg);
+    margin-top: 2rem;
+  }
+}
+
 @media (min-width: 861px) {
   .submit-bar {
     grid-column: 2 / -1;
@@ -1362,11 +1370,19 @@ body {
 }
 
 .graph-pill-arrow {
-  color: var(--color-ink-faint);
-  font-size: 0.8rem;
-  line-height: 1;
-  padding: 0 0.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin: 0 0.2rem;
   user-select: none;
+  flex-shrink: 0;
 }
 
 .graph-pill {
@@ -2701,6 +2717,17 @@ body {
   flex-direction: column;
   gap: 0.65rem;
   width: 260px;
+  isolation: isolate;
+}
+
+.gen-pills-panel::before {
+  content: '';
+  position: absolute;
+  inset: -3.5rem -3rem;
+  background: radial-gradient(ellipse 80% 80% at 70% 50%, var(--color-paper) 30%, transparent 75%);
+  filter: blur(18px);
+  z-index: -1;
+  pointer-events: none;
 }
 
 .gen-pill {
