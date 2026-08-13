@@ -19,6 +19,21 @@ from services.auth import hash_password
 router = APIRouter(prefix="/users", tags=["users"])
 
 
+def _delete_user_data(user_id: uuid.UUID, session: Session) -> None:
+    for row in session.exec(select(UserKnowledgeProgress).where(UserKnowledgeProgress.user_id == user_id)).all():
+        session.delete(row)
+    for row in session.exec(select(QuizAttempt).where(QuizAttempt.user_id == user_id)).all():
+        session.delete(row)
+    for row in session.exec(select(SectionProgress).where(SectionProgress.user_id == user_id)).all():
+        session.delete(row)
+    session.flush()
+    for c in session.exec(select(CachedCourse).where(CachedCourse.user_id == user_id)).all():
+        for link in session.exec(select(CourseKnowledgeNode).where(CourseKnowledgeNode.course_id == c.id)).all():
+            session.delete(link)
+        session.delete(c)
+    session.flush()
+
+
 @router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def create_user(
     body: CreateUserRequest,
@@ -76,19 +91,7 @@ def delete_user(
     if user.id == admin.id:
         logger.warning("[users]: admin attempted self-deletion, user_id=%s", user_id)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot delete yourself")
-    for row in session.exec(select(UserKnowledgeProgress).where(UserKnowledgeProgress.user_id == user_id)).all():
-        session.delete(row)
-    for row in session.exec(select(QuizAttempt).where(QuizAttempt.user_id == user_id)).all():
-        session.delete(row)
-    for row in session.exec(select(SectionProgress).where(SectionProgress.user_id == user_id)).all():
-        session.delete(row)
-    session.flush()
-    courses = session.exec(select(CachedCourse).where(CachedCourse.user_id == user_id)).all()
-    for c in courses:
-        for link in session.exec(select(CourseKnowledgeNode).where(CourseKnowledgeNode.course_id == c.id)).all():
-            session.delete(link)
-        session.delete(c)
-    session.flush()
+    _delete_user_data(user_id, session)
     session.delete(user)
     session.commit()
     logger.info("[users]: deleted user user_id=%s", user_id)
@@ -105,18 +108,6 @@ def reset_user_progress(
     if user is None:
         logger.warning("[users]: user not found for reset, user_id=%s", user_id)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    for row in session.exec(select(UserKnowledgeProgress).where(UserKnowledgeProgress.user_id == user_id)).all():
-        session.delete(row)
-    for row in session.exec(select(QuizAttempt).where(QuizAttempt.user_id == user_id)).all():
-        session.delete(row)
-    for row in session.exec(select(SectionProgress).where(SectionProgress.user_id == user_id)).all():
-        session.delete(row)
-    session.flush()
-    courses = session.exec(select(CachedCourse).where(CachedCourse.user_id == user_id)).all()
-    for c in courses:
-        for link in session.exec(select(CourseKnowledgeNode).where(CourseKnowledgeNode.course_id == c.id)).all():
-            session.delete(link)
-        session.delete(c)
-    session.flush()
+    _delete_user_data(user_id, session)
     session.commit()
     logger.info("[users]: progress reset complete for user_id=%s", user_id)
