@@ -22,6 +22,15 @@ const FALLBACK_MESSAGES = [
   "Distilling the good stuff…",
 ];
 
+function shuffle<T>(arr: T[]): T[] {
+  const out = [...arr];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
 export default function HomeScreen() {
   const { token } = useAuth();
   const navigate = useNavigate();
@@ -42,11 +51,12 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (step === "generating") {
+      const pool = shuffle(funMessages);
       let idx = 0;
-      setFunMsg(funMessages[0]);
+      setFunMsg(pool[0]);
       funInterval.current = setInterval(() => {
-        idx = (idx + 1) % funMessages.length;
-        setFunMsg(funMessages[idx]);
+        idx = (idx + 1) % pool.length;
+        setFunMsg(pool[idx]);
       }, 4000);
     } else {
       clearInterval(funInterval.current);
@@ -66,7 +76,7 @@ export default function HomeScreen() {
   }
 
   async function createCourse() {
-    setFunMessages(FALLBACK_MESSAGES);
+    setFunMessages([...FALLBACK_MESSAGES]);
     try {
       setStep("transcript");
       const transcriptData = await apiFetch("/transcript/extract", token, {
@@ -85,7 +95,7 @@ export default function HomeScreen() {
       });
 
       if (guardrailData.fun_messages?.length >= 3) {
-        setFunMessages(guardrailData.fun_messages);
+        setFunMessages([...guardrailData.fun_messages, ...FALLBACK_MESSAGES]);
       }
 
       if (!guardrailData.is_learnable) {
