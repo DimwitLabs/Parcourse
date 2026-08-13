@@ -186,27 +186,16 @@ export default function KnowledgeGraphScreen() {
     };
   }, []);
 
-  if (error) return <p className="error-message">{error}</p>;
-  if (!graph || !layout) return <p className="status-message">Loading knowledge graph…</p>;
+  if (error) return <p className="error-message" style={{ padding: "2rem" }}>{error}</p>;
 
-  if (graph.nodes.length === 0) {
-    return (
-      <div className="empty-state">
-        <p className="status-message">
-          No concepts mapped yet — generate a course to start building this graph.
-        </p>
-      </div>
-    );
-  }
-
-  const { positioned, positionedEdges, orphans } = layout;
+  const ready = graph !== null && layout !== null && graph.nodes.length > 0;
   const pad = 100;
-  const minX = Math.min(...positioned.map((n) => n.x - n.r)) - pad;
-  const maxX = Math.max(...positioned.map((n) => n.x + n.r)) + pad;
-  const minY = Math.min(...positioned.map((n) => n.y - n.r)) - pad;
-  const maxY = Math.max(...positioned.map((n) => n.y + n.r)) + pad;
-  const width = maxX - minX;
-  const height = maxY - minY;
+  const minX = ready ? Math.min(...layout!.positioned.map((n) => n.x - n.r)) - pad : 0;
+  const maxX = ready ? Math.max(...layout!.positioned.map((n) => n.x + n.r)) + pad : 0;
+  const minY = ready ? Math.min(...layout!.positioned.map((n) => n.y - n.r)) - pad : 0;
+  const maxY = ready ? Math.max(...layout!.positioned.map((n) => n.y + n.r)) + pad : 0;
+  const svgWidth = maxX - minX;
+  const svgHeight = maxY - minY;
 
   return (
     <div className="graph-view">
@@ -215,86 +204,106 @@ export default function KnowledgeGraphScreen() {
         <p className="page-header-sub">Every concept you've learned, connected.</p>
       </div>
 
-      <div className="graph-toolbar">
-        <div className="graph-zoom-controls">
-          <button className="button secondary" onClick={() => setZoom((z) => Math.min(2, z + 0.2))}>
-            +
-          </button>
-          <button className="button secondary" onClick={() => setZoom((z) => Math.max(0.4, z - 0.2))}>
-            −
-          </button>
-          <button
-            className="button secondary"
-            onClick={() => {
-              setZoom(1);
-              recenter();
-            }}
-          >
-            Recenter
-          </button>
+      {!graph || !layout ? (
+        <p className="status-message">Loading knowledge graph…</p>
+      ) : graph.nodes.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-state-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+            </svg>
+          </div>
+          <h2 className="empty-state-title">No concepts mapped yet</h2>
+          <p className="empty-state-body">Generate a course to start building your knowledge graph.</p>
         </div>
-        <div className="graph-legend">
-          <span className="legend-item">
-            <span className="legend-dot mastered" /> Mastered
-          </span>
-          <span className="legend-item">
-            <span className="legend-dot learning" /> Learning
-          </span>
-          <span className="legend-item">
-            <span className="legend-dot new" /> New
-          </span>
-        </div>
-      </div>
-
-      <div className="graph-canvas-wrap" ref={wrapRef}>
-        <svg
-          ref={svgRef}
-          className="graph-svg"
-          style={{ transform: `scale(${zoom})`, transformOrigin: "center center" }}
-          viewBox={`${minX} ${minY} ${width} ${height}`}
-          width={width}
-          height={height}
-        >
-          {positionedEdges.map((e, i) => (
-            <line key={i} x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} className="graph-edge" />
-          ))}
-          {positioned.map((n) => (
-            <g
-              key={n.id}
-              transform={`translate(${n.x}, ${n.y})`}
-              className={`graph-node-group ${masteryClass(n.times_encountered)}`}
-              onMouseEnter={(e) => setHover({ node: n, x: e.clientX, y: e.clientY })}
-              onMouseMove={(e) => setHover({ node: n, x: e.clientX, y: e.clientY })}
-              onMouseLeave={() => setHover(null)}
-            >
-              <circle r={n.r} className="graph-node-circle" />
-              <foreignObject x={-n.r} y={-n.r} width={n.r * 2} height={n.r * 2}>
-                <div className="graph-node-label">{n.label}</div>
-              </foreignObject>
-            </g>
-          ))}
-        </svg>
-      </div>
-
-      {orphans.length > 0 && (
-        <div className="graph-column">
-          <h3 className="graph-column-title">Unlinked concepts</h3>
-          {orphans.map((n) => (
-            <div className={`graph-node ${masteryClass(n.times_encountered)}`} key={n.id}>
-              <span className="graph-node-label">{n.label}</span>
-              <span className="graph-node-count">×{n.times_encountered}</span>
+      ) : (
+        <>
+          <div className="graph-toolbar">
+            <div className="graph-zoom-controls">
+              <button className="button secondary" onClick={() => setZoom((z) => Math.min(2, z + 0.2))}>
+                +
+              </button>
+              <button className="button secondary" onClick={() => setZoom((z) => Math.max(0.4, z - 0.2))}>
+                −
+              </button>
+              <button
+                className="button secondary"
+                onClick={() => {
+                  setZoom(1);
+                  recenter();
+                }}
+              >
+                Recenter
+              </button>
             </div>
-          ))}
-        </div>
-      )}
+            <div className="graph-legend">
+              <span className="legend-item">
+                <span className="legend-dot mastered" /> Mastered
+              </span>
+              <span className="legend-item">
+                <span className="legend-dot learning" /> Learning
+              </span>
+              <span className="legend-item">
+                <span className="legend-dot new" /> New
+              </span>
+            </div>
+          </div>
 
-      {hover && (
-        <div className="graph-tooltip" style={{ left: hover.x + 16, top: hover.y + 16 }}>
-          <strong>{hover.node.label}</strong>
-          <span className="graph-tooltip-tier">{hover.node.tier}</span>
-          <p>{hover.node.description}</p>
-          <span className="graph-tooltip-count">Seen {hover.node.times_encountered}×</span>
-        </div>
+          <div className="graph-canvas-wrap" ref={wrapRef}>
+            <svg
+              ref={svgRef}
+              className="graph-svg"
+              style={{ transform: `scale(${zoom})`, transformOrigin: "center center" }}
+              viewBox={`${minX} ${minY} ${svgWidth} ${svgHeight}`}
+              width={svgWidth}
+              height={svgHeight}
+            >
+              {layout.positionedEdges.map((e, i) => (
+                <line key={i} x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} className="graph-edge" />
+              ))}
+              {layout.positioned.map((n) => (
+                <g
+                  key={n.id}
+                  transform={`translate(${n.x}, ${n.y})`}
+                  className={`graph-node-group ${masteryClass(n.times_encountered)}`}
+                  onMouseEnter={(e) => setHover({ node: n, x: e.clientX, y: e.clientY })}
+                  onMouseMove={(e) => setHover({ node: n, x: e.clientX, y: e.clientY })}
+                  onMouseLeave={() => setHover(null)}
+                >
+                  <circle r={n.r} className="graph-node-circle" />
+                  <foreignObject x={-n.r} y={-n.r} width={n.r * 2} height={n.r * 2}>
+                    <div className="graph-node-label">{n.label}</div>
+                  </foreignObject>
+                </g>
+              ))}
+            </svg>
+          </div>
+
+          {layout.orphans.length > 0 && (
+            <div className="graph-column">
+              <h3 className="graph-column-title">Unlinked concepts</h3>
+              {layout.orphans.map((n) => (
+                <div className={`graph-node ${masteryClass(n.times_encountered)}`} key={n.id}>
+                  <span className="graph-node-label">{n.label}</span>
+                  <span className="graph-node-count">×{n.times_encountered}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {hover && (
+            <div className="graph-tooltip" style={{ left: hover.x + 16, top: hover.y + 16 }}>
+              <strong>{hover.node.label}</strong>
+              <span className="graph-tooltip-tier">{hover.node.tier}</span>
+              <p>{hover.node.description}</p>
+              <span className="graph-tooltip-count">Seen {hover.node.times_encountered}×</span>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
