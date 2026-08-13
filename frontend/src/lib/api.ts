@@ -20,6 +20,14 @@ export async function apiFetch(path: string, token: string | null, init: Request
     return null;
   }
   const data = JSON.parse(text);
-  if (!res.ok) throw new Error(data.detail ?? JSON.stringify(data));
+  if (!res.ok) {
+    const detail = data.detail;
+    const msg = typeof detail === "string"
+      ? detail
+      : Array.isArray(detail)
+        ? detail.map((d: { msg?: string }) => d.msg ?? JSON.stringify(d)).join(", ")
+        : JSON.stringify(data);
+    throw new Error(msg);
+  }
   return data;
 }
