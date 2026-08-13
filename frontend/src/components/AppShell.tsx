@@ -32,6 +32,7 @@ export default function AppShell() {
     <>
       <div className="top-nav">
         <NavLink to="/" className="top-nav-logo">
+          <img src="/parcourse.svg" alt="" aria-hidden="true" height="28" />
           Parcourse
         </NavLink>
         <div className="top-nav-links">
