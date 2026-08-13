@@ -1,6 +1,8 @@
 import json
 import logging
+import re
 import uuid
+from collections import defaultdict
 
 import litellm
 
@@ -10,16 +12,44 @@ from schemas.transcript import TranscriptSegment
 
 logger = logging.getLogger(__name__)
 
+_NOISE = re.compile(r"^\s*[\[\(][\w\s,]+[\]\)]\s*$")
+_WINDOW = 30  # seconds per merged chunk
+
+
+def _format_transcript(segments: list[TranscriptSegment]) -> str:
+    clean = [s for s in segments if not _NOISE.match(s.text)]
+    buckets: dict[int, list[str]] = defaultdict(list)
+    for s in clean:
+        buckets[int(s.start / _WINDOW) * _WINDOW].append(
+            s.text.strip().replace("\n", " ")
+        )
+    return "\n".join(
+        f"[{t}] {' '.join(texts)}"
+        for t, texts in sorted(buckets.items())
+    )
+
 _PROMPT = """You are building a structured course from a YouTube video transcript.
 
-Transcript (each line prefixed with its start time in seconds):
+Total video duration: {total_minutes:.1f} minutes ({total_seconds:.0f} seconds).
+
+Transcript (each line is a 30-second chunk prefixed with its start time in seconds):
 \"\"\"
 {formatted}
 \"\"\"
 
-Break this into 3-8 logical sections that build on each other. For each section, also \
-write 2-3 multiple-choice questions and 1-2 open-ended theory questions that test \
-understanding of that section's content.
+Break this into {min_sections}–{max_sections} logical sections that build on each other.
+
+Rules for section boundaries:
+- The first section MUST start at 0s and the last section MUST end at exactly {total_seconds:.0f}s.
+- Every section should cover roughly {approx_seconds:.0f} seconds (~{approx_minutes:.0f} minutes). \
+  No section may be shorter than {min_section_seconds:.0f}s or longer than {max_section_seconds:.0f}s.
+- The last section must NOT be a catch-all for the remainder of the video. \
+  All sections, including the last, must be approximately equal in length.
+- Use the transcript chunk timestamps only as a guide — section boundaries do not need \
+  to fall exactly on 30-second marks.
+
+For each section also write 2-3 multiple-choice questions and 1-2 open-ended theory \
+questions that test understanding of that section's content.
 
 Return only a JSON object with exactly this field:
 - "sections": a list of objects, each with:
@@ -36,8 +66,6 @@ Return only a JSON object with exactly this field:
   - "theory_questions": a list of 1-2 objects, each with:
     - "question": an open-ended question requiring a short written answer
     - "reference_answer": a model answer used later to grade student responses
-
-Sections must be in chronological order and cover the full video with no gaps.
 """
 
 
@@ -54,14 +82,42 @@ def generate(video_id: str, segments: list[TranscriptSegment], api_key: str, mod
             segments[-1].start + segments[-1].duration,
             (segments[-1].start + segments[-1].duration) / 60,
         )
-    formatted = "\n".join(f"[{s.start:.1f}s] {s.text}" for s in segments)
+    last = segments[-1] if segments else None
+    total_seconds = (last.start + last.duration) if last else 0.0
+    total_minutes = total_seconds / 60
+
+    # Scale section count: ~1 section per 15 min, clamped to 3–16
+    target = max(3, min(16, round(total_minutes / 15)))
+    min_sections = max(3, target - 1)
+    max_sections = min(16, target + 2)
+
+    # Duration guidance for even distribution
+    approx_seconds = total_seconds / target
+    approx_minutes = approx_seconds / 60
+    min_section_seconds = approx_seconds * 0.4   # allow down to 40% of average
+    max_section_seconds = approx_seconds * 2.5   # cap at 250% of average
+
+    formatted = _format_transcript(segments)
     estimated_tokens = len(formatted) // 4
     logger.info(
-        "[course]: formatted transcript %d chars (~%d tokens)",
+        "[course]: formatted transcript %d chars (~%d tokens), total=%.1fmin, sections=%d–%d",
         len(formatted),
         estimated_tokens,
+        total_minutes,
+        min_sections,
+        max_sections,
     )
-    prompt = _PROMPT.format(formatted=formatted)
+    prompt = _PROMPT.format(
+        formatted=formatted,
+        total_seconds=total_seconds,
+        total_minutes=total_minutes,
+        min_sections=min_sections,
+        max_sections=max_sections,
+        approx_seconds=approx_seconds,
+        approx_minutes=approx_minutes,
+        min_section_seconds=min_section_seconds,
+        max_section_seconds=max_section_seconds,
+    )
     logger.info("[course]: full prompt %d chars (~%d tokens)", len(prompt), len(prompt) // 4)
 
     used_model = model or settings.ai_model
