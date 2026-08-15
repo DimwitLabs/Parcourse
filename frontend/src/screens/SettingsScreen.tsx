@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import ProviderForm from "../components/ProviderForm";
 import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -10,27 +11,11 @@ export default function SettingsScreen() {
   const { token, user } = useAuth();
   const [tab, setTab] = useState<Tab>("api-key");
 
-  const [hasKey, setHasKey] = useState(false);
-  const [keyInput, setKeyInput] = useState("");
-  const [keySaving, setKeySaving] = useState(false);
-
-  const [hasInstanceKey, setHasInstanceKey] = useState(false);
-  const [instanceInput, setInstanceInput] = useState("");
-  const [instanceSaving, setInstanceSaving] = useState(false);
-
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [profileSaving, setProfileSaving] = useState(false);
 
   useEffect(() => {
-    apiFetch("/settings/api-key", token)
-      .then((d: { has_key: boolean }) => setHasKey(d.has_key))
-      .catch(() => {});
-    if (user?.role === "admin") {
-      apiFetch("/settings/instance-key", token)
-        .then((d: { has_key: boolean }) => setHasInstanceKey(d.has_key))
-        .catch(() => {});
-    }
     apiFetch("/auth/me", token)
       .then((d: { first_name?: string; last_name?: string }) => {
         setFirstName(d.first_name ?? "");
@@ -38,40 +23,6 @@ export default function SettingsScreen() {
       })
       .catch(() => {});
   }, [token, user?.role]);
-
-  async function saveKey() {
-    setKeySaving(true);
-    try {
-      const d = await apiFetch("/settings/api-key", token, {
-        method: "PUT",
-        body: JSON.stringify({ api_key: keyInput }),
-      });
-      setHasKey(d.has_key);
-      setKeyInput("");
-      toast(d.has_key ? "Key saved" : "Key cleared", "success");
-    } catch (err) {
-      toast(errMsg(err), "error");
-    } finally {
-      setKeySaving(false);
-    }
-  }
-
-  async function saveInstanceKey() {
-    setInstanceSaving(true);
-    try {
-      const d = await apiFetch("/settings/instance-key", token, {
-        method: "PUT",
-        body: JSON.stringify({ api_key: instanceInput }),
-      });
-      setHasInstanceKey(d.has_key);
-      setInstanceInput("");
-      toast(d.has_key ? "Instance key saved" : "Instance key cleared", "success");
-    } catch (err) {
-      toast(errMsg(err), "error");
-    } finally {
-      setInstanceSaving(false);
-    }
-  }
 
   async function saveProfile() {
     setProfileSaving(true);
@@ -107,53 +58,25 @@ export default function SettingsScreen() {
 
         <div className="settings-pane">
           {tab === "api-key" && (
-            <>
+            <div className="card settings-section">
               {user?.role === "admin" ? (
-                <div className="card settings-section">
-                  <h2 className="settings-section-title">Instance API Key</h2>
+                <>
+                  <h2 className="settings-section-title">Instance connection</h2>
                   <p className="settings-section-desc">
-                    Used for all course generation, grading, and analysis. Users without their own key fall back to this.
+                    Used for course generation, grading and analysis. Users without their own connection fall back to this.
                   </p>
-                  <p className="status-message" style={{ margin: 0, textAlign: "left" }}>
-                    Status: {hasInstanceKey ? "Key is set" : "No key"}
-                  </p>
-                  <div style={{ display: "flex", gap: "0.5rem" }}>
-                    <input
-                      className="text-input boxed"
-                      placeholder="sk-or-…"
-                      value={instanceInput}
-                      onChange={(e) => setInstanceInput(e.target.value)}
-                      style={{ flex: 1, marginBottom: 0 }}
-                    />
-                    <button className="button primary" onClick={saveInstanceKey} disabled={instanceSaving}>
-                      {instanceSaving ? "Saving…" : "Save"}
-                    </button>
-                  </div>
-                </div>
+                  <ProviderForm scope="instance" />
+                </>
               ) : (
-                <div className="card settings-section">
-                  <h2 className="settings-section-title">Your API Key</h2>
+                <>
+                  <h2 className="settings-section-title">Your AI provider</h2>
                   <p className="settings-section-desc">
-                    Bring your own OpenRouter key. This overrides the instance default.
+                    Bring your own provider and key. This overrides the instance default.
                   </p>
-                  <p className="status-message" style={{ margin: 0, textAlign: "left" }}>
-                    Status: {hasKey ? "Key is set" : "No key"}
-                  </p>
-                  <div style={{ display: "flex", gap: "0.5rem" }}>
-                    <input
-                      className="text-input boxed"
-                      placeholder="sk-or-…"
-                      value={keyInput}
-                      onChange={(e) => setKeyInput(e.target.value)}
-                      style={{ flex: 1, marginBottom: 0 }}
-                    />
-                    <button className="button primary" onClick={saveKey} disabled={keySaving}>
-                      {keySaving ? "Saving…" : "Save"}
-                    </button>
-                  </div>
-                </div>
+                  <ProviderForm scope="user" />
+                </>
               )}
-            </>
+            </div>
           )}
 
           {tab === "account" && (

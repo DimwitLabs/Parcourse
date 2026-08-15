@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 
 import Avatar from "../components/Avatar";
 import PasswordField from "../components/PasswordField";
-import CustomSelect from "../components/CustomSelect";
 import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { generatePassword, passwordError } from "../lib/password";
@@ -35,8 +34,6 @@ export default function AdminScreen() {
   const [newLastName, setNewLastName] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const [currentModel, setCurrentModel] = useState("");
-  const [modelSaving, setModelSaving] = useState(false);
 
   useEscapeKey(showAdd, () => { if (!busy) setShowAdd(false); });
 
@@ -82,24 +79,7 @@ export default function AdminScreen() {
   useEffect(refresh, [token]);
 
   useEffect(() => {
-    apiFetch("/settings/model", token)
-      .then((data: { model: string }) => setCurrentModel(data.model))
-      .catch(() => {});
   }, [token]);
-
-  async function saveModel(model: string) {
-    setModelSaving(true);
-    try {
-      const data = await apiFetch("/settings/model", token, {
-        method: "PUT",
-        body: JSON.stringify({ model }),
-      });
-      setCurrentModel(data.model);
-    } catch {
-    } finally {
-      setModelSaving(false);
-    }
-  }
 
   async function addUser() {
     setBusy(true);
@@ -258,33 +238,6 @@ export default function AdminScreen() {
           </div>
         </div>
       )}
-
-      <div className="card admin-model-section">
-        <div className="page-header">
-          <h2 className="page-header-title" style={{ fontSize: "1.15rem" }}>AI Model</h2>
-          <p className="page-header-sub">
-            The model used for course generation, grading, and knowledge graph extraction.
-          </p>
-        </div>
-        <div className="admin-model-row">
-          <CustomSelect
-            value={currentModel}
-            disabled={modelSaving}
-            onChange={(v) => { setCurrentModel(v); saveModel(v); }}
-            options={[
-              { value: "openrouter/openai/gpt-4o-mini", label: "GPT-4o Mini" },
-              { value: "openrouter/openai/gpt-4o", label: "GPT-4o" },
-              { value: "openrouter/openai/gpt-4.1-mini", label: "GPT-4.1 Mini" },
-              { value: "openrouter/openai/gpt-4.1", label: "GPT-4.1" },
-              { value: "openrouter/anthropic/claude-sonnet-4", label: "Claude Sonnet 4" },
-              { value: "openrouter/anthropic/claude-haiku-4", label: "Claude Haiku 4" },
-              { value: "openrouter/google/gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-              { value: "openrouter/google/gemini-2.5-pro", label: "Gemini 2.5 Pro" },
-            ]}
-          />
-          {modelSaving && <span className="status-message" style={{ margin: 0 }}>Saving…</span>}
-        </div>
-      </div>
 
       <div className="card user-table">
         {users.map((u) => {

@@ -246,10 +246,30 @@ def clear_instance_connection(
     return ConnectionResponse(configured=False)
 
 
+def _credentials_for_test(
+    body: ConnectionUpdateRequest, user: User, session: Session
+) -> dict[str, str]:
+    """Blank credentials mean "test what is already saved", so the form can
+    verify an existing connection without making the user paste the key again."""
+    if any(v.strip() for v in body.credentials.values()):
+        return body.credentials
+    instance = session.get(InstanceConfig, INSTANCE_ID)
+    fallback = instance.ai_model if instance else settings.ai_model
+    for blob in (user.openrouter_key, instance.default_openrouter_key if instance else None):
+        stored = deserialize(blob, fallback)
+        if stored and stored.provider == body.provider and stored.has_credentials:
+            return stored.credentials
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Credentials are required for this provider.",
+    )
+
+
 @router.post("/test-connection", response_model=TestConnectionResponse)
 def test_connection(
     body: ConnectionUpdateRequest,
     user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
 ) -> TestConnectionResponse:
     """Runs the smallest real request the app makes: a JSON completion. That
     catches a bad key, an unreachable host and a model that cannot do JSON."""
@@ -258,11 +278,12 @@ def test_connection(
     except KeyError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
+    credentials = _credentials_for_test(body, user, session)
     logger.info("[settings]: testing connection for user %s, model=%s", user.id, model)
     try:
         complete_json(
             model=model,
-            credentials=body.credentials,
+            credentials=credentials,
             prompt='Reply with this JSON object and nothing else: {"ok": true}',
             required_keys=("ok",),
             temperature=0,

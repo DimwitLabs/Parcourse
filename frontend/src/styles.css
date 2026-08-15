@@ -3203,7 +3203,7 @@ body {
   transform: rotate(180deg);
 }
 
-.custom-select-list {
+.custom-select-panel {
   position: absolute;
   top: calc(100% + 0.4rem);
   left: 0;
@@ -3213,12 +3213,68 @@ body {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lift);
   padding: 0.35rem;
-  margin: 0;
-  list-style: none;
   z-index: 200;
   display: flex;
   flex-direction: column;
+  gap: 0.35rem;
+}
+
+.custom-select-search {
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.65rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-lowest);
+  color: var(--color-ink);
+}
+
+.custom-select-search:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.custom-select-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
   gap: 0.1rem;
+  /* Roughly seven rows before scrolling, so the panel never covers the page. */
+  max-height: 17rem;
+  overflow-y: auto;
+}
+
+.custom-select-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.custom-select-group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.custom-select-group-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-faint);
+  padding: 0.5rem 0.65rem 0.25rem;
+}
+
+.custom-select-empty {
+  padding: 0.65rem;
+  font-size: 0.85rem;
+  color: var(--color-ink-faint);
+  text-align: center;
 }
 
 .custom-select-item {
@@ -3246,4 +3302,67 @@ body {
 .custom-select-item svg {
   flex-shrink: 0;
   color: var(--color-primary);
+}
+
+.provider-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.provider-form .text-input.boxed {
+  margin-bottom: 0;
+  padding: 0.7rem 1rem;
+}
+
+.provider-form-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.model-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.model-chip {
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface-lowest);
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.model-chip:hover {
+  border-color: var(--color-primary-light);
+  color: var(--color-ink);
+}
+
+.model-chip.selected {
+  background: var(--color-secondary-container);
+  border-color: var(--color-primary);
+  color: var(--color-ink);
+}
+
+a.modal-field-hint {
+  color: var(--color-ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  width: fit-content;
+}
+
+/* Onboarding renders the form inside .hero, which centres its text. */
+.login-form .provider-form {
+  text-align: left;
+}
+
+.login-form .provider-form-actions .button {
+  flex: 1;
 }

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import CanvasBackground from "../components/CanvasBackground";
 import { toast } from "../components/Toast";
 import PasswordField from "../components/PasswordField";
+import ProviderForm from "../components/ProviderForm";
 import { apiFetch, errMsg } from "../lib/api";
 import { PASSWORD_RULE, generatePassword, passwordError } from "../lib/password";
 import { useAuth } from "../lib/auth";
@@ -19,7 +20,6 @@ export default function SetupScreen() {
   const [mode, setMode] = useState<"single" | "multi">("single");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [apiKey, setApiKey] = useState("");
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserPassword, setNewUserPassword] = useState("");
   const [addedUsers, setAddedUsers] = useState<string[]>([]);
@@ -39,25 +39,6 @@ export default function SetupScreen() {
       setPendingToken(data.access_token);
       setPendingUser(me);
       setStage("api-key");
-    } catch (err) {
-      toast(errMsg(err), "error");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function saveInstanceKey() {
-    if (!pendingToken || !apiKey.trim()) {
-      goAfterKey();
-      return;
-    }
-    setBusy(true);
-    try {
-      await apiFetch("/settings/instance-key", pendingToken, {
-        method: "PUT",
-        body: JSON.stringify({ api_key: apiKey }),
-      });
-      goAfterKey();
     } catch (err) {
       toast(errMsg(err), "error");
     } finally {
@@ -173,27 +154,12 @@ export default function SetupScreen() {
 
       {stage === "api-key" && (
         <div className="hero" style={{ padding: 0 }}>
-          <h1 className="hero-title">Add your <span className="accent">AI key.</span></h1>
+          <h1 className="hero-title">Connect your <span className="accent">AI provider.</span></h1>
           <p className="hero-subtitle">
-            Your OpenRouter key powers course generation, quizzes, and analysis. You can add it later in settings.
+            This powers course generation, quizzes and analysis. You can add it later in settings.
           </p>
           <div className="login-form">
-            <div className="login-input-pill">
-              <input
-                className="text-input"
-                placeholder="sk-or-…"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                disabled={busy}
-              />
-            </div>
-            <button
-              className="button primary login-submit"
-              onClick={saveInstanceKey}
-              disabled={busy || !apiKey.trim()}
-            >
-              {busy ? "Saving…" : "Save & continue"}
-            </button>
+            <ProviderForm scope="instance" saveLabel="Save & continue" onSaved={goAfterKey} authToken={pendingToken} />
             <button className="button secondary login-submit" onClick={goAfterKey} style={{ marginTop: 0 }}>
               Skip for now
             </button>
