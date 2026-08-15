@@ -58,25 +58,7 @@ export default function SettingsScreen() {
 
         <div className="settings-pane">
           {tab === "api-key" && (
-            <div className="card settings-section">
-              {user?.role === "admin" ? (
-                <>
-                  <h2 className="settings-section-title">Instance connection</h2>
-                  <p className="settings-section-desc">
-                    Used for course generation, grading and analysis. Users without their own connection fall back to this.
-                  </p>
-                  <ProviderForm scope="instance" />
-                </>
-              ) : (
-                <>
-                  <h2 className="settings-section-title">Your AI provider</h2>
-                  <p className="settings-section-desc">
-                    Bring your own provider and key. This overrides the instance default.
-                  </p>
-                  <ProviderForm scope="user" />
-                </>
-              )}
-            </div>
+            <ProviderForm scope={user?.role === "admin" ? "instance" : "user"} />
           )}
 
           {tab === "account" && (

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-type Option = { value: string; label: string; group?: string };
+type Option = { value: string; label: string; group?: string; badge?: string; tone?: "primary" | "secondary" };
 
 type Props = {
   value: string;
@@ -65,13 +65,25 @@ export default function CustomSelect({ value, options, onChange, disabled }: Pro
               placeholder="Search…"
               value={query}
               autoFocus
+              type="search"
+              name="provider-search"
+              autoComplete="off"
+              spellCheck={false}
+              data-lpignore="true"
+              data-1p-ignore
               onChange={(e) => setQuery(e.target.value)}
             />
           )}
           <ul className="custom-select-list" role="listbox">
             {groups.map(([group, items]) => (
               <li key={group || "ungrouped"} className="custom-select-group">
-                {group && <span className="custom-select-group-label">{group}</span>}
+                {group && (
+                  <span
+                    className={`custom-select-group-label is-${items[0]?.tone ?? "secondary"}`}
+                  >
+                    {group}
+                  </span>
+                )}
                 <ul>
                   {items.map((o) => (
                     <li
@@ -87,6 +99,7 @@ export default function CustomSelect({ value, options, onChange, disabled }: Pro
                         </svg>
                       )}
                       {o.label}
+                      {o.badge && <span className="custom-select-badge">{o.badge}</span>}
                     </li>
                   ))}
                 </ul>

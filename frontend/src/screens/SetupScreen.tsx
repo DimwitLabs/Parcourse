@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import CanvasBackground from "../components/CanvasBackground";
 import { toast } from "../components/Toast";
@@ -12,6 +13,7 @@ type Stage = "mode" | "signup" | "api-key" | "add-user";
 
 export default function SetupScreen() {
   const { setSession } = useAuth();
+  const navigate = useNavigate();
   const [stage, setStage] = useState<Stage>("mode");
 
   useEffect(() => {
@@ -74,7 +76,11 @@ export default function SetupScreen() {
   }
 
   function finishSetup() {
-    if (pendingToken && pendingUser) setSession(pendingToken, pendingUser);
+    if (!pendingToken || !pendingUser) return;
+    // Setup renders over whatever URL the browser was on, so land on home
+    // rather than whichever route that happened to be.
+    navigate("/", { replace: true });
+    setSession(pendingToken, pendingUser);
   }
 
   return (
@@ -159,10 +165,13 @@ export default function SetupScreen() {
             This powers course generation, quizzes and analysis. You can add it later in settings.
           </p>
           <div className="login-form">
-            <ProviderForm scope="instance" saveLabel="Save & continue" onSaved={goAfterKey} authToken={pendingToken} />
-            <button className="button secondary login-submit" onClick={goAfterKey} style={{ marginTop: 0 }}>
-              Skip for now
-            </button>
+            <ProviderForm
+              scope="instance"
+              onSaved={goAfterKey}
+              onSkip={goAfterKey}
+              authToken={pendingToken}
+              framed={false}
+            />
           </div>
         </div>
       )}
