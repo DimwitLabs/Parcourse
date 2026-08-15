@@ -18,5 +18,7 @@ class User(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     first_name: str | None = Field(default=None)
     last_name: str | None = Field(default=None)
+    # Holds an encrypted connection blob for any provider. The column name
+    # predates provider support and is kept to avoid a migration.
     openrouter_key: str | None = Field(default=None)
     must_change_password: bool = Field(default=False)
