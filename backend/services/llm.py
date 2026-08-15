@@ -78,7 +78,7 @@ def _validate(raw: str, schema: type[BaseModel] | None, required_keys: Sequence[
 def complete_json(
     *,
     model: str,
-    api_key: str,
+    credentials: dict[str, str],
     prompt: str,
     schema: type[BaseModel] | None = None,
     required_keys: Sequence[str] = (),
@@ -96,7 +96,7 @@ def complete_json(
     last_error: Exception | None = None
     for attempt in (1, 2):
         response = litellm.completion(
-            model=model, messages=messages, temperature=temperature, api_key=api_key, **kwargs
+            model=model, messages=messages, temperature=temperature, **credentials, **kwargs
         )
         raw = response.choices[0].message.content or ""
         usage = getattr(response, "usage", None)
@@ -120,3 +120,12 @@ def complete_json(
     raise LLMJsonError(
         f"{model} did not return usable JSON. Try a different model in Settings."
     ) from last_error
+
+
+def describe_json_mode(model: str, schema: type[BaseModel] | None = None) -> str:
+    """Human-readable JSON mode, for showing the result of a connection test."""
+    kwargs = _capabilities(model, schema)
+    fmt = kwargs.get("response_format")
+    if fmt is None:
+        return "prompt"
+    return "schema" if isinstance(fmt, type) else "json_object"

@@ -61,7 +61,7 @@ def extract_and_merge(
     course_id: uuid.UUID,
     course: CourseResponse,
     video_id: str,
-    api_key: str,
+    credentials: dict[str, str],
     model: str | None = None,
 ) -> None:
     logger.info("[knowledge_graph]: extracting and merging for course %s, user %s, video %s", course_id, user_id, video_id)
@@ -74,7 +74,7 @@ def extract_and_merge(
     logger.info("[knowledge_graph]: extracting with model=%s", used_model)
     data = complete_json(
         model=used_model,
-        api_key=api_key,
+        credentials=credentials,
         prompt=prompt,
         schema=KnowledgeExtraction,
         temperature=0.2,

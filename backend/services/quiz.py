@@ -25,7 +25,7 @@ _THEORY_GRADE_PROMPT = load("quiz_theory_grade")
 
 
 def _grade_theory(
-    question: str, reference_answer: str, student_answer: str, api_key: str, model: str | None = None
+    question: str, reference_answer: str, student_answer: str, credentials: dict[str, str], model: str | None = None
 ) -> TheoryScoreBreakdown:
     if not student_answer.strip():
         logger.info("[quiz]: empty answer submitted, returning zero scores")
@@ -34,7 +34,7 @@ def _grade_theory(
         )
 
     used_model = model or settings.ai_model
-    logger.info("[quiz]: grading theory answer, model=%s, api_key length=%d", used_model, len(api_key))
+    logger.info("[quiz]: grading theory answer, model=%s", used_model)
     prompt = _THEORY_GRADE_PROMPT.format(
         question=question,
         reference_answer=reference_answer,
@@ -43,7 +43,7 @@ def _grade_theory(
     )
     data = complete_json(
         model=used_model,
-        api_key=api_key,
+        credentials=credentials,
         prompt=prompt,
         schema=TheoryScoreBreakdown,
         temperature=0,
@@ -61,7 +61,7 @@ def _generate_prose_analysis(
     results_summary: str,
     answered_count: int,
     total_count: int,
-    api_key: str,
+    credentials: dict[str, str],
     model: str | None = None,
 ) -> str:
     used_model = model or settings.ai_model
@@ -77,7 +77,7 @@ def _generate_prose_analysis(
             model=used_model,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.4,
-            api_key=api_key,
+            **credentials,
         )
         text = response.choices[0].message.content.strip().strip('"')
         return text.replace("—", ",").replace("–", ",")
@@ -91,7 +91,7 @@ def score_submission(
     course: CourseResponse,
     mcq_answers: list[MCQAnswer],
     theory_answers: list[TheoryAnswer],
-    api_key: str,
+    credentials: dict[str, str],
     model: str | None = None,
 ) -> QuizResultResponse:
     logger.info("[quiz]: scoring submission for course %s (%d MCQs, %d theory answers)", course_id, len(mcq_answers), len(theory_answers))
@@ -127,7 +127,7 @@ def score_submission(
                     feedback="Question was skipped.",
                 ))
                 continue
-            breakdown = _grade_theory(question.question, question.reference_answer, answer.answer_text, api_key, model)
+            breakdown = _grade_theory(question.question, question.reference_answer, answer.answer_text, credentials, model)
             average = round((breakdown.accuracy + breakdown.completeness + breakdown.relevance) / 3, 1)
             results.append(QuestionResult(
                 question_id=question.id, question_type="theory",
@@ -161,7 +161,7 @@ def score_submission(
     if answered_count == 0:
         prose_analysis = ""
     else:
-        prose_analysis = _generate_prose_analysis(section_titles, "\n".join(summary_lines), answered_count, len(results), api_key, model)
+        prose_analysis = _generate_prose_analysis(section_titles, "\n".join(summary_lines), answered_count, len(results), credentials, model)
 
     logger.info("[quiz]: scoring complete for course %s — %.1f/%.1f (%.1f%%)", course_id, total_score, max_score, percentage)
     return QuizResultResponse(

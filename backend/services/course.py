@@ -54,7 +54,7 @@ def thumbnail_url(video_id: str) -> str:
     return f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
 
 
-def generate(video_id: str, segments: list[TranscriptSegment], api_key: str, model: str | None = None, video_title: str = "", feedback: str = "") -> CourseResponse:
+def generate(video_id: str, segments: list[TranscriptSegment], credentials: dict[str, str], model: str | None = None, video_title: str = "", feedback: str = "") -> CourseResponse:
     logger.info("[course]: generating course for video %s (%d segments)", video_id, len(segments))
     if segments:
         logger.info(
@@ -113,7 +113,7 @@ def generate(video_id: str, segments: list[TranscriptSegment], api_key: str, mod
     logger.info("[course]: generating with model=%s", used_model)
     data = complete_json(
         model=used_model,
-        api_key=api_key,
+        credentials=credentials,
         prompt=prompt,
         required_keys=("sections",),
         temperature=0.3,

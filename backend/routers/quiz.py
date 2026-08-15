@@ -15,7 +15,7 @@ from models.quiz_attempt import QuizAttempt
 from models.user import User
 from schemas.course import CourseResponse
 from schemas.quiz import QuizResultResponse, QuizSubmitRequest
-from services.api_key import NoApiKeyError, resolve_api_key, resolve_model
+from services.api_key import NoApiKeyError, resolve_connection
 from services.quiz import score_submission
 
 router = APIRouter(prefix="/quiz", tags=["quiz"])
@@ -41,13 +41,13 @@ def score_quiz(
 
     course = CourseResponse.model_validate_json(cached.course_json)
     try:
-        api_key = resolve_api_key(session, user)
+        connection = resolve_connection(session, user)
     except NoApiKeyError as exc:
         raise HTTPException(status_code=status.HTTP_412_PRECONDITION_FAILED, detail=str(exc)) from exc
-    model = resolve_model(session)
+    model = connection.model
 
     try:
-        result = score_submission(body.course_id, course, body.mcq_answers, body.theory_answers, api_key, model)
+        result = score_submission(body.course_id, course, body.mcq_answers, body.theory_answers, connection.credentials, model)
     except Exception as exc:
         logger.error("[quiz]: AI scoring failed for course_id=%s: %s", body.course_id, exc)
         raise HTTPException(

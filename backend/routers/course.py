@@ -18,7 +18,7 @@ from models.quiz_draft import QuizDraft
 from models.section_progress import SectionProgress
 from models.user import User
 from schemas.course import CourseGenerateRequest, CourseListEntry, CourseResponse, CourseResponsePublic
-from services.api_key import NoApiKeyError, resolve_api_key, resolve_model
+from services.api_key import NoApiKeyError, resolve_connection
 from services.course import generate
 from services.knowledge_graph import extract_and_merge
 
@@ -49,13 +49,13 @@ def generate_course(
         return CourseResponsePublic.from_full(course, id=str(existing.id))
 
     try:
-        api_key = resolve_api_key(session, user)
+        connection = resolve_connection(session, user)
     except NoApiKeyError as exc:
         logger.warning("[course]: no API key for user %s", user.id)
         raise HTTPException(status_code=status.HTTP_412_PRECONDITION_FAILED, detail=str(exc)) from exc
-    model = resolve_model(session)
+    model = connection.model
     try:
-        course = generate(body.video_id, body.segments, api_key, model, body.video_title, body.feedback)
+        course = generate(body.video_id, body.segments, connection.credentials, model, body.video_title, body.feedback)
     except Exception as exc:
         logger.error("[course]: AI generation failed for video_id=%s: %s", body.video_id, exc)
         raise HTTPException(
@@ -69,7 +69,7 @@ def generate_course(
     logger.info("[course]: generated and cached course id=%s for video_id=%s", cached.id, body.video_id)
 
     try:
-        extract_and_merge(session, user.id, cached.id, course, course.video_id, api_key, model)
+        extract_and_merge(session, user.id, cached.id, course, course.video_id, connection.credentials, model)
     except Exception:
         logger.exception("Knowledge graph extraction failed for course %s", cached.id)
         session.rollback()

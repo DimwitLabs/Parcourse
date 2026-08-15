@@ -9,7 +9,7 @@ from database import get_session
 from dependencies import get_current_user
 from models.user import User
 from schemas.guardrail import GuardrailRequest, GuardrailResult
-from services.api_key import NoApiKeyError, resolve_api_key, resolve_model
+from services.api_key import NoApiKeyError, resolve_connection
 from services.guardrail import classify
 
 router = APIRouter(prefix="/guardrail", tags=["guardrail"])
@@ -23,13 +23,13 @@ def check(
 ) -> GuardrailResult:
     logger.info("[guardrail]: check called, transcript length=%d", len(body.transcript))
     try:
-        api_key = resolve_api_key(session, user)
+        connection = resolve_connection(session, user)
     except NoApiKeyError as exc:
         logger.warning("[guardrail]: no API key for user %s", user.id)
         raise HTTPException(status_code=status.HTTP_412_PRECONDITION_FAILED, detail=str(exc)) from exc
-    model = resolve_model(session)
+    model = connection.model
     try:
-        result = classify(body.transcript, api_key, model)
+        result = classify(body.transcript, connection.credentials, model)
         logger.info("[guardrail]: classification result is_learnable=%s", result.is_learnable)
         return result
     except Exception as exc:
