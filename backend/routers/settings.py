@@ -1,4 +1,7 @@
 import logging
+import re
+
+import litellm
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
@@ -10,101 +13,32 @@ from dependencies import get_current_user, require_admin
 from models.instance_config import INSTANCE_ID, InstanceConfig
 from models.user import User
 from schemas.auth import UserResponse
-from config import settings
 from schemas.settings import (
-    ApiKeyStatusResponse,
-    ApiKeyUpdateRequest,
+    AiStatusResponse,
     ConnectionResponse,
     ConnectionUpdateRequest,
-    ModelResponse,
-    ModelUpdateRequest,
     ProfileUpdateRequest,
     ProviderFieldResponse,
     ProviderResponse,
     TestConnectionResponse,
 )
+from services.api_key import NoApiKeyError, fallback_model, resolve_connection
 from services.connection import deserialize, serialize
-from services.crypto import encrypt
 from services.llm import complete_json, describe_json_mode
+
+# Ordered: the first matching class wins, so narrower errors come first.
+_ERROR_MESSAGES: tuple[tuple[type[Exception], str], ...] = (
+    (litellm.AuthenticationError, "Those credentials were rejected. Check the key and try again."),
+    (litellm.NotFoundError, "{model} is not a model this provider offers. Check the model ID."),
+    (litellm.RateLimitError, "The provider is rate limiting this key. Try again shortly."),
+    (litellm.Timeout, "Could not reach the provider. Check the server URL and that it is running."),
+    (litellm.APIConnectionError, "Could not reach the provider. Check the server URL and that it is running."),
+    (litellm.ServiceUnavailableError, "The provider is unavailable right now. Try again shortly."),
+    (litellm.BadRequestError, "The provider rejected the request for {model}."),
+)
 from services.providers import PROVIDERS, qualify
 
 router = APIRouter(prefix="/settings", tags=["settings"])
-
-
-@router.get("/api-key", response_model=ApiKeyStatusResponse)
-def get_my_api_key_status(user: User = Depends(get_current_user)) -> ApiKeyStatusResponse:
-    logger.info("[settings]: get API key status for user %s", user.id)
-    return ApiKeyStatusResponse(has_key=bool(user.openrouter_key))
-
-
-@router.put("/api-key", response_model=ApiKeyStatusResponse)
-def set_my_api_key(
-    body: ApiKeyUpdateRequest,
-    user: User = Depends(get_current_user),
-    session: Session = Depends(get_session),
-) -> ApiKeyStatusResponse:
-    logger.info("[settings]: set API key for user %s", user.id)
-    user.openrouter_key = encrypt(body.api_key) if body.api_key.strip() else None
-    session.add(user)
-    session.commit()
-    logger.info("[settings]: API key updated for user %s, has_key=%s", user.id, bool(user.openrouter_key))
-    return ApiKeyStatusResponse(has_key=bool(user.openrouter_key))
-
-
-@router.get("/instance-key", response_model=ApiKeyStatusResponse)
-def get_instance_api_key_status(
-    _: User = Depends(require_admin),
-    session: Session = Depends(get_session),
-) -> ApiKeyStatusResponse:
-    logger.info("[settings]: get instance API key status")
-    instance = session.get(InstanceConfig, INSTANCE_ID)
-    return ApiKeyStatusResponse(has_key=bool(instance and instance.default_openrouter_key))
-
-
-@router.put("/instance-key", response_model=ApiKeyStatusResponse)
-def set_instance_api_key(
-    body: ApiKeyUpdateRequest,
-    _: User = Depends(require_admin),
-    session: Session = Depends(get_session),
-) -> ApiKeyStatusResponse:
-    logger.info("[settings]: set instance API key")
-    instance = session.get(InstanceConfig, INSTANCE_ID)
-    if instance is None:
-        logger.error("[settings]: instance not configured when setting instance key")
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Instance not configured")
-    instance.default_openrouter_key = encrypt(body.api_key) if body.api_key.strip() else None
-    session.add(instance)
-    session.commit()
-    logger.info("[settings]: instance API key updated, has_key=%s", bool(instance.default_openrouter_key))
-    return ApiKeyStatusResponse(has_key=bool(instance.default_openrouter_key))
-
-
-@router.get("/model", response_model=ModelResponse)
-def get_model(
-    _: User = Depends(require_admin),
-    session: Session = Depends(get_session),
-) -> ModelResponse:
-    logger.info("[settings]: get model")
-    instance = session.get(InstanceConfig, INSTANCE_ID)
-    return ModelResponse(model=instance.ai_model if instance else "openrouter/openai/gpt-4o-mini")
-
-
-@router.put("/model", response_model=ModelResponse)
-def set_model(
-    body: ModelUpdateRequest,
-    _: User = Depends(require_admin),
-    session: Session = Depends(get_session),
-) -> ModelResponse:
-    logger.info("[settings]: set model to %s", body.model)
-    instance = session.get(InstanceConfig, INSTANCE_ID)
-    if instance is None:
-        logger.error("[settings]: instance not configured when setting model")
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Instance not configured")
-    instance.ai_model = body.model.strip()
-    session.add(instance)
-    session.commit()
-    logger.info("[settings]: model updated to %s", instance.ai_model)
-    return ModelResponse(model=instance.ai_model)
 
 
 @router.put("/profile", response_model=UserResponse)
@@ -173,7 +107,7 @@ def get_my_connection(
     session: Session = Depends(get_session),
 ) -> ConnectionResponse:
     instance = session.get(InstanceConfig, INSTANCE_ID)
-    return _connection_response(user.openrouter_key, instance.ai_model if instance else settings.ai_model)
+    return _connection_response(user.openrouter_key, fallback_model(instance))
 
 
 @router.put("/connection", response_model=ConnectionResponse)
@@ -184,7 +118,7 @@ def set_my_connection(
 ) -> ConnectionResponse:
     logger.info("[settings]: set connection for user %s, provider=%s", user.id, body.provider)
     instance = session.get(InstanceConfig, INSTANCE_ID)
-    fallback = instance.ai_model if instance else settings.ai_model
+    fallback = fallback_model(instance)
     user.openrouter_key = _store(body, user.openrouter_key, fallback)
     session.add(user)
     session.commit()
@@ -254,7 +188,7 @@ def _credentials_for_test(
     if any(v.strip() for v in body.credentials.values()):
         return body.credentials
     instance = session.get(InstanceConfig, INSTANCE_ID)
-    fallback = instance.ai_model if instance else settings.ai_model
+    fallback = fallback_model(instance)
     for blob in (user.openrouter_key, instance.default_openrouter_key if instance else None):
         stored = deserialize(blob, fallback)
         if stored and stored.provider == body.provider and stored.has_credentials:
@@ -263,6 +197,19 @@ def _credentials_for_test(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail="Credentials are required for this provider.",
     )
+
+
+def _readable_error(exc: Exception, model: str) -> str:
+    """LiteLLM raises with the provider's whole JSON envelope attached, so the
+    class says what went wrong and the envelope says why."""
+    for kind, message in _ERROR_MESSAGES:
+        if isinstance(exc, kind):
+            return message.format(model=model)
+
+    match = re.search(r"[\'\"]message[\'\"]:\s*[\'\"](.+?)[\'\"][,}]", str(exc), re.S)
+    if match:
+        return match.group(1).strip()[:200]
+    return f"The request failed: {type(exc).__name__}."
 
 
 @router.post("/test-connection", response_model=TestConnectionResponse)
@@ -290,8 +237,23 @@ def test_connection(
         )
     except Exception as exc:
         logger.warning("[settings]: connection test failed: %s", exc)
-        return TestConnectionResponse(ok=False, detail=str(exc)[:400])
+        return TestConnectionResponse(ok=False, detail=_readable_error(exc, model))
 
     return TestConnectionResponse(
         ok=True, detail=f"{model} responded", json_mode=describe_json_mode(model)
     )
+
+
+@router.get("/ai-status", response_model=AiStatusResponse)
+def ai_status(
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> AiStatusResponse:
+    """Whether this user can generate anything at all, counting their own
+    connection and the instance default."""
+    try:
+        connection = resolve_connection(session, user)
+    except NoApiKeyError:
+        logger.info("[settings]: ai-status not ready for user %s", user.id)
+        return AiStatusResponse(ready=False)
+    return AiStatusResponse(ready=True, provider=connection.provider, model=connection.model)
