@@ -4,7 +4,6 @@ import uuid
 from collections import defaultdict
 
 
-from config import settings
 from schemas.course import CourseResponse, CourseSection, MCQOption, MCQQuestion, TheoryQuestion
 from schemas.transcript import TranscriptSegment
 from services.llm import complete_json
@@ -54,7 +53,7 @@ def thumbnail_url(video_id: str) -> str:
     return f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
 
 
-def generate(video_id: str, segments: list[TranscriptSegment], credentials: dict[str, str], model: str | None = None, video_title: str = "", feedback: str = "") -> CourseResponse:
+def generate(video_id: str, segments: list[TranscriptSegment], credentials: dict[str, str], model: str, video_title: str = "", feedback: str = "") -> CourseResponse:
     logger.info("[course]: generating course for video %s (%d segments)", video_id, len(segments))
     if segments:
         logger.info(
@@ -109,10 +108,9 @@ def generate(video_id: str, segments: list[TranscriptSegment], credentials: dict
     )
     logger.info("[course]: full prompt %d chars (~%d tokens)", len(prompt), len(prompt) // 4)
 
-    used_model = model or settings.ai_model
-    logger.info("[course]: generating with model=%s", used_model)
+    logger.info("[course]: generating with model=%s", model)
     data = complete_json(
-        model=used_model,
+        model=model,
         credentials=credentials,
         prompt=prompt,
         required_keys=("sections",),

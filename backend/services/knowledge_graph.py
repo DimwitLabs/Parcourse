@@ -3,7 +3,6 @@ import uuid
 
 from sqlmodel import Session, select
 
-from config import settings
 
 logger = logging.getLogger(__name__)
 from models.knowledge_graph import (
@@ -62,7 +61,7 @@ def extract_and_merge(
     course: CourseResponse,
     video_id: str,
     credentials: dict[str, str],
-    model: str | None = None,
+    model: str,
 ) -> None:
     logger.info("[knowledge_graph]: extracting and merging for course %s, user %s, video %s", course_id, user_id, video_id)
 
@@ -70,10 +69,9 @@ def extract_and_merge(
     prompt = _EXTRACTION_PROMPT.format(
         sections_summary=sections_summary, existing_labels=_existing_labels(session)
     )
-    used_model = model or settings.ai_model
-    logger.info("[knowledge_graph]: extracting with model=%s", used_model)
+    logger.info("[knowledge_graph]: extracting with model=%s", model)
     data = complete_json(
-        model=used_model,
+        model=model,
         credentials=credentials,
         prompt=prompt,
         schema=KnowledgeExtraction,

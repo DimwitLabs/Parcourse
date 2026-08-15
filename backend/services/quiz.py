@@ -2,7 +2,6 @@ import logging
 
 import litellm
 
-from config import settings
 from schemas.course import CourseResponse
 from schemas.quiz import MCQAnswer, QuestionResult, QuizResultResponse, TheoryAnswer, TheoryScoreBreakdown
 from services.llm import complete_json
@@ -25,7 +24,7 @@ _THEORY_GRADE_PROMPT = load("quiz_theory_grade")
 
 
 def _grade_theory(
-    question: str, reference_answer: str, student_answer: str, credentials: dict[str, str], model: str | None = None
+    question: str, reference_answer: str, student_answer: str, credentials: dict[str, str], model: str
 ) -> TheoryScoreBreakdown:
     if not student_answer.strip():
         logger.info("[quiz]: empty answer submitted, returning zero scores")
@@ -33,8 +32,7 @@ def _grade_theory(
             accuracy=0, completeness=0, relevance=0, feedback="No answer submitted."
         )
 
-    used_model = model or settings.ai_model
-    logger.info("[quiz]: grading theory answer, model=%s", used_model)
+    logger.info("[quiz]: grading theory answer, model=%s", model)
     prompt = _THEORY_GRADE_PROMPT.format(
         question=question,
         reference_answer=reference_answer,
@@ -42,7 +40,7 @@ def _grade_theory(
         dimensions=_DIMENSIONS_TEXT,
     )
     data = complete_json(
-        model=used_model,
+        model=model,
         credentials=credentials,
         prompt=prompt,
         schema=TheoryScoreBreakdown,
@@ -62,10 +60,9 @@ def _generate_prose_analysis(
     answered_count: int,
     total_count: int,
     credentials: dict[str, str],
-    model: str | None = None,
+    model: str,
 ) -> str:
-    used_model = model or settings.ai_model
-    logger.info("[quiz]: generating prose analysis, model=%s", used_model)
+    logger.info("[quiz]: generating prose analysis, model=%s", model)
     prompt = _PROSE_ANALYSIS_PROMPT.format(
         section_titles="\n".join(f"- {t}" for t in section_titles),
         results_summary=results_summary,
@@ -74,7 +71,7 @@ def _generate_prose_analysis(
     )
     try:
         response = litellm.completion(
-            model=used_model,
+            model=model,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.4,
             **credentials,
@@ -92,7 +89,7 @@ def score_submission(
     mcq_answers: list[MCQAnswer],
     theory_answers: list[TheoryAnswer],
     credentials: dict[str, str],
-    model: str | None = None,
+    model: str,
 ) -> QuizResultResponse:
     logger.info("[quiz]: scoring submission for course %s (%d MCQs, %d theory answers)", course_id, len(mcq_answers), len(theory_answers))
     mcq_answer_lookup = {a.question_id: a for a in mcq_answers}
