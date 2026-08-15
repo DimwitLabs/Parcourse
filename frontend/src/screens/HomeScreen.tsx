@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { toast } from "../components/Toast";
@@ -31,8 +32,12 @@ function shuffle<T>(arr: T[]): T[] {
   return out;
 }
 
+const URL_PLACEHOLDER = "youtube.com/watch?v=…";
+const SUBMIT_LABEL = "Create course";
+
+
 export default function HomeScreen() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const navigate = useNavigate();
   const [videoUrl, setVideoUrl] = useState("");
   const [step, setStep] = useState<Step>("idle");
@@ -42,10 +47,18 @@ export default function HomeScreen() {
   const [pending, setPending] = useState<PendingTranscript | null>(null);
   const funInterval = useRef<ReturnType<typeof setInterval>>();
   const [courses, setCourses] = useState<CourseEntry[] | null>(null);
+  const [aiReady, setAiReady] = useState(true);
+  const [fillOrigin, setFillOrigin] = useState({ x: "50%", y: "50%" });
 
   useEffect(() => {
     apiFetch("/courses", token)
       .then(setCourses)
+      .catch(() => {});
+  }, [token]);
+
+  useEffect(() => {
+    apiFetch("/settings/ai-status", token)
+      .then((d: { ready: boolean }) => setAiReady(d.ready))
       .catch(() => {});
   }, [token]);
 
@@ -156,24 +169,48 @@ export default function HomeScreen() {
         </p>
 
         <div className="url-form-wrap">
-          <form
-            className="url-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              createCourse();
-            }}
-          >
-            <input
-              className="text-input"
-              placeholder="youtube.com/watch?v=…"
-              value={videoUrl}
-              onChange={(e) => setVideoUrl(e.target.value)}
-              disabled={busy}
-            />
-            <button className="button primary" type="submit" disabled={busy || !videoUrl}>
-              {busy ? "Working…" : "Create course"}
+          {aiReady ? (
+            <form
+              className="url-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                createCourse();
+              }}
+            >
+              <input
+                className="text-input"
+                placeholder={URL_PLACEHOLDER}
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                disabled={busy}
+              />
+              <button className="button primary" type="submit" disabled={busy || !videoUrl}>
+                {busy ? "Working…" : SUBMIT_LABEL}
+              </button>
+            </form>
+          ) : (
+            <button
+              type="button"
+              className="url-form url-form-gate"
+              onClick={() => navigate("/settings")}
+              onMouseEnter={(e) => {
+                const box = e.currentTarget.getBoundingClientRect();
+                setFillOrigin({ x: `${e.clientX - box.left}px`, y: `${e.clientY - box.top}px` });
+              }}
+              style={{ "--fill-x": fillOrigin.x, "--fill-y": fillOrigin.y } as CSSProperties}
+              title={
+                user?.role === "admin"
+                  ? "No AI provider is set up yet"
+                  : "No AI provider is set up yet. You can add your own."
+              }
+            >
+              <span className="url-form-gate-resting">
+                <span className="text-input">{URL_PLACEHOLDER}</span>
+                <span className="button primary">{SUBMIT_LABEL}</span>
+              </span>
+              <span className="url-form-gate-label">Configure AI</span>
             </button>
-          </form>
+          )}
 
           {busy && (
             <div className="gen-pills-panel">
