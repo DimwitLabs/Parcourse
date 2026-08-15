@@ -1,8 +1,6 @@
-import json
 import logging
 import uuid
 
-import litellm
 from sqlmodel import Session, select
 
 from config import settings
@@ -18,6 +16,7 @@ from models.knowledge_graph import (
 )
 from schemas.course import CourseResponse
 from schemas.knowledge_graph import KnowledgeExtraction
+from services.llm import complete_json
 from services.prompts import load
 
 _EXTRACTION_PROMPT = load("knowledge_graph_extraction")
@@ -72,17 +71,14 @@ def extract_and_merge(
         sections_summary=sections_summary, existing_labels=_existing_labels(session)
     )
     used_model = model or settings.ai_model
-    logger.info("[knowledge_graph]: calling litellm.completion model=%s, api_key length=%d", used_model, len(api_key))
-    response = litellm.completion(
+    logger.info("[knowledge_graph]: extracting with model=%s", used_model)
+    data = complete_json(
         model=used_model,
-        messages=[{"role": "user", "content": prompt}],
-        response_format={"type": "json_object"},
-        temperature=0.2,
         api_key=api_key,
+        prompt=prompt,
+        schema=KnowledgeExtraction,
+        temperature=0.2,
     )
-    usage = getattr(response, "usage", None)
-    logger.info("[knowledge_graph]: litellm.completion succeeded, tokens=%s", usage if usage else "N/A")
-    data = json.loads(response.choices[0].message.content)
     extraction = KnowledgeExtraction(**data)
 
     label_to_node: dict[str, KnowledgeNode] = {}

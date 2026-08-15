@@ -1,14 +1,13 @@
-import json
 import logging
 import re
 import uuid
 from collections import defaultdict
 
-import litellm
 
 from config import settings
 from schemas.course import CourseResponse, CourseSection, MCQOption, MCQQuestion, TheoryQuestion
 from schemas.transcript import TranscriptSegment
+from services.llm import complete_json
 from services.prompts import load
 
 logger = logging.getLogger(__name__)
@@ -111,22 +110,14 @@ def generate(video_id: str, segments: list[TranscriptSegment], api_key: str, mod
     logger.info("[course]: full prompt %d chars (~%d tokens)", len(prompt), len(prompt) // 4)
 
     used_model = model or settings.ai_model
-    logger.info("[course]: calling litellm.completion model=%s", used_model)
-    response = litellm.completion(
+    logger.info("[course]: generating with model=%s", used_model)
+    data = complete_json(
         model=used_model,
-        messages=[{"role": "user", "content": prompt}],
-        response_format={"type": "json_object"},
-        temperature=0.3,
         api_key=api_key,
+        prompt=prompt,
+        required_keys=("sections",),
+        temperature=0.3,
     )
-    usage = getattr(response, "usage", None)
-    logger.info(
-        "[course]: completion done — prompt_tokens=%s completion_tokens=%s total_tokens=%s",
-        getattr(usage, "prompt_tokens", "?"),
-        getattr(usage, "completion_tokens", "?"),
-        getattr(usage, "total_tokens", "?"),
-    )
-    data = json.loads(response.choices[0].message.content)
 
     sections = []
     for s in data["sections"]:

@@ -1,4 +1,3 @@
-import json
 import logging
 
 import litellm
@@ -6,6 +5,7 @@ import litellm
 from config import settings
 from schemas.course import CourseResponse
 from schemas.quiz import MCQAnswer, QuestionResult, QuizResultResponse, TheoryAnswer, TheoryScoreBreakdown
+from services.llm import complete_json
 from services.prompts import load
 
 logger = logging.getLogger(__name__)
@@ -41,15 +41,13 @@ def _grade_theory(
         student_answer=student_answer,
         dimensions=_DIMENSIONS_TEXT,
     )
-    response = litellm.completion(
+    data = complete_json(
         model=used_model,
-        messages=[{"role": "user", "content": prompt}],
-        response_format={"type": "json_object"},
-        temperature=0,
         api_key=api_key,
+        prompt=prompt,
+        schema=TheoryScoreBreakdown,
+        temperature=0,
     )
-    logger.info("[quiz]: theory grading litellm.completion succeeded")
-    data = json.loads(response.choices[0].message.content)
     if "feedback" in data:
         data["feedback"] = data["feedback"].replace("—", ",").replace("–", ",")
     return TheoryScoreBreakdown(**data)
