@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 from database import get_session
 from dependencies import get_current_user, require_admin
 from models.instance_config import INSTANCE_ID, InstanceConfig
-from models.user import User
+from models.user import User, UserRole
 from schemas.auth import UserResponse
 from schemas.settings import (
     AiStatusResponse,
@@ -189,15 +189,18 @@ def _credentials_for_test(
     body: ConnectionUpdateRequest, user: User, session: Session
 ) -> dict[str, str]:
     """Blank credentials mean "test what is already saved", so the form can
-    verify an existing connection without making the user paste the key again."""
+    verify a connection without making the user paste the key again. Only the
+    one that scope owns, so nobody can spend a key they cannot see."""
     if any(v.strip() for v in body.credentials.values()):
         return body.credentials
     instance = session.get(InstanceConfig, INSTANCE_ID)
-    fallback = fallback_model(instance)
-    for blob in (user.openrouter_key, instance.default_openrouter_key if instance else None):
-        stored = deserialize(blob, fallback)
-        if stored and stored.provider == body.provider and stored.has_credentials:
-            return stored.credentials
+    if user.role == UserRole.admin:
+        blob = instance.default_openrouter_key if instance else None
+    else:
+        blob = user.openrouter_key
+    stored = deserialize(blob, fallback_model(instance))
+    if stored and stored.provider == body.provider and stored.has_credentials:
+        return stored.credentials
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail="Credentials are required for this provider.",
