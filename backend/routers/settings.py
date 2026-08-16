@@ -84,17 +84,20 @@ def _connection_response(blob: str | None, fallback: str) -> ConnectionResponse:
 
 
 def _store(body: ConnectionUpdateRequest, existing: str | None, fallback: str) -> str:
-    """Credentials are never sent back to the client, so the edit form posts
-    them blank to mean "keep what is stored". Clearing is an explicit DELETE."""
-    credentials = body.credentials
+    """Credentials are never sent back to the client, so a blank field means
+    "keep what is stored". Per field, or editing an endpoint would wipe the key
+    beside it. Clearing is an explicit DELETE."""
+    current = deserialize(existing, fallback)
+    stored = current.credentials if current and current.provider == body.provider else {}
+    credentials = {
+        name: value if value.strip() else stored.get(name, "")
+        for name, value in body.credentials.items()
+    }
     if not any(v.strip() for v in credentials.values()):
-        current = deserialize(existing, fallback)
-        if current is None or current.provider != body.provider or not current.has_credentials:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Credentials are required for this provider.",
-            )
-        credentials = current.credentials
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Credentials are required for this provider.",
+        )
     try:
         return serialize(body.provider, body.model, credentials)
     except (KeyError, ValueError) as exc:
