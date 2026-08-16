@@ -122,9 +122,16 @@ def complete_json(
     ) from last_error
 
 
-def describe_json_mode(model: str, schema: type[BaseModel] | None = None) -> str:
-    """Human-readable JSON mode, for showing the result of a connection test."""
-    kwargs = _capabilities(model, schema)
+class _SchemaProbe(BaseModel):
+    """LiteLLM answers per model, not per schema, so any class asks the question."""
+
+    ok: bool
+
+
+def describe_json_mode(model: str) -> str:
+    """The strongest mode generation could use, for the connection test to show.
+    Not the mode the test itself ran in: it asks for JSON without a schema."""
+    kwargs = _capabilities(model, _SchemaProbe)
     fmt = kwargs.get("response_format")
     if fmt is None:
         return "prompt"
