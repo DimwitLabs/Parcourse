@@ -35,7 +35,6 @@ function shuffle<T>(arr: T[]): T[] {
 const URL_PLACEHOLDER = "youtube.com/watch?v=…";
 const SUBMIT_LABEL = "Create course";
 
-
 export default function HomeScreen() {
   const { token, user } = useAuth();
   const navigate = useNavigate();
@@ -47,7 +46,8 @@ export default function HomeScreen() {
   const [pending, setPending] = useState<PendingTranscript | null>(null);
   const funInterval = useRef<ReturnType<typeof setInterval>>();
   const [courses, setCourses] = useState<CourseEntry[] | null>(null);
-  const [aiReady, setAiReady] = useState(true);
+  // Fails closed: an unanswered status call shows the gate, not a dead submit.
+  const [aiReady, setAiReady] = useState(false);
   const [fillOrigin, setFillOrigin] = useState({ x: "50%", y: "50%" });
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export default function HomeScreen() {
   useEffect(() => {
     apiFetch("/settings/ai-status", token)
       .then((d: { ready: boolean }) => setAiReady(d.ready))
-      .catch(() => {});
+      .catch(() => setAiReady(false));
   }, [token]);
 
   useEffect(() => {
