@@ -30,7 +30,7 @@ const DEFAULT_PROVIDER = "openrouter";
 
 type Props = {
   scope: "user" | "instance";
-  /** Onboarding lays the form out in a hero, not in cards. */
+  /** Onboarding lays the form out in a hero: no cards, and no help strip. */
   framed?: boolean;
   onSaved?: () => void;
   saveLabel?: string;
@@ -296,7 +296,7 @@ export default function ProviderForm({
         </div>
       </div>
 
-      {provider.docs && (
+      {framed && provider.docs && (
         <div className="connection-help-bar card">
           <span className="status-message">
             {needsKey
