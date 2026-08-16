@@ -1,5 +1,6 @@
 """Connection storage. The legacy case matters most: keys written before
 providers existed are bare strings and must keep working forever."""
+import json
 import unittest
 
 from services.connection import Connection, deserialize, serialize
@@ -24,6 +25,10 @@ class DeserializeTests(unittest.TestCase):
 
     def test_nothing_stored_is_no_connection(self):
         self.assertIsNone(deserialize(None, FALLBACK))
+
+    def test_json_without_a_provider_fails_loudly(self):
+        with self.assertRaises(ValueError):
+            deserialize(encrypt(json.dumps({"model": "gpt-4o"})), FALLBACK)
 
     def test_blank_credentials_do_not_count_as_configured(self):
         self.assertFalse(Connection("openai", "openai/gpt-4o", {"api_key": "  "}).has_credentials)

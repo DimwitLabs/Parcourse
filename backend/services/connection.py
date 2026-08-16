@@ -49,8 +49,9 @@ def deserialize(blob: str | None, fallback_model: str) -> Connection | None:
         return Connection(DEFAULT_PROVIDER, fallback_model, {"api_key": raw})
 
     if not isinstance(payload, dict) or "provider" not in payload:
-        logger.warning("[connection]: stored blob has no provider, treating as OpenRouter")
-        return Connection(DEFAULT_PROVIDER, fallback_model, {"api_key": raw})
+        # JSON without a provider is a blob written wrong, not a legacy key.
+        logger.error("[connection]: stored blob is JSON but has no provider")
+        raise ValueError("Stored connection is unreadable. Save the connection again.")
 
     return Connection(
         provider=payload["provider"],
