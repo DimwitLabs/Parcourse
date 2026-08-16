@@ -6,8 +6,6 @@ import litellm
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
-logger = logging.getLogger(__name__)
-
 from database import get_session
 from dependencies import get_current_user, require_admin
 from models.instance_config import INSTANCE_ID, InstanceConfig
@@ -25,6 +23,11 @@ from schemas.settings import (
 from services.api_key import NoApiKeyError, fallback_model, resolve_connection
 from services.connection import deserialize, serialize
 from services.llm import complete_json, describe_json_mode
+from services.providers import PROVIDERS, qualify
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/settings", tags=["settings"])
 
 # Ordered: the first matching class wins, so narrower errors come first.
 _ERROR_MESSAGES: tuple[tuple[type[Exception], str], ...] = (
@@ -36,9 +39,6 @@ _ERROR_MESSAGES: tuple[tuple[type[Exception], str], ...] = (
     (litellm.ServiceUnavailableError, "The provider is unavailable right now. Try again shortly."),
     (litellm.BadRequestError, "The provider rejected the request for {model}."),
 )
-from services.providers import PROVIDERS, qualify
-
-router = APIRouter(prefix="/settings", tags=["settings"])
 
 
 @router.put("/profile", response_model=UserResponse)
