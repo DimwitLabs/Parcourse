@@ -148,7 +148,7 @@ def get_instance_connection(
     instance = session.get(InstanceConfig, INSTANCE_ID)
     if instance is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Instance not configured")
-    return _connection_response(instance.default_openrouter_key, instance.ai_model)
+    return _connection_response(instance.default_openrouter_key, fallback_model(instance))
 
 
 @router.put("/instance-connection", response_model=ConnectionResponse)
@@ -161,11 +161,13 @@ def set_instance_connection(
     instance = session.get(InstanceConfig, INSTANCE_ID)
     if instance is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Instance not configured")
-    instance.default_openrouter_key = _store(body, instance.default_openrouter_key, instance.ai_model)
-    instance.ai_model = qualify(body.provider, body.model)
+    # ai_model is left alone: it is the fallback for pre-provider bare keys,
+    # which are always OpenRouter and cannot serve the admin's chosen model.
+    fallback = fallback_model(instance)
+    instance.default_openrouter_key = _store(body, instance.default_openrouter_key, fallback)
     session.add(instance)
     session.commit()
-    return _connection_response(instance.default_openrouter_key, instance.ai_model)
+    return _connection_response(instance.default_openrouter_key, fallback)
 
 
 @router.delete("/instance-connection", response_model=ConnectionResponse)
