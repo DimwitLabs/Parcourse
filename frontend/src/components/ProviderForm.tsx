@@ -60,7 +60,7 @@ export default function ProviderForm({
   const path = scope === "instance" ? "/settings/instance-connection" : "/settings/connection";
 
   const [providers, setProviders] = useState<Provider[]>([]);
-  const [providerKey, setProviderKey] = useState("openrouter");
+  const [providerKey, setProviderKey] = useState(DEFAULT_PROVIDER);
   const [model, setModel] = useState("");
   const [credentials, setCredentials] = useState<Record<string, string>>({});
   const [configured, setConfigured] = useState(false);
@@ -77,10 +77,10 @@ export default function ProviderForm({
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      apiFetch("/settings/providers", token) as Promise<Provider[]>,
-      apiFetch(path, token).catch(() => null) as Promise<ConnectionState | null>,
+      apiFetch("/settings/providers", token),
+      apiFetch(path, token).catch(() => null),
     ])
-      .then(([list, connection]) => {
+      .then(([list, connection]: [Provider[], ConnectionState | null]) => {
         if (cancelled) return;
         setProviders(list);
         if (connection?.configured && connection.provider) {

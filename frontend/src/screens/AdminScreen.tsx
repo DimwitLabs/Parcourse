@@ -34,7 +34,6 @@ export default function AdminScreen() {
   const [newLastName, setNewLastName] = useState("");
   const [busy, setBusy] = useState(false);
 
-
   useEscapeKey(showAdd, () => { if (!busy) setShowAdd(false); });
 
   const [confirm, setConfirm] = useState<ConfirmAction | null>(null);
@@ -77,9 +76,6 @@ export default function AdminScreen() {
   }
 
   useEffect(refresh, [token]);
-
-  useEffect(() => {
-  }, [token]);
 
   async function addUser() {
     setBusy(true);
