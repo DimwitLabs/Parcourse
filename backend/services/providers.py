@@ -195,23 +195,13 @@ _OVERRIDES: dict[str, dict] = {
     "nvidia_nim": {"label": "NVIDIA NIM"},
     "ai21": {"label": "AI21"},
     "ai21_chat": {"label": "AI21 (chat)"},
-    "cohere": {"label": "Cohere"},
     "cohere_chat": {"label": "Cohere (chat)"},
-    "perplexity": {"label": "Perplexity"},
     "deepinfra": {"label": "DeepInfra"},
     "nlp_cloud": {"label": "NLP Cloud"},
     "friendliai": {"label": "FriendliAI"},
     "sambanova": {"label": "SambaNova"},
-    "volcengine": {"label": "Volcengine"},
     "github": {"label": "GitHub Models"},
-    "codestral": {"label": "Codestral"},
     "maritalk": {"label": "MariTalk"},
-    "anyscale": {"label": "Anyscale"},
-    "cerebras": {"label": "Cerebras"},
-    "replicate": {"label": "Replicate"},
-    "clarifai": {"label": "Clarifai"},
-    "baseten": {"label": "Baseten"},
-    "empower": {"label": "Empower"},
 }
 
 
