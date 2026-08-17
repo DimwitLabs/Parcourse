@@ -10,6 +10,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { gravatarUrl, userInitials } from "../lib/gravatar";
+import type { NamedUser } from "../lib/gravatar";
 
 type Tier = "you" | "domain" | "field" | "topic" | "skill";
 type CourseRef = { id: string; title: string };
@@ -77,6 +78,11 @@ function computeEffectiveMastery(nodes: Node[], edges: Edge[]): Map<string, numb
 type SimNode = Node & { x: number; y: number; vx: number; vy: number; r: number; fx?: number | null; fy?: number | null };
 type SimEdge = { source: SimNode; target: SimNode; edge_type: string };
 
+function displayName(u: NamedUser): string {
+  const name = [u.first_name, u.last_name].filter(Boolean).join(" ").trim();
+  return name || u.email;
+}
+
 const YOU_NODE: Node = {
   id: YOU_ID,
   tier: "you",
@@ -92,9 +98,10 @@ function runSimulation(
   nodes: Node[],
   edges: Edge[],
   width: number,
-  height: number
+  height: number,
+  centre: Node = YOU_NODE
 ): { sim: LiveSim; nodes: SimNode[]; edges: SimEdge[] } {
-  const youSimNode: SimNode = { ...YOU_NODE, x: 0, y: 0, vx: 0, vy: 0, r: NODE_RADIUS.you, fx: 0, fy: 0 };
+  const youSimNode: SimNode = { ...centre, x: 0, y: 0, vx: 0, vy: 0, r: NODE_RADIUS.you, fx: 0, fy: 0 };
 
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const regularSimNodes: SimNode[] = nodes.map((n) => ({
@@ -247,11 +254,27 @@ export default function KnowledgeGraphScreen() {
   const [params] = useSearchParams();
   const viewingUserId = params.get("user");
 
+  const [subject, setSubject] = useState<NamedUser | null>(null);
+  // An admin can open someone else's graph, and it is their concepts, their
+  // avatar and their name at the centre, not the admin's.
+  const owner = subject ?? user ?? null;
+
   useEffect(() => {
-    if (!user?.email) return;
+    if (!viewingUserId || user?.role !== "admin") {
+      setSubject(null);
+      return;
+    }
+    apiFetch("/users", token)
+      .then((list: (NamedUser & { id: string })[]) =>
+        setSubject(list.find((u) => u.id === viewingUserId) ?? null))
+      .catch(() => setSubject(null));
+  }, [viewingUserId, user?.role, token]);
+
+  useEffect(() => {
+    if (!owner?.email) return;
     setAvatarErr(false);
-    gravatarUrl(user.email, 160).then(setAvatarUrl);
-  }, [user?.email]);
+    gravatarUrl(owner.email, 160).then(setAvatarUrl);
+  }, [owner?.email]);
 
   const [graph, setGraph] = useState<Graph | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -291,7 +314,10 @@ export default function KnowledgeGraphScreen() {
       (e) => filteredIds.has(e.source_id) && filteredIds.has(e.target_id)
     );
 
-    const { sim, nodes, edges } = runSimulation(filtered, filteredEdges, 900, 700);
+    const centre: Node = subject
+      ? { ...YOU_NODE, label: displayName(subject), description: subject.email }
+      : YOU_NODE;
+    const { sim, nodes, edges } = runSimulation(filtered, filteredEdges, 900, 700, centre);
     simInstanceRef.current = sim;
 
     // D3 mutates node objects in place — React reads live positions on each forceUpdate
@@ -314,7 +340,7 @@ export default function KnowledgeGraphScreen() {
       cancelAnimationFrame(rafId);
       sim.stop();
     };
-  }, [graph, granularity]);
+  }, [graph, granularity, subject]);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -528,7 +554,7 @@ export default function KnowledgeGraphScreen() {
                 const isPinned = tooltip?.pinned && tooltip.node.id === n.id;
                 const fontSize = FONT_SIZES[n.tier];
                 const showAvatar = isYou && !!avatarUrl && !avatarErr;
-                const lines = wrapText(isYou ? userInitials(user) || n.label : n.label, n.r, fontSize);
+                const lines = wrapText(isYou ? userInitials(owner) || "You" : n.label, n.r, fontSize);
                 const lineHeight = fontSize * 1.32;
                 const textFill = mc === "new" && !isYou ? "var(--color-secondary)" : "white";
                 const clipId = `nc-${n.id}`;

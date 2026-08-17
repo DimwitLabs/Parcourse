@@ -7,7 +7,7 @@ export async function gravatarUrl(email: string, size = 72): Promise<string> {
   return `https://www.gravatar.com/avatar/${hash}?d=404&s=${size}`;
 }
 
-type NamedUser = { email: string; first_name?: string | null; last_name?: string | null };
+export type NamedUser = { email: string; first_name?: string | null; last_name?: string | null };
 
 export function userInitials(user?: NamedUser | null): string {
   if (!user) return "";
