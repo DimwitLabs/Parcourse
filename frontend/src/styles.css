@@ -2893,6 +2893,15 @@ body {
   }
 }
 
+/* The pills inline, for surfaces that already have a frame of their own. */
+.gen-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  text-align: left;
+  margin: 0.25rem 0 0.5rem;
+}
+
 .gen-pill {
   display: flex;
   align-items: flex-start;

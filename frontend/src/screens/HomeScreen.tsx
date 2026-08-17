@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import GenerationSteps, { FALLBACK_MESSAGES, useRotatingMessage } from "../components/GenerationSteps";
+import type { GenStep } from "../components/GenerationSteps";
 import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -10,27 +12,11 @@ import type { CourseEntry, Segment } from "../lib/types";
 type Step = "idle" | "transcript" | "guardrail" | "guardrail-blocked" | "generating";
 type PendingTranscript = { videoId: string; videoTitle: string; segments: Segment[] };
 
-const FALLBACK_MESSAGES = [
-  "Warming up the neurons…",
-  "Reading between the frames…",
-  "Brewing a fresh batch of knowledge…",
-  "Convincing the AI to pay attention…",
-  "Turning video into brainpower…",
-  "Sharpening the quiz pencils…",
-  "Mapping out the knowledge galaxy…",
-  "Almost there, the AI is thinking hard…",
-  "Organising your curriculum…",
-  "Distilling the good stuff…",
+const GEN_STEPS: readonly GenStep[] = [
+  { key: "transcript", label: "Extracting transcript" },
+  { key: "guardrail", label: "Checking content" },
+  { key: "generating", label: "Generating course" },
 ];
-
-function shuffle<T>(arr: T[]): T[] {
-  const out = [...arr];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
-}
 
 const URL_PLACEHOLDER = "youtube.com/watch?v=…";
 const SUBMIT_LABEL = "Create course";
@@ -40,11 +26,9 @@ export default function HomeScreen() {
   const navigate = useNavigate();
   const [videoUrl, setVideoUrl] = useState("");
   const [step, setStep] = useState<Step>("idle");
-  const [funMsg, setFunMsg] = useState("");
-  const [funMessages, setFunMessages] = useState<string[]>(FALLBACK_MESSAGES);
+  const [funMessages, setFunMessages] = useState<readonly string[]>(FALLBACK_MESSAGES);
   const [guardrailReason, setGuardrailReason] = useState<string | null>(null);
   const [pending, setPending] = useState<PendingTranscript | null>(null);
-  const funInterval = useRef<ReturnType<typeof setInterval>>();
   const [courses, setCourses] = useState<CourseEntry[] | null>(null);
   // Fails closed: an unanswered status call shows the gate, not a dead submit.
   const [aiReady, setAiReady] = useState(false);
@@ -62,21 +46,7 @@ export default function HomeScreen() {
       .catch(() => setAiReady(false));
   }, [token]);
 
-  useEffect(() => {
-    if (step === "generating") {
-      const pool = shuffle(funMessages);
-      let idx = 0;
-      setFunMsg(pool[0]);
-      funInterval.current = setInterval(() => {
-        idx = (idx + 1) % pool.length;
-        setFunMsg(pool[idx]);
-      }, 4000);
-    } else {
-      clearInterval(funInterval.current);
-      setFunMsg("");
-    }
-    return () => clearInterval(funInterval.current);
-  }, [step, funMessages]);
+  const funMsg = useRotatingMessage(step === "generating", funMessages);
 
   async function generate(videoId: string, videoTitle: string, segments: Segment[]) {
     setStep("generating");
@@ -142,16 +112,7 @@ export default function HomeScreen() {
   const recentCourses = courses?.filter((c) => !isDone(c)).slice(0, 3) ?? [];
   const totalSections = courses?.reduce((n, c) => n + c.sections.length, 0) ?? 0;
 
-  const GEN_STEPS = [
-    { key: "transcript" as Step, label: "Extracting transcript" },
-    { key: "guardrail" as Step, label: "Checking content" },
-    { key: "generating" as Step, label: "Generating course" },
-  ] as const;
-  const stepOrder = GEN_STEPS.map((s) => s.key);
   const blocked = step === "guardrail-blocked";
-  const currentStepIdx = blocked
-    ? stepOrder.indexOf("guardrail")
-    : stepOrder.indexOf(step as (typeof stepOrder)[number]);
 
   return (
     <>
@@ -213,42 +174,14 @@ export default function HomeScreen() {
           )}
 
           {busy && (
-            <div className="gen-pills-panel">
-              {GEN_STEPS.map(({ key, label }, i) => {
-                const isDone = currentStepIdx > i;
-                const isActive = !blocked && step === key;
-                const isBlocked = blocked && key === "guardrail";
-                return (
-                  <div key={key} className={`gen-pill${isBlocked ? " blocked" : isActive ? " active" : isDone ? " done" : ""}`}>
-                    <div className="gen-pill-left">
-                      {isBlocked ? (
-                        <svg className="gen-pill-icon gen-pill-warn" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2L12.5 12H1.5L7 2Z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round"/><line x1="7" y1="6" x2="7" y2="9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="7" cy="10.5" r="0.75" fill="currentColor"/></svg>
-                      ) : isDone ? (
-                        <svg className="gen-pill-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.15"/><polyline points="3.5,7 6,9.5 10.5,4.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      ) : isActive ? (
-                        <span className="gen-pill-spinner" />
-                      ) : (
-                        <span className="gen-pill-dot" />
-                      )}
-                      <span className="gen-pill-label">
-                        {label}
-                        {isBlocked && guardrailReason && (
-                          <span className="gen-pill-sub gen-pill-reason">{guardrailReason}</span>
-                        )}
-                        {isActive && step === "generating" && funMsg && (
-                          <span className="gen-pill-sub">{funMsg}</span>
-                        )}
-                      </span>
-                    </div>
-                    {isBlocked && (
-                      <button className="gen-pill-override" type="button" onClick={proceedAnyway}>
-                        Proceed Anyway
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            <GenerationSteps
+              className="gen-pills-panel"
+              steps={GEN_STEPS}
+              current={blocked ? "guardrail" : step}
+              note={step === "generating" ? funMsg : undefined}
+              blockedReason={blocked ? guardrailReason ?? undefined : undefined}
+              onOverride={proceedAnyway}
+            />
           )}
         </div>
 
