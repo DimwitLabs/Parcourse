@@ -21,7 +21,7 @@ services:
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql+psycopg://parcourse:parcourse@db:5432/parcourse}
+      - DATABASE_URL=${DATABASE_URL:-postgresql+psycopg://parcourse:${POSTGRES_PASSWORD:-parcourse}@db:5432/parcourse}
       - JWT_SECRET=${JWT_SECRET:-change-this-in-production}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY:-uvSAXyWG429v7tYFyht42Jud0v--hr42pitofMf0pTY=}
       - CORS_ORIGINS=${CORS_ORIGINS:-["http://localhost:5173"]}
