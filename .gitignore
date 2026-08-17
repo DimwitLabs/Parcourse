@@ -4,5 +4,4 @@ __pycache__/
 *.pyc
 node_modules/
 dist/
-stitch_prototype
 .claude
