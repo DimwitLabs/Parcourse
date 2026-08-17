@@ -60,7 +60,6 @@ type Props = {
   steps: readonly GenStep[];
   /** Key of the step in flight. Steps before it read as done. */
   current: string;
-  /** Shown under the active step. */
   note?: string;
   /** Turns the current step red and explains why. */
   blockedReason?: string;

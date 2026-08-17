@@ -1,17 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import GenerationSteps, {
-  FALLBACK_MESSAGES,
-  REGEN_STEPS,
-  useRotatingMessage,
-} from "../components/GenerationSteps";
-import type { RegenStep } from "../components/GenerationSteps";
+import CourseActionModal from "../components/CourseActionModal";
+import type { CourseAction } from "../components/CourseActionModal";
 import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { useEscapeKey } from "../lib/useEscapeKey";
-import type { Segment } from "../lib/types";
 
 
 type MCQOption = { label: string; text: string };
@@ -52,12 +47,7 @@ export default function CourseScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showSkipModal, setShowSkipModal] = useState(false);
-  const [courseAction, setCourseAction] = useState<"delete" | "regenerate" | null>(null);
-  const [actionBusy, setActionBusy] = useState(false);
-  const [cleanupGraph, setCleanupGraph] = useState(false);
-  const [regenFeedback, setRegenFeedback] = useState("");
-  const [regenStep, setRegenStep] = useState<RegenStep>("");
-  const regenMsg = useRotatingMessage(regenStep === "generating", FALLBACK_MESSAGES);
+  const [courseAction, setCourseAction] = useState<CourseAction | null>(null);
   const [doneSections, setDoneSections] = useState<Set<number>>(new Set());
   const [atBottom, setAtBottom] = useState(false);
   const [barVisible, setBarVisible] = useState(false);
@@ -121,14 +111,8 @@ export default function CourseScreen() {
     return () => observer.disconnect();
   }, [course]);
 
-  useEffect(() => {
-    if (!courseAction) setRegenFeedback("");
-  }, [courseAction]);
-
-  useEscapeKey(!!courseAction || showSkipModal, () => {
-    if (actionBusy || submitting) return;
-    setCourseAction(null);
-    setShowSkipModal(false);
+  useEscapeKey(showSkipModal, () => {
+    if (!submitting) setShowSkipModal(false);
   });
 
   function handleSubmitClick() {
@@ -200,56 +184,6 @@ export default function CourseScreen() {
         else next.delete(index);
         return next;
       });
-    }
-  }
-
-  async function deleteCourse() {
-    if (!course) return;
-    setActionBusy(true);
-    try {
-      const qs = cleanupGraph ? "?cleanup_graph=true" : "";
-      await apiFetch(`/courses/${course.id}${qs}`, token, { method: "DELETE" });
-      toast("Course deleted.", "info");
-      navigate("/notebook");
-    } catch (err) {
-      toast(errMsg(err), "error");
-    } finally {
-      setActionBusy(false);
-      setCourseAction(null);
-      setCleanupGraph(false);
-    }
-  }
-
-  async function regenerateCourse() {
-    if (!course) return;
-    setActionBusy(true);
-    try {
-      setRegenStep("clearing");
-      await apiFetch(`/courses/${course.id}`, token, { method: "DELETE" });
-      setRegenStep("transcript");
-      const transcriptData = await apiFetch("/transcript/extract", token, {
-        method: "POST",
-        body: JSON.stringify({ url: `https://www.youtube.com/watch?v=${course.video_id}` }),
-      });
-      const segments: Segment[] = transcriptData.segments;
-      setRegenStep("generating");
-      const courseData = await apiFetch("/courses/generate", token, {
-        method: "POST",
-        body: JSON.stringify({
-          video_id: course.video_id,
-          video_title: transcriptData.video_title ?? "",
-          feedback: regenFeedback,
-          segments,
-        }),
-      });
-      toast("Course regenerated!", "success");
-      navigate(`/course/${courseData.id}`);
-    } catch (err) {
-      toast(errMsg(err), "error");
-    } finally {
-      setActionBusy(false);
-      setRegenStep("");
-      setCourseAction(null);
     }
   }
 
@@ -443,67 +377,13 @@ export default function CourseScreen() {
         </div>
       )}
 
-      {courseAction && (
-        <div className="modal-overlay" onClick={() => !actionBusy && setCourseAction(null)}>
-          <div className="modal-card card" onClick={(e) => e.stopPropagation()}>
-            <h2 style={{ margin: "0 0 0.5rem", fontSize: "1.25rem", fontWeight: 800 }}>
-              {courseAction === "delete" ? "Delete course" : "Regenerate course"}
-            </h2>
-            {!regenStep && (
-              <p style={{ margin: "0 0 1rem", color: "var(--color-ink-soft)" }}>
-                {courseAction === "delete"
-                  ? "This will permanently delete this course and all associated quiz data."
-                  : "This will delete the current course and regenerate it from scratch using the same video."}
-              </p>
-            )}
-            {courseAction === "delete" && (
-              <label className="modal-checkbox-row">
-                <input
-                  type="checkbox"
-                  checked={cleanupGraph}
-                  onChange={(e) => setCleanupGraph(e.target.checked)}
-                />
-                <span>Also remove knowledge graph entries from this course</span>
-              </label>
-            )}
-            {courseAction === "regenerate" && !regenStep && (
-              <label className="modal-field">
-                <span className="modal-field-label">What looks wrong?</span>
-                <textarea
-                  className="text-input boxed textarea modal-textarea"
-                  value={regenFeedback}
-                  onChange={(e) => setRegenFeedback(e.target.value)}
-                  placeholder="Sections were too long, the quiz missed the main argument…"
-                  maxLength={1000}
-                  disabled={actionBusy}
-                />
-                <span className="modal-field-hint">
-                  Required. Your feedback feeds straight into the new course generation.
-                </span>
-              </label>
-            )}
-            {regenStep && (
-              <GenerationSteps steps={REGEN_STEPS} current={regenStep} note={regenMsg} />
-            )}
-            {!regenStep && (
-              <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "1.5rem" }}>
-                <button className="button secondary" onClick={() => setCourseAction(null)} disabled={actionBusy}>
-                  Cancel
-                </button>
-                <button
-                  className={`button ${courseAction === "delete" ? "danger" : "primary"}`}
-                  onClick={courseAction === "delete" ? deleteCourse : regenerateCourse}
-                  disabled={actionBusy || (courseAction === "regenerate" && !regenFeedback.trim())}
-                >
-                  {actionBusy
-                    ? courseAction === "delete" ? "Deleting…" : "Regenerating…"
-                    : courseAction === "delete" ? "Delete" : "Regenerate"}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <CourseActionModal
+        action={courseAction}
+        course={course}
+        onClose={() => setCourseAction(null)}
+        onDeleted={() => navigate("/notebook")}
+        onError={(m) => toast(m, "error")}
+      />
     </div>
   );
 }

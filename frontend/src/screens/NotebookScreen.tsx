@@ -1,38 +1,19 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-import GenerationSteps, {
-  FALLBACK_MESSAGES,
-  REGEN_STEPS,
-  useRotatingMessage,
-} from "../components/GenerationSteps";
-import type { RegenStep } from "../components/GenerationSteps";
+import CourseActionModal from "../components/CourseActionModal";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import { useEscapeKey } from "../lib/useEscapeKey";
-import type { CourseEntry, Segment } from "../lib/types";
+import type { CourseEntry } from "../lib/types";
 
 type ModalAction = { course: CourseEntry; type: "delete" | "regenerate" };
 
-
 export default function NotebookScreen() {
   const { token } = useAuth();
-  const navigate = useNavigate();
   const [courses, setCourses] = useState<CourseEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalAction | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [cleanupGraph, setCleanupGraph] = useState(false);
   const [togglingDone, setTogglingDone] = useState<Set<string>>(new Set());
-  const [regenFeedback, setRegenFeedback] = useState("");
-  const [regenStep, setRegenStep] = useState<RegenStep>("");
-  const regenMsg = useRotatingMessage(regenStep === "generating", FALLBACK_MESSAGES);
-
-  useEffect(() => {
-    if (!modal) setRegenFeedback("");
-  }, [modal]);
-
-  useEscapeKey(!!modal, () => { if (!busy) setModal(null); });
 
   function refresh() {
     apiFetch("/courses", token)
@@ -64,54 +45,6 @@ export default function NotebookScreen() {
       setError(errMsg(err));
     } finally {
       setTogglingDone((prev) => { const next = new Set(prev); next.delete(c.id); return next; });
-    }
-  }
-
-  async function deleteCourse(id: string) {
-    setBusy(true);
-    try {
-      const qs = cleanupGraph ? "?cleanup_graph=true" : "";
-      await apiFetch(`/courses/${id}${qs}`, token, { method: "DELETE" });
-      setCourses((prev) => prev?.filter((c) => c.id !== id) ?? null);
-      setModal(null);
-      setCleanupGraph(false);
-    } catch (err) {
-      setError(errMsg(err));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function regenerateCourse(c: CourseEntry) {
-    setBusy(true);
-    setRegenStep("clearing");
-    try {
-      await apiFetch(`/courses/${c.id}`, token, { method: "DELETE" });
-
-      setRegenStep("transcript");
-      const transcriptData = await apiFetch("/transcript/extract", token, {
-        method: "POST",
-        body: JSON.stringify({ url: `https://www.youtube.com/watch?v=${c.video_id}` }),
-      });
-
-      const segments: Segment[] = transcriptData.segments;
-      setRegenStep("generating");
-      const courseData = await apiFetch("/courses/generate", token, {
-        method: "POST",
-        body: JSON.stringify({
-          video_id: c.video_id,
-          video_title: transcriptData.video_title ?? "",
-          feedback: regenFeedback,
-          segments,
-        }),
-      });
-
-      setModal(null);
-      navigate(`/course/${courseData.id}`);
-    } catch (err) {
-      setError(errMsg(err));
-      setRegenStep("");
-      setBusy(false);
     }
   }
 
@@ -203,71 +136,13 @@ export default function NotebookScreen() {
         })}
       </div>}
 
-      {modal && (
-        <div className="modal-overlay" onClick={() => !busy && setModal(null)}>
-          <div className="modal-card card" onClick={(e) => e.stopPropagation()}>
-            <h2 style={{ margin: "0 0 0.5rem", fontSize: "1.25rem", fontWeight: 800 }}>
-              {modal.type === "delete" ? "Delete course" : "Regenerate course"}
-            </h2>
-            {!regenStep && (
-              <p style={{ margin: "0 0 1rem", color: "var(--color-ink-soft)" }}>
-                {modal.type === "delete"
-                  ? "This will permanently delete this course and all associated quiz data."
-                  : "This will delete the current course and regenerate it from scratch using the same video."}
-              </p>
-            )}
-            {modal.type === "delete" && (
-              <label className="modal-checkbox-row">
-                <input
-                  type="checkbox"
-                  checked={cleanupGraph}
-                  onChange={(e) => setCleanupGraph(e.target.checked)}
-                />
-                <span>Also remove knowledge graph entries from this course</span>
-              </label>
-            )}
-            {modal.type === "regenerate" && !regenStep && (
-              <label className="modal-field">
-                <span className="modal-field-label">What looks wrong?</span>
-                <textarea
-                  className="text-input boxed textarea modal-textarea"
-                  value={regenFeedback}
-                  onChange={(e) => setRegenFeedback(e.target.value)}
-                  placeholder="Sections were too long, the quiz missed the main argument…"
-                  maxLength={1000}
-                  disabled={busy}
-                />
-                <span className="modal-field-hint">
-                  Required. Your feedback feeds straight into the new course generation.
-                </span>
-              </label>
-            )}
-            {regenStep && (
-              <GenerationSteps steps={REGEN_STEPS} current={regenStep} note={regenMsg} />
-            )}
-            {!regenStep && (
-              <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "1.5rem" }}>
-                <button className="button secondary" onClick={() => setModal(null)} disabled={busy}>
-                  Cancel
-                </button>
-                <button
-                  className={`button ${modal.type === "delete" ? "danger" : "primary"}`}
-                  onClick={() =>
-                    modal.type === "delete"
-                      ? deleteCourse(modal.course.id)
-                      : regenerateCourse(modal.course)
-                  }
-                  disabled={busy || (modal.type === "regenerate" && !regenFeedback.trim())}
-                >
-                  {busy
-                    ? modal.type === "delete" ? "Deleting…" : "Regenerating…"
-                    : modal.type === "delete" ? "Delete" : "Regenerate"}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <CourseActionModal
+        action={modal?.type ?? null}
+        course={modal?.course ?? null}
+        onClose={() => setModal(null)}
+        onDeleted={refresh}
+        onError={setError}
+      />
     </div>
   );
 }
