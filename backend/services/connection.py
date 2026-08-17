@@ -1,17 +1,21 @@
-"""An AI connection: which provider, which model, and the credentials for it.
-
-Stored as an encrypted JSON blob in the existing key columns, so adding this
-needs no migration. Values written before this existed decrypt to a bare key
-string and are read as an OpenRouter connection.
-"""
+"""An AI connection: which provider, which model, and the credentials for it,
+stored as one encrypted JSON blob per row."""
 import json
 import logging
 from dataclasses import dataclass
 
+from sqlmodel import Session
+
+from models.instance_config import INSTANCE_ID, InstanceConfig
+from models.user import User
 from services.crypto import decrypt, encrypt
-from services.providers import DEFAULT_PROVIDER, get, qualify
+from services.providers import get, qualify
 
 logger = logging.getLogger(__name__)
+
+
+class NoConnectionError(Exception):
+    pass
 
 
 @dataclass(frozen=True)
@@ -38,23 +42,35 @@ def serialize(provider: str, model: str, credentials: dict[str, str]) -> str:
     return encrypt(json.dumps(payload))
 
 
-def deserialize(blob: str | None, fallback_model: str) -> Connection | None:
+def deserialize(blob: str | None) -> Connection | None:
     if not blob:
         return None
-    raw = decrypt(blob)
     try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError:
-        logger.info("[connection]: reading a pre-provider key as OpenRouter")
-        return Connection(DEFAULT_PROVIDER, fallback_model, {"api_key": raw})
+        payload = json.loads(decrypt(blob))
+        return Connection(
+            provider=payload["provider"],
+            model=payload["model"],
+            credentials=payload.get("credentials") or {},
+        )
+    except (json.JSONDecodeError, KeyError, TypeError) as exc:
+        logger.error("[connection]: stored connection is unreadable: %s", exc)
+        raise ValueError("Stored connection is unreadable. Save the connection again.") from exc
 
-    if not isinstance(payload, dict) or "provider" not in payload:
-        # JSON without a provider is a blob written wrong, not a legacy key.
-        logger.error("[connection]: stored blob is JSON but has no provider")
-        raise ValueError("Stored connection is unreadable. Save the connection again.")
 
-    return Connection(
-        provider=payload["provider"],
-        model=payload.get("model") or fallback_model,
-        credentials=payload.get("credentials") or {},
-    )
+def resolve(session: Session, user: User) -> Connection:
+    """A user's own connection wins, then the instance default. Credentials are
+    never read from the environment: they are configured in the app so they can
+    be rotated and removed without a redeploy."""
+    own = deserialize(user.connection)
+    if own and own.has_credentials:
+        logger.info("[connection]: using user connection, provider=%s model=%s", own.provider, own.model)
+        return own
+
+    instance = session.get(InstanceConfig, INSTANCE_ID)
+    shared = deserialize(instance.default_connection if instance else None)
+    if shared and shared.has_credentials:
+        logger.info("[connection]: using instance connection, provider=%s model=%s", shared.provider, shared.model)
+        return shared
+
+    logger.error("[connection]: none configured for user %s", user.id)
+    raise NoConnectionError("No AI provider configured. Add one in Settings.")

@@ -1,8 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-DEFAULT_AI_MODEL = "openrouter/openai/gpt-4o-mini"
-
-
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     database_url: str = "postgresql+psycopg://parcourse:parcourse@db:5432/parcourse"

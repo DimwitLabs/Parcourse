@@ -20,8 +20,7 @@ from schemas.settings import (
     ProviderResponse,
     TestConnectionResponse,
 )
-from services.api_key import NoApiKeyError, fallback_model, resolve_connection
-from services.connection import deserialize, serialize
+from services.connection import NoConnectionError, deserialize, resolve, serialize
 from services.llm import complete_json, describe_json_mode
 from services.providers import PROVIDERS, qualify
 
@@ -74,8 +73,8 @@ def list_providers(_: User = Depends(get_current_user)) -> list[ProviderResponse
     ]
 
 
-def _connection_response(blob: str | None, fallback: str) -> ConnectionResponse:
-    connection = deserialize(blob, fallback)
+def _connection_response(blob: str | None) -> ConnectionResponse:
+    connection = deserialize(blob)
     if connection is None or not connection.has_credentials:
         return ConnectionResponse(configured=False)
     return ConnectionResponse(
@@ -83,11 +82,11 @@ def _connection_response(blob: str | None, fallback: str) -> ConnectionResponse:
     )
 
 
-def _store(body: ConnectionUpdateRequest, existing: str | None, fallback: str) -> str:
+def _store(body: ConnectionUpdateRequest, existing: str | None) -> str:
     """Credentials are never sent back to the client, so a blank field means
     "keep what is stored". Per field, or editing an endpoint would wipe the key
     beside it. Clearing is an explicit DELETE."""
-    current = deserialize(existing, fallback)
+    current = deserialize(existing)
     stored = current.credentials if current and current.provider == body.provider else {}
     credentials = {
         name: value if value.strip() else stored.get(name, "")
@@ -109,8 +108,7 @@ def get_my_connection(
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ) -> ConnectionResponse:
-    instance = session.get(InstanceConfig, INSTANCE_ID)
-    return _connection_response(user.openrouter_key, fallback_model(instance))
+    return _connection_response(user.connection)
 
 
 @router.put("/connection", response_model=ConnectionResponse)
@@ -120,12 +118,10 @@ def set_my_connection(
     session: Session = Depends(get_session),
 ) -> ConnectionResponse:
     logger.info("[settings]: set connection for user %s, provider=%s", user.id, body.provider)
-    instance = session.get(InstanceConfig, INSTANCE_ID)
-    fallback = fallback_model(instance)
-    user.openrouter_key = _store(body, user.openrouter_key, fallback)
+    user.connection = _store(body, user.connection)
     session.add(user)
     session.commit()
-    return _connection_response(user.openrouter_key, fallback)
+    return _connection_response(user.connection)
 
 
 @router.delete("/connection", response_model=ConnectionResponse)
@@ -134,7 +130,7 @@ def clear_my_connection(
     session: Session = Depends(get_session),
 ) -> ConnectionResponse:
     logger.info("[settings]: clearing connection for user %s", user.id)
-    user.openrouter_key = None
+    user.connection = None
     session.add(user)
     session.commit()
     return ConnectionResponse(configured=False)
@@ -148,7 +144,7 @@ def get_instance_connection(
     instance = session.get(InstanceConfig, INSTANCE_ID)
     if instance is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Instance not configured")
-    return _connection_response(instance.default_openrouter_key, fallback_model(instance))
+    return _connection_response(instance.default_connection)
 
 
 @router.put("/instance-connection", response_model=ConnectionResponse)
@@ -161,13 +157,10 @@ def set_instance_connection(
     instance = session.get(InstanceConfig, INSTANCE_ID)
     if instance is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Instance not configured")
-    # ai_model is left alone: it is the fallback for pre-provider bare keys,
-    # which are always OpenRouter and cannot serve the admin's chosen model.
-    fallback = fallback_model(instance)
-    instance.default_openrouter_key = _store(body, instance.default_openrouter_key, fallback)
+    instance.default_connection = _store(body, instance.default_connection)
     session.add(instance)
     session.commit()
-    return _connection_response(instance.default_openrouter_key, fallback)
+    return _connection_response(instance.default_connection)
 
 
 @router.delete("/instance-connection", response_model=ConnectionResponse)
@@ -179,7 +172,7 @@ def clear_instance_connection(
     instance = session.get(InstanceConfig, INSTANCE_ID)
     if instance is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Instance not configured")
-    instance.default_openrouter_key = None
+    instance.default_connection = None
     session.add(instance)
     session.commit()
     return ConnectionResponse(configured=False)
@@ -195,10 +188,10 @@ def _credentials_for_test(
         return body.credentials
     instance = session.get(InstanceConfig, INSTANCE_ID)
     if user.role == UserRole.admin:
-        blob = instance.default_openrouter_key if instance else None
+        blob = instance.default_connection if instance else None
     else:
-        blob = user.openrouter_key
-    stored = deserialize(blob, fallback_model(instance))
+        blob = user.connection
+    stored = deserialize(blob)
     if stored and stored.provider == body.provider and stored.has_credentials:
         return stored.credentials
     raise HTTPException(
@@ -260,8 +253,8 @@ def ai_status(
     """Whether this user can generate anything at all, counting their own
     connection and the instance default."""
     try:
-        connection = resolve_connection(session, user)
-    except NoApiKeyError:
+        connection = resolve(session, user)
+    except NoConnectionError:
         logger.info("[settings]: ai-status not ready for user %s", user.id)
         return AiStatusResponse(ready=False)
     return AiStatusResponse(ready=True, provider=connection.provider, model=connection.model)

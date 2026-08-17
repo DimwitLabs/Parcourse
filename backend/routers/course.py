@@ -7,8 +7,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
-logger = logging.getLogger(__name__)
-
 from database import get_session
 from dependencies import get_current_user
 from models.course_cache import CachedCourse
@@ -18,9 +16,11 @@ from models.quiz_draft import QuizDraft
 from models.section_progress import SectionProgress
 from models.user import User
 from schemas.course import CourseGenerateRequest, CourseListEntry, CourseResponse, CourseResponsePublic
-from services.api_key import NoApiKeyError, resolve_connection
+from services.connection import NoConnectionError, resolve
 from services.course import generate
 from services.knowledge_graph import extract_and_merge
+
+logger = logging.getLogger(__name__)
 
 
 class DraftPayload(BaseModel):
@@ -49,8 +49,8 @@ def generate_course(
         return CourseResponsePublic.from_full(course, id=str(existing.id))
 
     try:
-        connection = resolve_connection(session, user)
-    except NoApiKeyError as exc:
+        connection = resolve(session, user)
+    except NoConnectionError as exc:
         logger.warning("[course]: no API key for user %s", user.id)
         raise HTTPException(status_code=status.HTTP_412_PRECONDITION_FAILED, detail=str(exc)) from exc
     model = connection.model
@@ -154,9 +154,8 @@ def delete_course(
 
     if cleanup_graph:
         for link in links:
-            # Derived, not counted: a course this user still holds is the only
-            # thing that keeps a concept alive, and regenerating a course would
-            # leave a tally too high to ever reach zero.
+            # A course the user still holds is the only thing keeping a
+            # concept alive, so ask that rather than keeping a tally.
             still_reached = session.exec(
                 select(CourseKnowledgeNode.course_id)
                 .join(CachedCourse, CachedCourse.id == CourseKnowledgeNode.course_id)

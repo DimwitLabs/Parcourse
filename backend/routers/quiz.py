@@ -15,7 +15,7 @@ from models.quiz_attempt import QuizAttempt
 from models.user import User
 from schemas.course import CourseResponse
 from schemas.quiz import QuizResultResponse, QuizSubmitRequest
-from services.api_key import NoApiKeyError, resolve_connection
+from services.connection import NoConnectionError, resolve
 from services.quiz import score_submission
 
 router = APIRouter(prefix="/quiz", tags=["quiz"])
@@ -41,8 +41,8 @@ def score_quiz(
 
     course = CourseResponse.model_validate_json(cached.course_json)
     try:
-        connection = resolve_connection(session, user)
-    except NoApiKeyError as exc:
+        connection = resolve(session, user)
+    except NoConnectionError as exc:
         raise HTTPException(status_code=status.HTTP_412_PRECONDITION_FAILED, detail=str(exc)) from exc
     model = connection.model
 

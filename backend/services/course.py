@@ -66,7 +66,6 @@ def generate(video_id: str, segments: list[TranscriptSegment], credentials: dict
     total_seconds = (last.start + last.duration) if last else 0.0
     total_minutes = total_seconds / 60
 
-    # Scale section count: ~1 section per 15 min, clamped to 3–16
     target = max(3, min(16, round(total_minutes / 15)))
     min_sections = max(3, target - 1)
     max_sections = min(16, target + 2)
