@@ -196,10 +196,36 @@ function inlineStylesToClone(original: SVGSVGElement, clone: SVGSVGElement) {
   });
 }
 
-function exportSvg(svgEl: SVGSVGElement) {
+/** A serialized SVG is rendered in isolation, so a remote avatar never loads
+ *  and exports as a broken image. Embed it before writing the file. */
+async function inlineImages(clone: SVGSVGElement): Promise<void> {
+  const images = Array.from(clone.querySelectorAll("image"));
+  await Promise.all(
+    images.map(async (img) => {
+      const href = img.getAttribute("href") ?? img.getAttribute("xlink:href");
+      if (!href || href.startsWith("data:")) return;
+      try {
+        const blob = await fetch(href, { mode: "cors" }).then((r) => r.blob());
+        const data = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        img.setAttribute("href", data);
+        img.removeAttribute("xlink:href");
+      } catch {
+        img.remove();
+      }
+    })
+  );
+}
+
+async function exportSvg(svgEl: SVGSVGElement) {
   const clone = svgEl.cloneNode(true) as SVGSVGElement;
   clone.removeAttribute("style");
   inlineStylesToClone(svgEl, clone);
+  await inlineImages(clone);
   const blob = new Blob([clone.outerHTML], { type: "image/svg+xml" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -209,10 +235,11 @@ function exportSvg(svgEl: SVGSVGElement) {
   URL.revokeObjectURL(url);
 }
 
-function exportPng(svgEl: SVGSVGElement) {
+async function exportPng(svgEl: SVGSVGElement) {
   const clone = svgEl.cloneNode(true) as SVGSVGElement;
   clone.removeAttribute("style");
   inlineStylesToClone(svgEl, clone);
+  await inlineImages(clone);
   const bbox = svgEl.getBBox();
   const pad = 40;
   const w = bbox.width + pad * 2;
