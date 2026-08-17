@@ -15,6 +15,7 @@ services:
   backend:
     build:
       context: ./backend
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
       db:
         condition: service_healthy
@@ -30,6 +31,7 @@ services:
   frontend:
     build:
       context: ./frontend
+    command: npm run dev -- --host 0.0.0.0
     ports:
       - "5173:5173"
     volumes:
