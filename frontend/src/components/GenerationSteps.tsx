@@ -64,6 +64,7 @@ type Props = {
   /** Turns the current step red and explains why. */
   blockedReason?: string;
   onOverride?: () => void;
+  onCancel?: () => void;
   className?: string;
 };
 
@@ -73,6 +74,7 @@ export default function GenerationSteps({
   note,
   blockedReason,
   onOverride,
+  onCancel,
   className = "gen-steps",
 }: Props) {
   const currentIdx = steps.findIndex((s) => s.key === current);
@@ -104,10 +106,19 @@ export default function GenerationSteps({
                 {isActive && note && <span className="gen-pill-sub">{note}</span>}
               </span>
             </div>
-            {isBlocked && onOverride && (
-              <button className="gen-pill-override" type="button" onClick={onOverride}>
-                Proceed Anyway
-              </button>
+            {isBlocked && (onCancel || onOverride) && (
+              <div className="gen-pill-actions">
+                {onCancel && (
+                  <button className="gen-pill-cancel" type="button" onClick={onCancel}>
+                    Pick Another Video
+                  </button>
+                )}
+                {onOverride && (
+                  <button className="gen-pill-override" type="button" onClick={onOverride}>
+                    Proceed Anyway
+                  </button>
+                )}
+              </div>
             )}
           </div>
         );

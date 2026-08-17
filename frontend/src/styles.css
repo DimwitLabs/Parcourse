@@ -2995,6 +2995,32 @@ body {
   margin-top: 0.0625rem;
 }
 
+.gen-pill-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  align-self: flex-end;
+}
+
+.gen-pill-cancel {
+  appearance: none;
+  border: 1.5px solid transparent;
+  background: none;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-ink-soft);
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.gen-pill-cancel:hover {
+  border-color: var(--color-border);
+  color: var(--color-ink);
+}
+
 .gen-pill-override {
   appearance: none;
   border: 1.5px solid #d48a2e;
@@ -3006,7 +3032,6 @@ body {
   padding: 0.35rem 0.85rem;
   border-radius: var(--radius-full);
   cursor: pointer;
-  align-self: flex-end;
   transition: background 0.15s ease, color 0.15s ease;
 }
 

@@ -95,6 +95,13 @@ export default function HomeScreen() {
     }
   }
 
+  function dismissBlocked() {
+    setStep("idle");
+    setGuardrailReason(null);
+    setPending(null);
+    setVideoUrl("");
+  }
+
   async function proceedAnyway() {
     if (!pending) return;
     try {
@@ -181,6 +188,7 @@ export default function HomeScreen() {
               note={step === "generating" ? funMsg : undefined}
               blockedReason={blocked ? guardrailReason ?? undefined : undefined}
               onOverride={proceedAnyway}
+              onCancel={dismissBlocked}
             />
           )}
         </div>
