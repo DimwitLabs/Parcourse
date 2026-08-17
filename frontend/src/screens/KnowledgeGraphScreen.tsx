@@ -19,7 +19,6 @@ type Node = {
   label: string;
   description: string;
   mastery_score: number;
-  times_encountered: number;
   courses: CourseRef[];
 };
 type Edge = { source_id: string; target_id: string; edge_type: string };
@@ -84,7 +83,6 @@ const YOU_NODE: Node = {
   label: "You",
   description: "Cogito, ergo sum",
   mastery_score: 1,
-  times_encountered: 0,
   courses: [],
 };
 

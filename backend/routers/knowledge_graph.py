@@ -60,7 +60,6 @@ def _build_graph(session: Session, user_id: uuid.UUID) -> KnowledgeGraphResponse
                 label=n.label,
                 description=n.description,
                 mastery_score=progress_by_node[n.id].mastery_score,
-                times_encountered=progress_by_node[n.id].times_encountered,
                 courses=node_courses.get(n.id, []),
             )
             for n in nodes

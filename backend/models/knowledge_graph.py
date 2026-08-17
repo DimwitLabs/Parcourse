@@ -52,5 +52,4 @@ class UserKnowledgeProgress(SQLModel, table=True):
     user_id: uuid.UUID = Field(sa_column=Column(ForeignKey("user.id", ondelete="CASCADE"), index=True, nullable=False))
     node_id: uuid.UUID = Field(sa_column=Column(ForeignKey("knowledgenode.id", ondelete="CASCADE"), index=True, nullable=False))
     mastery_score: float = 0.0
-    times_encountered: int = 0
     last_touched_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

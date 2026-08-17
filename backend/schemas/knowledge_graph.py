@@ -31,7 +31,6 @@ class NodeOut(BaseModel):
     label: str
     description: str
     mastery_score: float
-    times_encountered: int
     courses: list[CourseRef] = []
 
 

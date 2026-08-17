@@ -108,13 +108,8 @@ def extract_and_merge(
         ).first()
         if progress is None:
             session.add(
-                UserKnowledgeProgress(
-                    user_id=user_id, node_id=node.id, times_encountered=1, mastery_score=_EXPOSURE_MASTERY
-                )
+                UserKnowledgeProgress(user_id=user_id, node_id=node.id, mastery_score=_EXPOSURE_MASTERY)
             )
-        else:
-            progress.times_encountered += 1
-            session.add(progress)
 
     session.commit()
     logger.info("[knowledge_graph]: merged %d nodes and %d edges for course %s", len(extraction.nodes), len(extraction.edges), course_id)

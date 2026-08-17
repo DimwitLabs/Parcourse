@@ -45,7 +45,6 @@ def upgrade() -> None:
     sa.Column('user_id', sa.Uuid(), nullable=False),
     sa.Column('node_id', sa.Uuid(), nullable=False),
     sa.Column('mastery_score', sa.Float(), nullable=False),
-    sa.Column('times_encountered', sa.Integer(), nullable=False),
     sa.Column('last_touched_at', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['node_id'], ['knowledgenode.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
