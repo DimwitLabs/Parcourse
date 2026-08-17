@@ -34,7 +34,6 @@ export default function CourseScreen() {
   const navigate = useNavigate();
 
   const [course, setCourse] = useState<Course | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
   const [playStart, setPlayStart] = useState(0);
   const [playKey, setPlayKey] = useState(0);
   const [activeSection, setActiveSection] = useState(0);
@@ -45,7 +44,6 @@ export default function CourseScreen() {
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, string>>({});
   const [theoryAnswers, setTheoryAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [showSkipModal, setShowSkipModal] = useState(false);
   const [courseAction, setCourseAction] = useState<CourseAction | null>(null);
   const [doneSections, setDoneSections] = useState<Set<number>>(new Set());
@@ -56,19 +54,32 @@ export default function CourseScreen() {
 
   useEffect(() => {
     if (!courseId) return;
+    let ignore = false;
     apiFetch(`/courses/${courseId}`, token)
-      .then(setCourse)
-      .catch((err) => setLoadError(String(err.message ?? err)));
+      .then((data) => {
+        if (!ignore) setCourse(data);
+      })
+      .catch((err) => {
+        if (ignore) return;
+        toast(errMsg(err), "error");
+        navigate("/notebook", { replace: true });
+      });
     apiFetch(`/courses/${courseId}/progress`, token)
-      .then((indices: number[]) => setDoneSections(new Set(indices)))
+      .then((indices: number[]) => {
+        if (!ignore) setDoneSections(new Set(indices));
+      })
       .catch(() => {});
     apiFetch(`/courses/${courseId}/draft`, token)
       .then((draft: { mcq_answers: Record<string, string>; theory_answers: Record<string, string> }) => {
+        if (ignore) return;
         if (Object.keys(draft.mcq_answers).length) setMcqAnswers(draft.mcq_answers);
         if (Object.keys(draft.theory_answers).length) setTheoryAnswers(draft.theory_answers);
       })
       .catch(() => {});
-  }, [courseId, token]);
+    return () => {
+      ignore = true;
+    };
+  }, [courseId, token, navigate]);
 
   useEffect(() => {
     if (!course) return;
@@ -129,7 +140,6 @@ export default function CourseScreen() {
     if (!course) return;
     setShowSkipModal(false);
     setSubmitting(true);
-    setSubmitError(null);
     try {
       saveDraft();
       const result = await apiFetch("/quiz/score", token, {
@@ -148,7 +158,7 @@ export default function CourseScreen() {
       });
       navigate(`/course/${course.id}/results`, { state: { result, course } });
     } catch (err) {
-      setSubmitError(errMsg(err));
+      toast(errMsg(err), "error");
     } finally {
       setSubmitting(false);
     }
@@ -187,7 +197,6 @@ export default function CourseScreen() {
     }
   }
 
-  if (loadError) return <p className="error-message">{loadError}</p>;
   if (!course) return <p className="status-message">Loading course…</p>;
 
   const totalQuestions = course.sections.reduce(
