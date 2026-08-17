@@ -4,6 +4,8 @@
 
 <p align="center"><img src="frontend/public/parcourse-wordmark.svg" alt="Parcourse" height="52" /></p>
 
+<p align="center"><a href="https://parcourse.dimwit.me">parcourse.dimwit.me</a></p>
+
 Parcourse is an open-source app that transforms YouTube videos into structured learning experiences. Paste any URL and get AI-generated sections, summaries, and quiz questions with instant feedback. The app builds a personal knowledge graph mapping your growth across topics, supports multi-user administration, and works with any provider LiteLLM reaches (OpenRouter, OpenAI, Anthropic, Gemini, Groq, a local Ollama, and more), configured from the Settings page and stored encrypted.
 
 ## Running it
