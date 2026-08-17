@@ -154,19 +154,28 @@ def delete_course(
 
     if cleanup_graph:
         for link in links:
+            # Derived, not counted: a course this user still holds is the only
+            # thing that keeps a concept alive, and regenerating a course would
+            # leave a tally too high to ever reach zero.
+            still_reached = session.exec(
+                select(CourseKnowledgeNode.course_id)
+                .join(CachedCourse, CachedCourse.id == CourseKnowledgeNode.course_id)
+                .where(
+                    CourseKnowledgeNode.node_id == link.node_id,
+                    CourseKnowledgeNode.course_id != course_id,
+                    CachedCourse.user_id == user.id,
+                )
+            ).first()
+            if still_reached is not None:
+                continue
             progress = session.exec(
                 select(UserKnowledgeProgress).where(
                     UserKnowledgeProgress.user_id == user.id,
                     UserKnowledgeProgress.node_id == link.node_id,
                 )
             ).first()
-            if progress is None:
-                continue
-            progress.times_encountered -= 1
-            if progress.times_encountered <= 0:
+            if progress is not None:
                 session.delete(progress)
-            else:
-                session.add(progress)
         session.flush()
 
     for link in links:
