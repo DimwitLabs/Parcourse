@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parcourse | Turn curiosity into knowledge</title>
+    <meta name="description" content="Parcourse turns a YouTube video into a course you can actually study: structured sections, questions that test your thinking, and a knowledge graph that grows with you. Self-hosted, and uses whichever model you bring.">
+    <link rel="canonical" href="https://parcourse.dimwit.me/">
+    <link rel="icon" type="image/svg+xml" href="parcourse.svg">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Parcourse">
+    <meta property="og:title" content="Parcourse | Turn curiosity into knowledge">
+    <meta property="og:description" content="Self-hosted courses from any YouTube video, on whichever model you bring.">
+    <meta property="og:url" content="https://parcourse.dimwit.me/">
+    <meta property="og:image" content="https://parcourse.dimwit.me/og.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Parcourse. Turn curiosity into knowledge.">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Parcourse | Turn curiosity into knowledge">
+    <meta name="twitter:description" content="Self-hosted courses from any YouTube video, on whichever model you bring.">
+    <meta name="twitter:image" content="https://parcourse.dimwit.me/og.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="canvas-glow"></div>
+    <div class="container">
+        <img class="wordmark" src="parcourse-wordmark.svg" alt="Parcourse" width="195" height="52">
+        <h1>Turn curiosity into <span class="accent">knowledge.</span></h1>
+        <p class="description">Parcourse turns a YouTube video into a course you can actually study: structured sections, questions that test your thinking, and a knowledge graph that maps how your understanding grows. Self-hosted, and uses whichever model you bring.</p>
+        <div class="nav-links">
+            <a href="https://github.com/DimwitLabs/Parcourse" class="text-link" target="_blank" rel="noopener noreferrer">Repository</a>
+            <a href="https://github.com/orgs/DimwitLabs/packages?repo_name=Parcourse" class="text-link" target="_blank" rel="noopener noreferrer">Packages</a>
+            <a href="https://github.com/DimwitLabs/Parcourse/blob/main/CHANGELOG.md" class="text-link" target="_blank" rel="noopener noreferrer">Changelog</a>
+        </div>
+        <div class="nav-links">
+            <a href="https://github.com/DimwitLabs/Parcourse/blob/main/CONTRIBUTING.md" class="text-link" target="_blank" rel="noopener noreferrer">Contributing</a>
+            <a href="https://github.com/sponsors/DeepanshKhurana" class="text-link" target="_blank" rel="noopener noreferrer">Donate</a>
+        </div>
+        <div class="footer">
+            <span>Made with love and labour by Deepansh Khurana</span>
+            <span><a href="https://dimwit.me" target="_blank" rel="noopener noreferrer">Dimwit Labs</a></span>
+        </div>
+    </div>
+    <script>
+        let frame = 0;
+        let lastX = -999;
+        let lastY = -999;
+
+        function update(x, y) {
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(() => {
+                const root = document.documentElement.style;
+                root.setProperty('--mouse-x', x + 'px');
+                root.setProperty('--mouse-y', y + 'px');
+                root.setProperty('--scroll-x', (13 - (window.scrollX % 26)) + 'px');
+                root.setProperty('--scroll-y', (13 - (window.scrollY % 26)) + 'px');
+            });
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            lastX = e.clientX;
+            lastY = e.clientY;
+            update(lastX, lastY);
+        });
+        window.addEventListener('scroll', () => update(lastX, lastY), { passive: true });
+    </script>
+</body>
+</html>
