@@ -110,7 +110,7 @@ export default function GenerationSteps({
               <div className="gen-pill-actions">
                 {onCancel && (
                   <button className="gen-pill-cancel" type="button" onClick={onCancel}>
-                    Pick Another Video
+                    Cancel
                   </button>
                 )}
                 {onOverride && (
