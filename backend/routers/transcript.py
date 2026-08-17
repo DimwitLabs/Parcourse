@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 from dependencies import get_current_user
 from models.user import User
 from schemas.transcript import TranscriptRequest, TranscriptResponse, TranscriptSegment
-from services.youtube import extract_video_id, fetch_transcript, fetch_video_title
+from services.youtube import TranscriptBlocked, extract_video_id, fetch_transcript, fetch_video_title
 
 router = APIRouter(prefix="/transcript", tags=["transcript"])
 
@@ -18,6 +18,9 @@ def extract(body: TranscriptRequest, _: User = Depends(get_current_user)) -> Tra
     try:
         video_id = extract_video_id(body.url)
         segments = fetch_transcript(video_id)
+    except TranscriptBlocked as exc:
+        logger.error("[transcript]: youtube blocked this server for url=%s", body.url)
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
     except ValueError as exc:
         logger.warning("[transcript]: extraction failed for url=%s: %s", body.url, exc)
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
