@@ -4,12 +4,14 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _PLAIN_PREFIXES = ("postgresql://", "postgres://")
 _SCHEMA_RE = re.compile(r"^[a-z_][a-z0-9_]*$")
+_LOG_LEVELS = ("debug", "info", "warning", "error", "critical")
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     database_url: str = "postgresql+psycopg://parcourse:parcourse@db:5432/parcourse"
     db_schema: str = "public"
+    log_level: str = "info"
     cors_origins: list[str] = ["http://localhost:5173"]
     jwt_secret: str
     jwt_expiry_hours: int = 24
@@ -38,8 +40,17 @@ def _checked_schema(name: str) -> str:
     return name
 
 
+def _checked_log_level(name: str) -> str:
+    """getattr on the logging module answers for any name it happens to
+    carry, so BASIC_FORMAT would arrive as a level and crash the app."""
+    if name.lower() not in _LOG_LEVELS:
+        raise ValueError(f"LOG_LEVEL must be one of {', '.join(_LOG_LEVELS)}: {name!r}")
+    return name.upper()
+
+
 DATABASE_URL = _with_driver(settings.database_url)
 IS_POSTGRES = DATABASE_URL.startswith("postgresql")
 # Tables carry the schema themselves, so nothing depends on search_path and
 # extensions in public still resolve. Only Postgres has schemas.
 SCHEMA = _checked_schema(settings.db_schema) if IS_POSTGRES else None
+LOG_LEVEL = _checked_log_level(settings.log_level)

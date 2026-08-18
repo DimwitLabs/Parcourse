@@ -8,6 +8,7 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL:?set this to your database connection string}
       - DB_SCHEMA=${DB_SCHEMA:-public}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
       - JWT_SECRET=${JWT_SECRET:-change-this-in-production}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY:-uvSAXyWG429v7tYFyht42Jud0v--hr42pitofMf0pTY=}
       - CORS_ORIGINS=${CORS_ORIGINS:-["http://localhost:5173"]}

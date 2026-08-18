@@ -1,11 +1,18 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from config import settings
+from config import LOG_LEVEL, settings
 from database import init_db
 from routers import auth, course, guardrail, knowledge_graph, quiz, settings as settings_router, transcript, users
+
+
+logging.basicConfig(
+    level=LOG_LEVEL,
+    format="%(levelname)s:     %(message)s",
+)
 
 
 @asynccontextmanager

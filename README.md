@@ -35,6 +35,8 @@ DATABASE_URL=postgresql://user:password@host:5432/postgres docker compose -f doc
 
 Paste the connection string exactly as your provider gives it; `postgresql://` and `postgres://` both work. Set `DB_SCHEMA` if you would rather the tables sat somewhere other than `public`, and the schema is created for you.
 
+Set `LOG_LEVEL` to `debug`, `info`, `warning`, `error` or `critical` to change how much the backend says for itself; it defaults to `info`.
+
 ## Tests
 
 ```bash
