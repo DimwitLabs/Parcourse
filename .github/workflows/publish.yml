@@ -18,6 +18,17 @@ jobs:
 
       - run: pip install -r backend/requirements.txt
 
+      - name: Versions agree
+        run: |
+          backend=$(sed -n 's/^__version__ = "\(.*\)"/\1/p' backend/version.py)
+          frontend=$(sed -n 's/.*"version": "\(.*\)".*/\1/p' frontend/package.json | head -1)
+          changelog=$(sed -n 's/^## \[\([0-9][^]]*\)\].*/\1/p' CHANGELOG.md | head -1)
+          echo "backend=$backend frontend=$frontend changelog=$changelog"
+          if [ "$backend" != "$frontend" ] || [ "$backend" != "$changelog" ]; then
+            echo "These three must carry the same version" >&2
+            exit 1
+          fi
+
       - name: Backend tests
         working-directory: backend
         env:

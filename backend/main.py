@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import LOG_LEVEL, settings
 from database import init_db
 from routers import auth, course, guardrail, knowledge_graph, quiz, settings as settings_router, transcript, users
+from version import __version__
 
 
 logging.basicConfig(
@@ -21,7 +22,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Parcourse API", lifespan=lifespan)
+app = FastAPI(title="Parcourse API", version=__version__, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
