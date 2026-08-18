@@ -25,6 +25,16 @@ python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().
 
 The app is on http://localhost:5173 and the API on http://localhost:8000. The first visit walks you through creating an admin account and connecting a provider; you can skip the provider and add it from Settings later although the app will nudge you to do it anyway.
 
+## Using your own database
+
+The app ships with a Postgres container, but it will talk to any Postgres you already have, including Supabase and Neon. Point `DATABASE_URL` at it and use the compose file that leaves the database out:
+
+```bash
+DATABASE_URL=postgresql://user:password@host:5432/postgres docker compose -f docker-compose.external-db.yml up
+```
+
+Paste the connection string exactly as your provider gives it; `postgresql://` and `postgres://` both work. Set `DB_SCHEMA` if you would rather the tables sat somewhere other than `public`, and the schema is created for you.
+
 ## Tests
 
 ```bash

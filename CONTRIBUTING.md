@@ -57,9 +57,8 @@ To use anything AI-powered you need a key from a provider. The first run walks y
 
 - Keep things readable and follow existing conventions of code structure
 - Comment the why, not the what; delete a comment that restates the code beneath it
-- Delete code you make unreachable, there are no users to keep compatibility for yet
+- Delete code you make unreachable rather than leaving it behind a flag
 - Include tests for new backend behaviour and ensure all tests pass before submitting
-- There is no migration tool, so if you change a model, say so in your PR: everyone testing it will need to recreate their database with `docker compose down -v`
 - Update CHANGELOG.md with your changes
 
 Thank you for contributing!
