@@ -8,6 +8,9 @@ from models.instance_config import InstanceMode
 from models.user import UserRole
 
 PASSWORD_MIN_LENGTH = 8
+# bcrypt reads no further than this and refuses anything longer, so a password
+# past it could be set and then never verify.
+PASSWORD_MAX_BYTES = 72
 
 
 def _check_password(value: str) -> str:
@@ -15,6 +18,8 @@ def _check_password(value: str) -> str:
     field name, so they start with a verb and carry no field label."""
     if len(value) < PASSWORD_MIN_LENGTH:
         raise ValueError(f"must be at least {PASSWORD_MIN_LENGTH} characters")
+    if len(value.encode()) > PASSWORD_MAX_BYTES:
+        raise ValueError(f"must be at most {PASSWORD_MAX_BYTES} bytes (accents and emoji count as several)")
     if not any(c.isupper() for c in value):
         raise ValueError("must include an uppercase letter")
     if not any(c.islower() for c in value):

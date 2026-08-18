@@ -2,23 +2,27 @@ import logging
 import uuid
 from datetime import datetime, timedelta, timezone
 
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from config import settings
 
 logger = logging.getLogger(__name__)
 
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 def hash_password(password: str) -> str:
     logger.info("[auth]: hashing password")
-    return _pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 
 def verify_password(password: str, hashed_password: str) -> bool:
-    result = _pwd_context.verify(password, hashed_password)
+    try:
+        result = bcrypt.checkpw(password.encode(), hashed_password.encode())
+    except ValueError:
+        # Sign-in accepts any string, so the password can be longer than bcrypt
+        # reads or the stored hash can predate this scheme. Neither is a match.
+        logger.warning("[auth]: password verification failed — unreadable password or hash")
+        return False
     if result:
         logger.info("[auth]: password verification succeeded")
     else:
