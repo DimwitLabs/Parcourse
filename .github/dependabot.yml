@@ -7,12 +7,30 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    groups:
+      # litellm pulls pydantic along with it, so a bump to either on its own
+      # resolves to nothing installable and the pull request cannot be tested.
+      pydantic-stack:
+        patterns:
+          - litellm
+          - pydantic
+          - pydantic-settings
 
   - package-ecosystem: npm
     directory: /frontend
     schedule:
       interval: monthly
     open-pull-requests-limit: 5
+    groups:
+      # react and react-dom have to move as one. Split across two pull requests
+      # the half-upgraded tree still builds and still passes CI, and only says
+      # so in the browser, as a blank page.
+      react:
+        patterns:
+          - react
+          - react-dom
+          - "@types/react"
+          - "@types/react-dom"
 
   - package-ecosystem: github-actions
     directory: /
