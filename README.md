@@ -2,7 +2,7 @@
 
 [![AI-DECLARATION: copilot](https://img.shields.io/badge/䷼%20AI--DECLARATION-copilot-fee2e2?labelColor=fee2e2)](AI-DECLARATION.md)
 
-<p align="center"><img src="frontend/public/parcourse-wordmark.svg" alt="Parcourse" height="52" /></p>
+<p align="center"><img src="landing/og.png" alt="Parcourse. Turn curiosity into knowledge." width="100%" /></p>
 
 <p align="center"><a href="https://parcourse.dimwit.me">parcourse.dimwit.me</a></p>
 
