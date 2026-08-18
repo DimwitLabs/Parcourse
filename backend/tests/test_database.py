@@ -4,7 +4,7 @@ accept, the schema it is allowed to use, and what it says when either is wrong.
 
 import unittest
 
-from config import _checked_schema, _with_driver
+from config import SCHEMA, _checked_schema, _with_driver
 from database import _failure_message
 
 SUPABASE = "postgres.abc:pw@aws-0-ap-south-1.pooler.supabase.com:5432/postgres"
@@ -61,13 +61,13 @@ class SchemaQualificationTests(unittest.TestCase):
         from models.base import SQLModelBase
 
         schemas = {table.schema for table in SQLModelBase.metadata.tables.values()}
-        self.assertEqual(schemas, {"public"})
+        self.assertEqual(schemas, {SCHEMA})
 
     def test_every_table_is_registered_on_the_shared_metadata(self):
         from models.base import SQLModelBase
 
-        self.assertIn("public.user", SQLModelBase.metadata.tables)
-        self.assertIn("public.cached_course", SQLModelBase.metadata.tables)
+        self.assertIn(f"{SCHEMA}.user", SQLModelBase.metadata.tables)
+        self.assertIn(f"{SCHEMA}.cached_course", SQLModelBase.metadata.tables)
 
 
 class FailureMessageTests(unittest.TestCase):
