@@ -30,7 +30,7 @@ def extract(
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
     except ValueError as exc:
         logger.warning("[transcript]: extraction failed for url=%s: %s", body.url, exc)
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from exc
 
     logger.info("[transcript]: extracted %d segments for video_id=%s", len(video.segments), video_id)
     return TranscriptResponse(

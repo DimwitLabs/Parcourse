@@ -47,6 +47,17 @@ class FetchVideoTests(unittest.TestCase):
                 fetch_video("abc")
         self.assertIn("server", str(caught.exception))
 
+    def test_the_bot_check_is_recognised_with_a_typographic_apostrophe(self):
+        """The exact sentence YouTube sent a live deployment. The apostrophe is
+        U+2019, and matching only the ASCII one blamed the video for a block."""
+        message = (
+            "ERROR: [youtube] abc: Sign in to confirm you\u2019re not a bot. "
+            "Use --cookies-from-browser or --cookies for the authentication."
+        )
+        with extracting(error=DownloadError(message)):
+            with self.assertRaises(TranscriptBlocked):
+                fetch_video("abc")
+
     def test_an_unplayable_video_says_so(self):
         with extracting(error=DownloadError("ERROR: Private video")):
             with self.assertRaises(ValueError) as caught:

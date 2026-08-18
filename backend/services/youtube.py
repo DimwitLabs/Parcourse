@@ -48,6 +48,11 @@ _BLOCKED_SIGNS = (
     "unable to download webpage: http error",
 )
 
+# YouTube writes its refusal with a typographic apostrophe, and yt-dlp passes
+# the sentence through untouched. Matching the ASCII one alone read the bot
+# check as an unknown failure and blamed the video for it.
+_APOSTROPHES = str.maketrans({"\u2018": "'", "\u2019": "'", "\u02bc": "'"})
+
 _NO_CAPTIONS = "This video has no captions, so there's nothing to build a course from."
 _UNREADABLE = "This video's transcript couldn't be fetched, so try another video."
 _UNPLAYABLE = "This video is private, removed or age-restricted, so it can't be read."
@@ -113,7 +118,7 @@ def _segments_from(track: list[dict]) -> list[dict]:
 
 
 def _from_download_error(video_id: str, exc: DownloadError) -> Exception:
-    reason = str(exc).lower()
+    reason = str(exc).lower().translate(_APOSTROPHES)
     if any(sign in reason for sign in _UNPLAYABLE_SIGNS):
         logger.warning("[youtube]: video %s cannot be opened", video_id)
         return ValueError(_UNPLAYABLE)
