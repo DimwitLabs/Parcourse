@@ -33,14 +33,23 @@
         <img class="wordmark" src="parcourse-wordmark.svg" alt="Parcourse" width="195" height="52">
         <h1>Turn curiosity into <span class="accent">knowledge.</span></h1>
         <p class="description">Parcourse turns a YouTube video into a course you can actually study: structured sections, questions that test your thinking, and a knowledge graph that maps how your understanding grows. Self-hosted, and uses whichever model you bring.</p>
-        <div class="nav-links">
-            <a href="https://github.com/DimwitLabs/Parcourse" class="text-link" target="_blank" rel="noopener noreferrer">Repository</a>
-            <a href="https://github.com/orgs/DimwitLabs/packages?repo_name=Parcourse" class="text-link" target="_blank" rel="noopener noreferrer">Packages</a>
-            <a href="https://github.com/DimwitLabs/Parcourse/blob/main/CHANGELOG.md" class="text-link" target="_blank" rel="noopener noreferrer">Changelog</a>
-        </div>
-        <div class="nav-links">
-            <a href="https://github.com/DimwitLabs/Parcourse/blob/main/CONTRIBUTING.md" class="text-link" target="_blank" rel="noopener noreferrer">Contributing</a>
-            <a href="https://github.com/sponsors/DeepanshKhurana" class="text-link" target="_blank" rel="noopener noreferrer">Donate</a>
+        <form class="interest-form" id="interest-form" novalidate>
+            <input
+                class="text-input"
+                id="interest-email"
+                type="email"
+                name="email"
+                placeholder="you@example.com"
+                autocomplete="email"
+                required
+            >
+            <button class="button primary" type="submit" id="interest-submit">Keep me posted</button>
+        </form>
+        <p class="interest-note" id="interest-note">Hosted Parcourse is coming. Leave an address and hear about it once.</p>
+
+        <div class="actions">
+            <a href="https://github.com/DimwitLabs/Parcourse" class="button secondary" target="_blank" rel="noopener noreferrer">Repository</a>
+            <a href="docs/" class="button secondary">Documentation</a>
         </div>
         <div class="footer">
             <span>Made with love and labour by Deepansh Khurana</span>
@@ -69,6 +78,58 @@
             update(lastX, lastY);
         });
         window.addEventListener('scroll', () => update(lastX, lastY), { passive: true });
+    </script>
+    <script>
+        const SUPABASE_URL = 'https://cyocplxyyrxwaurivccs.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_nCLVP7LGwS7BboabGvtoEw_5T7mLsF2';
+
+        const form = document.getElementById('interest-form');
+        const field = document.getElementById('interest-email');
+        const submit = document.getElementById('interest-submit');
+        const note = document.getElementById('interest-note');
+
+        function say(message, tone) {
+            note.textContent = message;
+            note.dataset.tone = tone;
+        }
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const email = field.value.trim();
+            if (!field.checkValidity() || !email) {
+                say('That address does not look right, so check it and try again.', 'warn');
+                field.focus();
+                return;
+            }
+
+            submit.disabled = true;
+            field.disabled = true;
+            submit.textContent = 'Sending…';
+
+            try {
+                const response = await fetch(SUPABASE_URL + '/rest/v1/parcourse_interest', {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+
+                if (!response.ok && response.status !== 409) {
+                    throw new Error(String(response.status));
+                }
+
+                form.hidden = true;
+                say('You are on the list. You will hear from us once, when it opens.', 'done');
+            } catch (error) {
+                submit.disabled = false;
+                field.disabled = false;
+                submit.textContent = 'Keep me posted';
+                say('That did not send. Try again in a moment.', 'warn');
+            }
+        });
     </script>
 </body>
 </html>
