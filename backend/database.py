@@ -12,7 +12,14 @@ from models.base import SQLModelBase
 
 logger = logging.getLogger(__name__)
 
-engine = create_engine(DATABASE_URL)
+def _connect_args() -> dict[str, object]:
+    """A pooler hands the next statement to a different backend connection, so
+    the prepared statement psycopg makes after a few repeats is not there any
+    more. Supabase, PgBouncer and Neon all pool this way."""
+    return {"prepare_threshold": None} if IS_POSTGRES else {}
+
+
+engine = create_engine(DATABASE_URL, connect_args=_connect_args())
 
 
 def get_session() -> Generator[Session, None, None]:
