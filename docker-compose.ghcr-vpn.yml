@@ -1,3 +1,5 @@
+# The deployment file with a VPN alongside it, for a server whose address
+# YouTube refuses. Everything else matches docker-compose.ghcr.yml.
 services:
   db:
     image: postgres:16-alpine
@@ -26,7 +28,7 @@ services:
       - DATABASE_URL=${DATABASE_URL:-postgresql+psycopg://parcourse:${POSTGRES_PASSWORD:-parcourse}@db:5432/parcourse}
       - DB_SCHEMA=${DB_SCHEMA:-public}
       - LOG_LEVEL=${LOG_LEVEL:-info}
-      - YTDLP_PROXY=${YTDLP_PROXY:-}
+      - YTDLP_PROXY=${YTDLP_PROXY:-http://vpn:8888}
       - JWT_SECRET=${JWT_SECRET:-change-this-in-production}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY:-uvSAXyWG429v7tYFyht42Jud0v--hr42pitofMf0pTY=}
       - CORS_ORIGINS=${CORS_ORIGINS:-["http://localhost:5173"]}
@@ -39,6 +41,24 @@ services:
       - "${FRONTEND_PORT:-5173}:5173"
     environment:
       - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8000}
+
+  # YouTube refuses transcript requests from datacenter addresses, so a VPS
+  # fetches through here instead. OPENVPN_USER and OPENVPN_PASSWORD are the
+  # provider's OpenVPN credentials, not the ones their website logs you in with.
+  vpn:
+    image: qmcgaw/gluetun:latest
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER:-protonvpn}
+      - VPN_TYPE=${VPN_TYPE:-openvpn}
+      - OPENVPN_USER=${OPENVPN_USER:?set this to your provider's OpenVPN username}
+      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD:?set this to your provider's OpenVPN password}
+      - SERVER_COUNTRIES=${SERVER_COUNTRIES:-Netherlands}
+      - HTTPPROXY=on
 
 volumes:
   postgres_data:

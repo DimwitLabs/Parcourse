@@ -11,7 +11,7 @@ from urllib.error import HTTPError
 
 from yt_dlp.utils import DownloadError
 
-from services.youtube import TranscriptBlocked, extract_video_id, fetch_video
+from services.youtube import TranscriptBlocked, _options, extract_video_id, fetch_video
 
 CAPTIONS = {"en": [{"ext": "json3", "url": "https://example.test/track"}]}
 EVENTS = {"events": [{"tStartMs": 1360, "dDurationMs": 1680, "segs": [{"utf8": "hello"}]}]}
@@ -79,7 +79,7 @@ class FetchVideoTests(unittest.TestCase):
 
     def test_captions_become_segments_in_seconds(self):
         with extracting(result={"title": "DNA Explained", "subtitles": CAPTIONS}):
-            with patch("urllib.request.urlopen", return_value=io.BytesIO(json.dumps(EVENTS).encode())):
+            with patch("services.youtube.YoutubeDL.urlopen", return_value=io.BytesIO(json.dumps(EVENTS).encode())):
                 video = fetch_video("abc")
 
         self.assertEqual(video.title, "DNA Explained")
@@ -93,14 +93,43 @@ class FetchVideoTests(unittest.TestCase):
         }
         seen = {}
 
-        def record(url, timeout=None):
+        def record(url):
             seen["url"] = url
             return io.BytesIO(json.dumps(EVENTS).encode())
 
         with extracting(result=info):
-            with patch("urllib.request.urlopen", side_effect=record):
+            with patch("services.youtube.YoutubeDL.urlopen", side_effect=record):
                 fetch_video("abc")
         self.assertEqual(seen["url"], "https://example.test/track")
+
+
+class ProxyTests(unittest.TestCase):
+    """A VPS is refused by YouTube on address alone, so the operator points the
+    fetch somewhere else and nothing else about the app changes."""
+
+    def test_no_proxy_is_configured_by_default(self):
+        self.assertNotIn("proxy", _options())
+
+    def test_a_configured_proxy_reaches_yt_dlp(self):
+        with patch("services.youtube.YTDLP_PROXY", "socks5h://user:pw@vpn:1080"):
+            self.assertEqual(_options()["proxy"], "socks5h://user:pw@vpn:1080")
+
+    def test_a_broken_proxy_is_not_blamed_on_the_video(self):
+        error = DownloadError("ERROR: [youtube] abc: Unable to connect to proxy: Connection refused")
+        with patch("services.youtube.YTDLP_PROXY", "socks5h://vpn:1080"):
+            with extracting(error=error):
+                with self.assertRaises(TranscriptBlocked) as caught:
+                    fetch_video("abc")
+        self.assertIn("reach YouTube", str(caught.exception))
+
+    def test_captions_are_fetched_through_the_same_opener_as_the_page(self):
+        """A caption track pulled outside yt-dlp would leave from the server's
+        own address even when a proxy is set, and read as a broken proxy."""
+        info = {"title": "t", "subtitles": CAPTIONS}
+        with extracting(result=info):
+            with patch("services.youtube.YoutubeDL.urlopen", return_value=io.BytesIO(json.dumps(EVENTS).encode())) as opener:
+                fetch_video("abc")
+        opener.assert_called_once()
 
 
 class FailuresThatMustNotBecomeServerErrors(unittest.TestCase):
@@ -109,14 +138,14 @@ class FailuresThatMustNotBecomeServerErrors(unittest.TestCase):
     def test_a_caption_download_that_fails(self):
         info = {"title": "t", "subtitles": CAPTIONS}
         with extracting(result=info):
-            with patch("urllib.request.urlopen", side_effect=HTTPError("u", 429, "x", {}, None)):
+            with patch("services.youtube.YoutubeDL.urlopen", side_effect=HTTPError("u", 429, "x", {}, None)):
                 with self.assertRaises(ValueError):
                     fetch_video("abc")
 
     def test_captions_that_are_not_json(self):
         info = {"title": "t", "subtitles": CAPTIONS}
         with extracting(result=info):
-            with patch("urllib.request.urlopen", return_value=io.BytesIO(b"<xml>not json</xml>")):
+            with patch("services.youtube.YoutubeDL.urlopen", return_value=io.BytesIO(b"<xml>not json</xml>")):
                 with self.assertRaises(ValueError):
                     fetch_video("abc")
 
@@ -141,7 +170,7 @@ class FailuresThatMustNotBecomeServerErrors(unittest.TestCase):
     def test_captions_with_no_readable_text(self):
         info = {"title": "t", "subtitles": CAPTIONS}
         with extracting(result=info):
-            with patch("urllib.request.urlopen", return_value=io.BytesIO(b'{"events": []}')):
+            with patch("services.youtube.YoutubeDL.urlopen", return_value=io.BytesIO(b'{"events": []}')):
                 with self.assertRaises(ValueError) as caught:
                     fetch_video("abc")
         self.assertIn("empty", str(caught.exception))

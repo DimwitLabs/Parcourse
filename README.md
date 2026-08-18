@@ -17,6 +17,18 @@ cp .env.example .env
 docker compose up
 ```
 
+### Running on a VPS
+
+YouTube refuses transcript requests from datacenter addresses, so a server
+rented anywhere is told to prove it is not a bot while the same app on a home
+machine works untouched. Point `YTDLP_PROXY` at any proxy and only the YouTube
+fetches go through it. A second deployment file runs a VPN alongside
+the app for this, and any provider's proxy works just as well:
+
+```bash
+docker compose -f docker-compose.ghcr-vpn.yml up
+```
+
 Set `JWT_SECRET` and `ENCRYPTION_KEY` in `.env`. Generate the encryption key with:
 
 ```bash

@@ -1,11 +1,12 @@
 import json
 import logging
 import re
-import urllib.request
 from dataclasses import dataclass
 
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
+
+from config import YTDLP_PROXY
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +22,15 @@ _OPTIONS = {
     "retries": 2,
     "extractor_retries": 1,
 }
+
+
+def _options() -> dict:
+    """A datacenter address is refused by YouTube whatever it asks for, so a
+    deployment that has one fetches through somewhere else instead."""
+    if not YTDLP_PROXY:
+        return _OPTIONS
+    return {**_OPTIONS, "proxy": YTDLP_PROXY}
+
 
 # yt-dlp reports failures as prose, so these match phrases rather than types.
 # A video nobody can play is checked first: its message often also mentions
@@ -53,9 +63,14 @@ _BLOCKED_SIGNS = (
 # check as an unknown failure and blamed the video for it.
 _APOSTROPHES = str.maketrans({"\u2018": "'", "\u2019": "'", "\u02bc": "'"})
 
+# A proxy that is wrong or down is the operator's problem, and reads nothing
+# like a problem with the video the user picked.
+_EGRESS_SIGNS = ("unable to connect to proxy", "socks", "proxy")
+
 _NO_CAPTIONS = "This video has no captions, so there's nothing to build a course from."
 _UNREADABLE = "This video's transcript couldn't be fetched, so try another video."
 _UNPLAYABLE = "This video is private, removed or age-restricted, so it can't be read."
+_UNREACHABLE = "This server can't reach YouTube right now, so courses cannot be made."
 _REFUSED = "YouTube is refusing requests from this server, so courses cannot be made right now."
 
 
@@ -92,7 +107,7 @@ def _english_track(info: dict) -> list[dict] | None:
     return None
 
 
-def _segments_from(track: list[dict]) -> list[dict]:
+def _segments_from(ydl: YoutubeDL, track: list[dict]) -> list[dict]:
     chosen = next((t for t in track if t.get("ext") == "json3"), None)
     if not chosen:
         raise ValueError(_NO_CAPTIONS)
@@ -101,8 +116,9 @@ def _segments_from(track: list[dict]) -> list[dict]:
         # The URL arrives from the extractor, and urlopen would honour file://.
         raise ValueError(_UNREADABLE)
 
-    with urllib.request.urlopen(url, timeout=20) as response:
-        events = json.load(response).get("events") or []
+    # yt-dlp's own opener, so the caption track is fetched through the same
+    # proxy and the same session that was allowed to list it.
+    events = json.loads(ydl.urlopen(url).read()).get("events") or []
 
     segments = []
     for event in events:
@@ -122,6 +138,9 @@ def _from_download_error(video_id: str, exc: DownloadError) -> Exception:
     if any(sign in reason for sign in _UNPLAYABLE_SIGNS):
         logger.warning("[youtube]: video %s cannot be opened", video_id)
         return ValueError(_UNPLAYABLE)
+    if YTDLP_PROXY and any(sign in reason for sign in _EGRESS_SIGNS):
+        logger.error("[youtube]: the configured YTDLP_PROXY did not carry the request: %s", exc)
+        return TranscriptBlocked(_UNREACHABLE)
     if any(sign in reason for sign in _BLOCKED_SIGNS):
         logger.error("[youtube]: youtube refused the request for video %s", video_id)
         return TranscriptBlocked(_REFUSED)
@@ -134,17 +153,17 @@ def fetch_video(video_id: str) -> Video:
     would only spend a second request on the same answer."""
     logger.info("[youtube]: fetching video %s", video_id)
     try:
-        with YoutubeDL(_OPTIONS) as ydl:
+        with YoutubeDL(_options()) as ydl:
             info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
-        if not info:
-            raise ValueError(_UNREADABLE)
+            if not info:
+                raise ValueError(_UNREADABLE)
 
-        track = _english_track(info)
-        if not track:
-            logger.warning("[youtube]: video %s has no english captions", video_id)
-            raise ValueError(_NO_CAPTIONS)
+            track = _english_track(info)
+            if not track:
+                logger.warning("[youtube]: video %s has no english captions", video_id)
+                raise ValueError(_NO_CAPTIONS)
 
-        segments = _segments_from(track)
+            segments = _segments_from(ydl, track)
         if not segments:
             raise ValueError("This video's captions are empty, so there's nothing to build a course from.")
     except DownloadError as exc:

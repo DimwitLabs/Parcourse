@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     db_schema: str = "public"
     log_level: str = "info"
     cors_origins: list[str] = ["http://localhost:5173"]
+    ytdlp_proxy: str = ""
     jwt_secret: str
     jwt_expiry_hours: int = 24
     encryption_key: str
@@ -48,6 +49,7 @@ def _checked_log_level(name: str) -> str:
     return name.upper()
 
 
+YTDLP_PROXY = settings.ytdlp_proxy.strip()
 DATABASE_URL = _with_driver(settings.database_url)
 IS_POSTGRES = DATABASE_URL.startswith("postgresql")
 # Tables carry the schema themselves, so nothing depends on search_path and
