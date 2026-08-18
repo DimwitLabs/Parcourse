@@ -1,5 +1,4 @@
 import logging
-import sys
 import time
 from collections.abc import Generator
 
@@ -43,8 +42,7 @@ def _wait_for_database(attempts: int = 5, delay: float = 2.0) -> None:
             return
         except SQLAlchemyError as exc:
             if attempt == attempts:
-                logger.error("[database]: %s", _failure_message(DATABASE_URL, SCHEMA, exc))
-                sys.exit(1)
+                raise RuntimeError(_failure_message(DATABASE_URL, SCHEMA, exc)) from exc
             logger.warning("[database]: not ready yet, retrying (%d/%d)", attempt, attempts)
             time.sleep(delay)
 
