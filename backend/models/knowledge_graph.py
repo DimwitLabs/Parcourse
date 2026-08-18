@@ -3,7 +3,9 @@ from datetime import datetime, timezone
 from enum import Enum
 
 from sqlalchemy import Column, ForeignKey, UniqueConstraint
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field
+
+from models.base import SQLModelBase
 
 
 class NodeTier(str, Enum):
@@ -19,8 +21,8 @@ class EdgeType(str, Enum):
     prerequisite_of = "prerequisite_of"
 
 
-class KnowledgeNode(SQLModel, table=True):
-    __table_args__ = (UniqueConstraint("label", "tier", name="uq_knowledgenode_label_tier"),)
+class KnowledgeNode(SQLModelBase, table=True):
+    __table_args__ = (UniqueConstraint("label", "tier", name="uq_knowledge_node_label_tier"),)
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     tier: NodeTier
@@ -29,27 +31,27 @@ class KnowledgeNode(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
-class KnowledgeEdge(SQLModel, table=True):
+class KnowledgeEdge(SQLModelBase, table=True):
     __table_args__ = (
-        UniqueConstraint("source_id", "target_id", "edge_type", name="uq_knowledgeedge_unique"),
+        UniqueConstraint("source_id", "target_id", "edge_type", name="uq_knowledge_edge_source_target_type"),
     )
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    source_id: uuid.UUID = Field(sa_column=Column(ForeignKey("knowledgenode.id", ondelete="CASCADE"), index=True, nullable=False))
-    target_id: uuid.UUID = Field(sa_column=Column(ForeignKey("knowledgenode.id", ondelete="CASCADE"), index=True, nullable=False))
+    source_id: uuid.UUID = Field(sa_column=Column(ForeignKey("knowledge_node.id", ondelete="CASCADE"), index=True, nullable=False))
+    target_id: uuid.UUID = Field(sa_column=Column(ForeignKey("knowledge_node.id", ondelete="CASCADE"), index=True, nullable=False))
     edge_type: EdgeType
 
 
-class CourseKnowledgeNode(SQLModel, table=True):
-    course_id: uuid.UUID = Field(sa_column=Column(ForeignKey("cachedcourse.id", ondelete="CASCADE"), primary_key=True))
-    node_id: uuid.UUID = Field(sa_column=Column(ForeignKey("knowledgenode.id", ondelete="CASCADE"), primary_key=True))
+class CourseKnowledgeNode(SQLModelBase, table=True):
+    course_id: uuid.UUID = Field(sa_column=Column(ForeignKey("cached_course.id", ondelete="CASCADE"), primary_key=True))
+    node_id: uuid.UUID = Field(sa_column=Column(ForeignKey("knowledge_node.id", ondelete="CASCADE"), primary_key=True))
 
 
-class UserKnowledgeProgress(SQLModel, table=True):
-    __table_args__ = (UniqueConstraint("user_id", "node_id", name="uq_userknowledgeprogress_user_node"),)
+class UserKnowledgeProgress(SQLModelBase, table=True):
+    __table_args__ = (UniqueConstraint("user_id", "node_id", name="uq_user_knowledge_progress_user_node"),)
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     user_id: uuid.UUID = Field(sa_column=Column(ForeignKey("user.id", ondelete="CASCADE"), index=True, nullable=False))
-    node_id: uuid.UUID = Field(sa_column=Column(ForeignKey("knowledgenode.id", ondelete="CASCADE"), index=True, nullable=False))
+    node_id: uuid.UUID = Field(sa_column=Column(ForeignKey("knowledge_node.id", ondelete="CASCADE"), index=True, nullable=False))
     mastery_score: float = 0.0
     last_touched_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

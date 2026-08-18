@@ -2,7 +2,9 @@ import uuid
 from datetime import datetime, timezone
 from enum import Enum
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field
+
+from models.base import SQLModelBase
 
 
 class UserRole(str, Enum):
@@ -10,7 +12,7 @@ class UserRole(str, Enum):
     student = "student"
 
 
-class User(SQLModel, table=True):
+class User(SQLModelBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     email: str = Field(unique=True, index=True)
     hashed_password: str
