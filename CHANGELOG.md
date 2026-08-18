@@ -11,10 +11,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Transcripts are fetched with `yt-dlp`, which is a more robust library and works significantly better across different hosts.
 - A transcript is stored against its video, so we only fetch a video once in the entire lifetime of a deployment.
 - `LOG_LEVEL` sets how much the backend says for itself, from `debug` to `critical`, defaulting to `info`.
+- YouTube refuses transcript requests from the addresses rented servers have, so a deployment on one fetches through a proxy named by `YTDLP_PROXY`, or through the VPN that `docker-compose.ghcr-vpn.yml` runs beside it. A home machine needs none of it.
 - Passwords are hashed with `bcrypt` directly, dropping the unmaintained `passlib` wrapper. Existing passwords keep working, and a password longer than bcrypt can read is now refused when it is set rather than silently truncated.
 
 ### Fixed
 
+- A password can be revealed while signing in, setting the instance up, or changing it, instead of being typed blind.
 - Video titles keep the capitalisation YouTube gave them, instead of being title-cased into `Dna Explained`.
 
 ## [1.0.0] - 2026-08-17

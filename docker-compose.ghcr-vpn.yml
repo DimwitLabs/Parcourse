@@ -57,7 +57,9 @@ services:
       - VPN_TYPE=${VPN_TYPE:-openvpn}
       - OPENVPN_USER=${OPENVPN_USER:?set this to your provider's OpenVPN username}
       - OPENVPN_PASSWORD=${OPENVPN_PASSWORD:?set this to your provider's OpenVPN password}
-      - SERVER_COUNTRIES=${SERVER_COUNTRIES:-Netherlands}
+      # A free account cannot sign in to a paid server, and being handed one
+      # reads as a wrong password rather than the wrong server.
+      - FREE_ONLY=${FREE_ONLY:-off}
       - HTTPPROXY=on
 
 volumes:
