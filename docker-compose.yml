@@ -20,20 +20,22 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - ./backend:/app
     environment:
       - DATABASE_URL=${DATABASE_URL:-postgresql+psycopg://parcourse:${POSTGRES_PASSWORD:-parcourse}@db:5432/parcourse}
+      - DB_SCHEMA=${DB_SCHEMA:-public}
       - JWT_SECRET=${JWT_SECRET:-change-this-in-production}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY:-uvSAXyWG429v7tYFyht42Jud0v--hr42pitofMf0pTY=}
+      - CORS_ORIGINS=${CORS_ORIGINS:-["http://localhost:5173"]}
 
   frontend:
     build:
       context: ./frontend
     command: npm run dev -- --host 0.0.0.0
     ports:
-      - "5173:5173"
+      - "${FRONTEND_PORT:-5173}:5173"
     volumes:
       - ./frontend:/app
       - /app/node_modules
