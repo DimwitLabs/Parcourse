@@ -1,3 +1,4 @@
+from models.cached_transcript import CachedTranscript
 from models.course_cache import CachedCourse
 from models.instance_config import InstanceConfig, InstanceMode
 from models.knowledge_graph import (
@@ -15,6 +16,7 @@ from models.user import User, UserRole
 
 __all__ = [
     "CachedCourse",
+    "CachedTranscript",
     "CourseKnowledgeNode",
     "EdgeType",
     "InstanceConfig",
