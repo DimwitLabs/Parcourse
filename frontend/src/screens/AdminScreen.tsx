@@ -196,7 +196,7 @@ export default function AdminScreen() {
                 value={newPassword}
                 onChange={setNewPassword}
                 disabled={busy}
-                hint="Name is optional. Share this password with the user, they will be asked to change it on first sign in."
+                hint="Name is optional. Share this password with the user. They will be asked to change it on first sign in."
               />
             </div>
             <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "1.25rem" }}>
