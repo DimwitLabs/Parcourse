@@ -11,7 +11,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Transcripts are fetched with `yt-dlp`, which is a more robust library and works significantly better across different hosts.
 - A transcript is stored against its video, so we only fetch a video once in the entire lifetime of a deployment.
 - `LOG_LEVEL` sets how much the backend says for itself, from `debug` to `critical`, defaulting to `info`.
-- Dependencies moved up to current: FastAPI, React 19, TypeScript 7, and `python-jose` 3.5, which closes two advisories open against 3.3.
+- Dependencies moved up to current: FastAPI, React 19, React Router 7, TypeScript 7, Vite 8, and `python-jose` 3.5, which closes two advisories open against 3.3.
+- The images run on Python 3.14 and Node 26, and the tests now run on those same versions rather than the ones they used to ship.
 - Passwords are hashed with `bcrypt` directly, dropping the unmaintained `passlib` wrapper. Existing passwords keep working, and a password longer than bcrypt can read is now refused when it is set rather than silently truncated.
 
 ### Fixed
