@@ -2,12 +2,12 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-logger = logging.getLogger(__name__)
-
 from dependencies import get_current_user
 from models.user import User
 from schemas.transcript import TranscriptRequest, TranscriptResponse, TranscriptSegment
-from services.youtube import TranscriptBlocked, extract_video_id, fetch_transcript, fetch_video_title
+from services.youtube import TranscriptBlocked, extract_video_id, fetch_video
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/transcript", tags=["transcript"])
 
@@ -17,7 +17,7 @@ def extract(body: TranscriptRequest, _: User = Depends(get_current_user)) -> Tra
     logger.info("[transcript]: extract requested for url=%s", body.url)
     try:
         video_id = extract_video_id(body.url)
-        segments = fetch_transcript(video_id)
+        video = fetch_video(video_id)
     except TranscriptBlocked as exc:
         logger.error("[transcript]: youtube blocked this server for url=%s", body.url)
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
@@ -25,6 +25,9 @@ def extract(body: TranscriptRequest, _: User = Depends(get_current_user)) -> Tra
         logger.warning("[transcript]: extraction failed for url=%s: %s", body.url, exc)
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
 
-    logger.info("[transcript]: extracted %d segments for video_id=%s", len(segments), video_id)
-    video_title = fetch_video_title(video_id)
-    return TranscriptResponse(video_id=video_id, video_title=video_title, segments=[TranscriptSegment(**s) for s in segments])
+    logger.info("[transcript]: extracted %d segments for video_id=%s", len(video.segments), video_id)
+    return TranscriptResponse(
+        video_id=video_id,
+        video_title=video.title,
+        segments=[TranscriptSegment(**s) for s in video.segments],
+    )

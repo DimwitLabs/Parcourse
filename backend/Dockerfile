@@ -1,5 +1,9 @@
 FROM python:3.12-slim
 
+# yt-dlp runs YouTube's own JavaScript to sign some URLs, and deno is the
+# runtime it reaches for by default.
+COPY --from=denoland/deno:bin-2.9.5 /deno /usr/local/bin/deno
+
 WORKDIR /app
 
 COPY requirements.txt .
