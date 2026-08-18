@@ -495,6 +495,13 @@ body {
   font-size: 1.05rem;
 }
 
+/* The pill is as tall as the text inside it, and the reveal button carries
+   enough padding for its own hover circle to sit taller than that. The pull
+   back keeps the password pill the same height as the email one. */
+.login-input-pill .icon-btn {
+  margin: -0.45rem -0.5rem -0.45rem 0.5rem;
+}
+
 .login-submit {
   width: 100%;
   border-radius: var(--radius-full) !important;

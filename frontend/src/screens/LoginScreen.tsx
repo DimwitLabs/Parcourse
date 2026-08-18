@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PasswordInput from "../components/PasswordInput";
 
 import CanvasBackground from "../components/CanvasBackground";
 import { toast } from "../components/Toast";
@@ -49,17 +50,13 @@ export default function LoginScreen() {
               disabled={busy}
             />
           </div>
-          <div className="login-input-pill">
-            <input
-              className="text-input"
-              placeholder="Password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={busy}
-            />
-          </div>
+          <PasswordInput
+            placeholder="Password"
+            autoComplete="current-password"
+            value={password}
+            onChange={setPassword}
+            disabled={busy}
+          />
           <button className="button primary login-submit" type="submit" disabled={busy || !email || !password}>
             {busy ? "Logging in…" : "Log in"}
           </button>

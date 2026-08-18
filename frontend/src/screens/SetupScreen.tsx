@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import CanvasBackground from "../components/CanvasBackground";
 import { toast } from "../components/Toast";
 import PasswordField from "../components/PasswordField";
+import PasswordInput from "../components/PasswordInput";
 import ProviderForm from "../components/ProviderForm";
 import { apiFetch, errMsg } from "../lib/api";
 import { PASSWORD_RULE, generatePassword, passwordError } from "../lib/password";
@@ -135,17 +136,13 @@ export default function SetupScreen() {
                 disabled={busy}
               />
             </div>
-            <div className="login-input-pill">
-              <input
-                className="text-input"
-                placeholder="Password"
-                type="password"
-                autoComplete="new-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={busy}
-              />
-            </div>
+            <PasswordInput
+              placeholder="Password"
+              autoComplete="new-password"
+              value={password}
+              onChange={setPassword}
+              disabled={busy}
+            />
             <span className="modal-field-hint">{PASSWORD_RULE}</span>
             <button
               className="button primary login-submit"

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PasswordInput from "../components/PasswordInput";
 
 import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
@@ -47,28 +48,20 @@ export default function ChangePasswordScreen() {
             submit();
           }}
         >
-          <div className="login-input-pill">
-            <input
-              className="text-input"
-              type="password"
-              placeholder="New password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={busy}
-            />
-          </div>
-          <div className="login-input-pill">
-            <input
-              className="text-input"
-              type="password"
-              placeholder="Confirm new password"
-              autoComplete="new-password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              disabled={busy}
-            />
-          </div>
+          <PasswordInput
+            placeholder="New password"
+            autoComplete="new-password"
+            value={password}
+            onChange={setPassword}
+            disabled={busy}
+          />
+          <PasswordInput
+            placeholder="Confirm new password"
+            autoComplete="new-password"
+            value={confirm}
+            onChange={setConfirm}
+            disabled={busy}
+          />
           <span className={`modal-field-hint${problem ? " is-error" : ""}`}>
             {problem ?? PASSWORD_RULE}
           </span>
