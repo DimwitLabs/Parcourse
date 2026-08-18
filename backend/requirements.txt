@@ -1,11 +1,11 @@
-fastapi==0.115.0
+fastapi==0.141.1
 uvicorn[standard]==0.30.6
 pydantic-settings==2.15.0
 sqlmodel==0.0.22
 psycopg[binary]==3.2.2
 bcrypt==5.0.0
-python-jose[cryptography]==3.3.0
+python-jose[cryptography]==3.5.0
 cryptography==43.0.1
-email-validator==2.2.0
+email-validator==2.3.0
 yt-dlp==2026.7.4
 litellm==1.96.2
