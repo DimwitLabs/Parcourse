@@ -4,6 +4,18 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-08-18
+
+### Changed
+
+- Transcripts are fetched with `yt-dlp`, which is a more robust library and works significantly better across different hosts.
+- A transcript is stored against its video, so we only fetch a video once in the entire lifetime of a deployment.
+- `LOG_LEVEL` sets how much the backend says for itself, from `debug` to `critical`, defaulting to `info`.
+
+### Fixed
+
+- Video titles keep the capitalisation YouTube gave them, instead of being title-cased into `Dna Explained`.
+
 ## [1.0.0] - 2026-08-17
 
 ### Added
