@@ -3160,7 +3160,7 @@ body {
 
 .gen-pill {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.65rem;
   padding: 0.75rem 1.1rem;
   border-radius: var(--radius-full);
@@ -3298,7 +3298,6 @@ body {
 
 .gen-pill-icon {
   flex-shrink: 0;
-  margin-top: 0.0625rem;
   color: var(--color-sage, #6ab47b);
 }
 
@@ -3308,7 +3307,6 @@ body {
   border-radius: 50%;
   background: var(--color-border);
   flex-shrink: 0;
-  margin-top: 0.25rem;
 }
 
 .gen-pill-spinner {
@@ -3319,7 +3317,6 @@ body {
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
   flex-shrink: 0;
-  margin-top: 0.125rem;
 }
 
 @keyframes spin {
