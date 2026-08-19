@@ -2712,6 +2712,7 @@ body {
   fill: none;
   stroke: var(--color-surface-high);
   stroke-width: 7;
+  stroke-linecap: round;
 }
 
 .score-ring-fill {

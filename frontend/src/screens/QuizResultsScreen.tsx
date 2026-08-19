@@ -46,7 +46,17 @@ function subtitle(pct: number): string {
   return "Don't worry, re-watch the course sections and give it another shot.";
 }
 
-const CIRCUMFERENCE = 2 * Math.PI * 48;
+const RING_R = 48;
+const CIRCUMFERENCE = 2 * Math.PI * RING_R;
+// Material holds the track back from the active arc rather than running it
+// underneath, so both ends stay visible as rounded caps.
+const RING_GAP = RING_R * 0.14;
+
+function trackLength(filled: number): number {
+  if (filled <= 0) return CIRCUMFERENCE;
+  return Math.max(0, CIRCUMFERENCE - filled - RING_GAP * 2);
+}
+
 const SWEEP_MS = 1100;
 // The tick has finished drawing by now, which is the moment the news lands.
 const TICK_MS = 620;
@@ -96,23 +106,38 @@ export default function QuizResultsScreen() {
   }, [courseId, data, token]);
 
   const ringRef = useRef<SVGCircleElement>(null);
+  const trackRef = useRef<SVGCircleElement>(null);
   // The ring reads off the score on screen rather than the stored percentage,
   // so the number in the middle and the arc around it can never disagree.
   const shown = data ? shownScore({ total: data.result.total_score, max: data.result.max_score }) : null;
   const percentage = shown?.percentage ?? 0;
 
+  const filled = (CIRCUMFERENCE * Math.min(percentage, 100)) / 100;
+  const track = trackLength(filled);
+
   useEffect(() => {
     const ring = ringRef.current;
     if (!ring) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const target = CIRCUMFERENCE - (CIRCUMFERENCE * percentage) / 100;
-    ring.animate([{ strokeDashoffset: CIRCUMFERENCE }, { strokeDashoffset: target }], {
+    const timing: KeyframeAnimationOptions = {
       duration: SWEEP_MS,
       // Quick off the mark and a long glide into the score, so it arrives
       // rather than stops.
       easing: "cubic-bezier(0.16, 1, 0.3, 1)",
-    });
-  }, [percentage]);
+    };
+    ring.animate(
+      [{ strokeDashoffset: CIRCUMFERENCE }, { strokeDashoffset: CIRCUMFERENCE - filled }],
+      timing,
+    );
+    // The track gives way as the arc grows, so the gap holds throughout.
+    trackRef.current?.animate(
+      [
+        { strokeDasharray: `${trackLength(0)} ${CIRCUMFERENCE}`, strokeDashoffset: -RING_GAP },
+        { strokeDasharray: `${track} ${CIRCUMFERENCE}`, strokeDashoffset: -(filled + RING_GAP) },
+      ],
+      timing,
+    );
+  }, [filled, track]);
 
   useEffect(() => {
     // A mastery score means the course has been learned, so it marks itself
@@ -171,7 +196,6 @@ export default function QuizResultsScreen() {
     max: result.max_score,
   });
   const pct = Math.round(percentage);
-  const dashOffset = CIRCUMFERENCE - (CIRCUMFERENCE * pct) / 100;
 
   const allResults = result.results;
   const mcqResults = allResults.filter((r) => r.question_type === "mcq");
@@ -194,9 +218,10 @@ export default function QuizResultsScreen() {
           </div>
           <div className="score-circle">
             <svg className="score-ring-svg" viewBox="0 0 120 120">
-              <circle className="score-ring-bg" cx="60" cy="60" r="48" />
-              <circle ref={ringRef} className="score-ring-fill" cx="60" cy="60" r="48"
-                strokeDasharray={CIRCUMFERENCE} strokeDashoffset={dashOffset} />
+              <circle ref={trackRef} className="score-ring-bg" cx="60" cy="60" r={RING_R}
+                strokeDasharray={`${track} ${CIRCUMFERENCE}`} strokeDashoffset={-(filled + RING_GAP)} />
+              <circle ref={ringRef} className="score-ring-fill" cx="60" cy="60" r={RING_R}
+                strokeDasharray={CIRCUMFERENCE} strokeDashoffset={CIRCUMFERENCE - filled} />
             </svg>
             <div className="score-ring-label">
               <span className="score-ring-big">
