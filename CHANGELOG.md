@@ -4,6 +4,24 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-08-19
+
+### Added
+
+- **Shareable Result Cards:** A quiz result can be sent out as a picture. The card is drawn as the results page reads: the score in its ring inside the dashed frame, the performance summary beside it, and the tutor's analysis under both. A phone hands it to whatever it shares with; a desktop puts it on the clipboard, or saves it where the clipboard is refused.
+
+### Changed
+
+- **Score Ring:** The ring behind the score is held back from the arc at both ends, with rounded caps on each, in the manner Material draws a circular indicator. It closes into a full ring at a perfect score. The same treatment carries onto the shared card.
+- **Configuring AI:** On a phone, where nothing can be hovered, the create bar fills itself on arrival and settles as a Configure AI button, so what it does when tapped is what it looks like.
+
+### Fixed
+
+- **Create Bar:** A long button label no longer pushes itself out of the bar on a narrow screen, which was also what let the whole page be dragged sideways.
+- **Long Titles:** A page heading wraps on a phone rather than running off the edge, and an unbroken string anywhere breaks instead of widening the page.
+- **Generation Pills:** The spinner sits against the middle of its label rather than the top of its first line.
+- **Knowledge Graph:** The granularity pills, the zoom and export controls, and the legend are centred on a phone instead of hugging the left edge. The empty-state line wraps instead of being cut off, and has dropped an icon that read as a share button.
+
 ## [1.0.2] - 2026-08-19
 
 ### Added
