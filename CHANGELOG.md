@@ -4,6 +4,22 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-08-19
+
+### Added
+
+- **Quiz History Improvements:** Every attempt at a quiz is kept and can be opened again. A course that has been attempted carries a history icon beside regenerate and delete, on the course page and on its notebook card, leading to a list of attempts newest first: each with its score, its number, and the attempt that first earned mastery flagged.
+- **Prettier Quiz Results:** Animations! The score ring fills, a tick lands, and the course is done: no separate button to remember if you achieve the criteria.
+- **Added Version Pill:** The profile menu carries the version the instance is running and links to that release on GitHub, so a deployment can be placed against this changelog without opening a shell.
+
+### Fixed
+
+- **Knowledge Graph:** Making a course no longer paints its concepts as studied. A node stays new until something has actually been scored against it.
+- **Scores:** A half mark now reads as the rounded score it is graded against, marked with an asterisk, so the ring and the number in it agree.
+- **Admin Area:** The admin is listed apart from the people using the instance, and the Admins count, which could only ever be one, is gone.  
+- **Mobile Fixes:** The description under a heading sits below it rather than beside it, admin rows keep their controls inside the card, and the course actions stay reachable on a screen too narrow for the sidebar.
+- **Landing Page:** The email field carries its own frame once the form stacks, the copy is centred rather than justified, and type comes down a step to match the heading.
+
 ## [1.0.1] - 2026-08-18
 
 ### Changed
