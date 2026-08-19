@@ -385,6 +385,7 @@ body {
 
 .text-input {
   flex: 1;
+  min-width: 0;
   border: none;
   background: transparent;
   font-family: inherit;
@@ -3841,6 +3842,9 @@ a.modal-field-hint {
 
 .url-form-gate-resting .text-input {
   color: var(--color-ink-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .url-form-gate-resting .button {
