@@ -17,6 +17,9 @@
 
   --shadow-lift: 0 1.125rem 2.5rem -1.375rem rgba(27, 28, 26, 0.22);
   --shadow-lift-sm: 0 0.625rem 1.5rem -1.125rem rgba(27, 28, 26, 0.18);
+  /* Wide and shallow, so the menu floats rather than sits on a hard edge. */
+  --shadow-menu: 0 0.25rem 1rem -0.5rem rgba(27, 28, 26, 0.12),
+    0 1.5rem 3.5rem -1rem rgba(27, 28, 26, 0.2);
   --line: rgba(27, 28, 26, 0.08);
 
   --radius-sm: 0.5rem;
@@ -177,18 +180,29 @@ body {
   background: #c6dabc;
 }
 
-.user-dropdown {
+/* The menu and the version ride together, so the second card hangs off the
+   first rather than floating on its own. */
+.user-menu {
   position: absolute;
   top: calc(100% + 0.625rem);
   right: 0;
-  background: var(--color-surface-lowest);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 1.25rem 3rem -1.125rem rgba(27, 28, 26, 0.28);
-  padding: 0.5rem;
   min-width: 16rem;
+  /* Without a ceiling a long name widens the card instead of trimming, and on
+     a phone it would run off the screen. */
+  max-width: min(20rem, calc(100vw - 2rem));
   display: flex;
   flex-direction: column;
+  gap: 0.35rem;
   z-index: 30;
+}
+
+.user-dropdown {
+  background: var(--color-surface-lowest);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-menu);
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .user-dropdown-header {
@@ -197,23 +211,37 @@ body {
   margin-bottom: 0.3rem;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.15rem;
+}
+
+.user-dropdown-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .user-dropdown-name {
+  flex: 1;
+  min-width: 0;
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--color-ink);
+  /* A long name or address trims rather than pushing the pill off the card. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .user-dropdown-email {
-  font-size: 0.82rem;
-  color: var(--color-ink-soft);
-  word-break: break-all;
+  font-size: 0.78rem;
+  color: var(--color-ink-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .user-dropdown-header .role-pill {
-  align-self: flex-start;
+  flex-shrink: 0;
 }
 
 .user-dropdown-item {
@@ -244,6 +272,45 @@ body {
 
 .user-dropdown-item.danger {
   color: var(--color-danger);
+}
+
+.user-dropdown-version {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--color-secondary-container);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-menu);
+  /* The menu's own padding sits inside the card, so this row has to carry both
+     to put its icon on the same line as Settings and Log out. */
+  padding: 0.7rem 1.4rem;
+  /* Below twice the radius the corners round each other off into a pill, which
+     the shadow now separates from the card cleanly enough to read. */
+  border-radius: var(--radius-full);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: background 0.12s ease;
+}
+
+.user-dropdown-version svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.user-dropdown-version svg:last-child {
+  margin-left: auto;
+  transition: transform 0.15s ease;
+}
+
+.user-dropdown-version:hover {
+  background: var(--color-primary);
+  color: var(--color-surface-lowest);
+}
+
+.user-dropdown-version:hover svg:last-child {
+  transform: translateX(0.15rem);
 }
 
 .user-email {
