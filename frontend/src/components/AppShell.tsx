@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate, useNavigationType } from "react-router-dom";
 
 import Avatar from "./Avatar";
 import { useAuth } from "../lib/auth";
@@ -16,9 +16,18 @@ export default function AppShell() {
   // title attribute or the layout.
   const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(" ");
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const navigationType = useNavigationType();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // A page opened from a link starts at its top. Going back is a return to
+    // somewhere already read, so that keeps where it was left.
+    if (navigationType === "POP") return;
+    window.scrollTo(0, 0);
+  }, [pathname, navigationType]);
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
