@@ -1293,6 +1293,15 @@ body {
   gap: 1rem;
 }
 
+.user-group-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-soft);
+  margin-bottom: -0.75rem;
+}
+
 .user-table {
   display: flex;
   flex-direction: column;
