@@ -101,7 +101,7 @@ export default function SetupScreen() {
               <input type="radio" name="mode" checked={mode === "single"} onChange={() => setMode("single")} />
               <span className="setup-radio-text">
                 <strong>Just me</strong>
-                <span>Single-user instance</span>
+                <span>Single-user for now</span>
               </span>
             </label>
             <label className={`setup-radio-pill${mode === "multi" ? " selected" : ""}`}>
