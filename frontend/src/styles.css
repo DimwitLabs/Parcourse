@@ -3878,11 +3878,49 @@ a.modal-field-hint {
   opacity: 1;
 }
 
+@media (hover: none) and (pointer: coarse) {
+  .url-form-gate::before {
+    left: 50%;
+    top: 50%;
+    animation: gate-fill 0.95s cubic-bezier(0.33, 0, 0.15, 1) 0.45s forwards;
+  }
+
+  .url-form-gate {
+    animation: gate-edge 0.6s ease 0.45s forwards;
+  }
+
+  .url-form-gate-resting {
+    animation: gate-out 0.45s ease 0.45s forwards;
+  }
+
+  .url-form-gate-label {
+    animation: gate-in 0.45s ease 0.8s forwards;
+  }
+}
+
+@keyframes gate-fill {
+  to { transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes gate-edge {
+  to { border-color: var(--color-primary); }
+}
+
+@keyframes gate-out {
+  to { opacity: 0; }
+}
+
+@keyframes gate-in {
+  to { opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .url-form-gate::before,
   .url-form-gate-resting,
   .url-form-gate-label {
     transition-duration: 0.01ms;
+    animation-duration: 0.01ms;
+    animation-delay: 0s;
   }
 }
 
