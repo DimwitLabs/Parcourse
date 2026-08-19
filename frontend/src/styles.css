@@ -48,6 +48,7 @@ body {
   color: var(--color-ink);
   font-family: "Plus Jakarta Sans", sans-serif;
   position: relative;
+  overflow-wrap: anywhere;
 }
 
 .canvas-grid {
@@ -2034,6 +2035,12 @@ body {
   font-size: 1.5rem;
   font-weight: 800;
   white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .page-header-title {
+    white-space: normal;
+  }
 }
 
 .page-header-sub {
