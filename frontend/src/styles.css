@@ -2482,6 +2482,37 @@ body {
   transform: rotate(6deg);
 }
 
+.score-orbit {
+  /* Matches the dashed frame exactly, because it is the track the shapes ride:
+     offset-path reads this box, radius and tilt included. */
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-xl);
+  transform: rotate(6deg);
+}
+
+.score-blob-tr,
+.score-blob-bl {
+  offset-path: border-box;
+  offset-rotate: auto;
+  animation: score-orbit-travel 26s linear infinite;
+}
+
+.score-blob-bl {
+  /* Half a lap behind, so the two are always on opposite sides. */
+  animation-delay: -13s;
+}
+
+@keyframes score-orbit-travel {
+  from { offset-distance: 0%; }
+  to { offset-distance: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .score-blob-tr,
+  .score-blob-bl { animation: none; }
+}
+
 .score-blob-tr {
   position: absolute;
   top: -0.375rem;

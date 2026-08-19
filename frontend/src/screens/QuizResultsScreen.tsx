@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { toast } from "../components/Toast";
@@ -47,6 +47,7 @@ function subtitle(pct: number): string {
 }
 
 const CIRCUMFERENCE = 2 * Math.PI * 48;
+const SWEEP_MS = 1100;
 
 export default function QuizResultsScreen() {
   const { courseId } = useParams();
@@ -77,8 +78,22 @@ export default function QuizResultsScreen() {
 
   // The ring reads off the score on screen rather than the stored percentage,
   // so the number in the middle and the arc around it can never disagree.
+  const ringRef = useRef<SVGCircleElement>(null);
   const shown = data ? shownScore({ total: data.result.total_score, max: data.result.max_score }) : null;
   const percentage = shown?.percentage ?? 0;
+
+  useEffect(() => {
+    const ring = ringRef.current;
+    if (!ring) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const target = CIRCUMFERENCE - (CIRCUMFERENCE * percentage) / 100;
+    ring.animate([{ strokeDashoffset: CIRCUMFERENCE }, { strokeDashoffset: target }], {
+      duration: SWEEP_MS,
+      // Quick off the mark and a long glide into the score, so it arrives
+      // rather than stops.
+      easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+    });
+  }, [percentage]);
 
   if (notFound) {
     return (
@@ -123,12 +138,14 @@ export default function QuizResultsScreen() {
       <section className="results-hero">
         <div className="score-stage">
           <div className="score-deco-frame" />
-          <div className="score-blob-tr" />
-          <div className="score-blob-bl" />
+          <div className="score-orbit">
+            <div className="score-blob-tr" />
+            <div className="score-blob-bl" />
+          </div>
           <div className="score-circle">
             <svg className="score-ring-svg" viewBox="0 0 120 120">
               <circle className="score-ring-bg" cx="60" cy="60" r="48" />
-              <circle className="score-ring-fill" cx="60" cy="60" r="48"
+              <circle ref={ringRef} className="score-ring-fill" cx="60" cy="60" r="48"
                 strokeDasharray={CIRCUMFERENCE} strokeDashoffset={dashOffset} />
             </svg>
             <div className="score-ring-label">
