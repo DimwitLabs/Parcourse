@@ -5,6 +5,8 @@ import { toast } from "../components/Toast";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { MASTERY_PCT, shownScore } from "../lib/score";
+import { drawResultCard } from "../lib/shareCard";
+import type { SummaryRow } from "../lib/shareCard";
 
 type Breakdown = { accuracy: number; completeness: number; relevance: number; feedback: string };
 type QuestionResult = {
@@ -26,6 +28,7 @@ type QuizResult = {
 type MCQOption = { label: string; text: string };
 type Course = {
   id: string;
+  video_title?: string;
   sections: {
     mcqs: { id: string; question: string; options: MCQOption[] }[];
     theory_questions: { id: string; question: string }[];
@@ -44,6 +47,45 @@ function subtitle(pct: number): string {
   if (pct >= 70) return "You have a strong grasp of the core concepts. A few more sessions and you'll be an expert!";
   if (pct >= 40) return "You're getting there. Review the sections you found tricky and try again.";
   return "Don't worry, re-watch the course sections and give it another shot.";
+}
+
+type Counts = {
+  pct: number;
+  mcqTotal: number;
+  correctMcq: number;
+  incorrectMcq: number;
+  strongTheory: number;
+  weakTheory: number;
+  skipped: number;
+};
+
+// One source for the summary, so the page and the card it is shared as cannot
+// drift apart.
+function countsOf(result: QuizResult, pct: number): Counts {
+  const skipped = (r: QuestionResult) => r.feedback === "Question was skipped.";
+  const mcqs = result.results.filter((r) => r.question_type === "mcq");
+  const theory = result.results.filter((r) => r.question_type === "theory");
+  return {
+    pct,
+    mcqTotal: mcqs.length,
+    correctMcq: mcqs.filter((r) => r.is_correct).length,
+    incorrectMcq: mcqs.filter((r) => !r.is_correct && !skipped(r)).length,
+    strongTheory: theory.filter((r) => r.score >= 4).length,
+    weakTheory: theory.filter((r) => r.score < 3 && !skipped(r)).length,
+    skipped: result.results.filter(skipped).length,
+  };
+}
+
+function summaryRows(n: Counts): SummaryRow[] {
+  const rows: SummaryRow[] = [];
+  if (n.correctMcq > 0) rows.push({ tone: "good", text: `Answered ${n.correctMcq} of ${n.mcqTotal} MCQs correctly.` });
+  if (n.strongTheory > 0) rows.push({ tone: "good", text: `Strong depth on ${n.strongTheory} theory ${n.strongTheory === 1 ? "question" : "questions"}.` });
+  if (n.pct >= 70) rows.push({ tone: "good", text: "Solid overall grasp of the material." });
+  if (n.incorrectMcq > 0) rows.push({ tone: "warn", text: `Review the ${n.incorrectMcq} missed MCQ${n.incorrectMcq === 1 ? "" : "s"}.` });
+  if (n.weakTheory > 0) rows.push({ tone: "warn", text: `Deepen understanding on ${n.weakTheory} theory response${n.weakTheory === 1 ? "" : "s"}.` });
+  if (n.skipped > 0) rows.push({ tone: "warn", text: `You skipped ${n.skipped} question${n.skipped === 1 ? "" : "s"}. Try answering ${n.skipped === 1 ? "it" : "them"} on your next attempt.` });
+  if (n.pct < 70) rows.push({ tone: "warn", text: "Re-watch sections you found tricky before retaking." });
+  return rows;
 }
 
 const RING_R = 48;
@@ -78,6 +120,7 @@ export default function QuizResultsScreen() {
   const [markingDone, setMarkingDone] = useState(false);
   const [allDone, setAllDone] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     if (data || !courseId) return;
@@ -170,6 +213,53 @@ export default function QuizResultsScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [percentage, courseId, data, token, attemptId]);
 
+  function cardData() {
+    const shownNow = shownScore({ total: data!.result.total_score, max: data!.result.max_score });
+    const cardPct = Math.round(shownNow.percentage);
+    return {
+      courseTitle: data!.course.video_title || "A Parcourse course",
+      score: shownNow.score,
+      outOf: shownNow.outOf,
+      percentage: cardPct,
+      mastered: cardPct >= MASTERY_PCT,
+      analysis: data!.result.prose_analysis,
+      summary: summaryRows(countsOf(data!.result, cardPct)),
+    };
+  }
+
+  async function shareResult() {
+    if (!data) return;
+    setSharing(true);
+    try {
+      const blob = await drawResultCard(cardData());
+      const file = new File([blob], "parcourse-result.png", { type: "image/png" });
+      // A phone can hand the file to its share sheet; a desktop cannot.
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file] });
+        return;
+      }
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        toast("Result card copied. Paste it wherever you like.", "success");
+        return;
+      } catch {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "parcourse-result.png";
+        link.click();
+        URL.revokeObjectURL(url);
+        toast("Result card saved.", "success");
+      }
+    } catch (err) {
+      // Someone dismissing the share sheet is not a failure worth shouting about.
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      toast("The result card could not be made.", "error");
+    } finally {
+      setSharing(false);
+    }
+  }
+
   if (notFound) {
     return (
       <div className="empty-state">
@@ -198,13 +288,7 @@ export default function QuizResultsScreen() {
   const pct = Math.round(percentage);
 
   const allResults = result.results;
-  const mcqResults = allResults.filter((r) => r.question_type === "mcq");
-  const theoryResults = allResults.filter((r) => r.question_type === "theory");
-  const skippedCount = allResults.filter((r) => r.feedback === "Question was skipped.").length;
-  const correctMcqCount = mcqResults.filter((r) => r.is_correct).length;
-  const incorrectMcqCount = mcqResults.filter((r) => !r.is_correct && r.feedback !== "Question was skipped.").length;
-  const strongTheoryCount = theoryResults.filter((r) => r.score >= 4).length;
-  const weakTheoryCount = theoryResults.filter((r) => r.score < 3 && r.feedback !== "Question was skipped.").length;
+  const rows = summaryRows(countsOf(result, pct));
 
   return (
     <div className="results-view">
@@ -320,48 +404,12 @@ export default function QuizResultsScreen() {
           <div className="tutor-card">
             <h3 className="tutor-card-heading">Performance Summary</h3>
             <div className="tutor-rows">
-              {correctMcqCount > 0 && (
-                <div className="tutor-row">
-                  <span className="tutor-row-icon tutor-row-icon--good">✓</span>
-                  <span>Answered {correctMcqCount} of {mcqResults.length} MCQs correctly.</span>
+              {rows.map((row, i) => (
+                <div className="tutor-row" key={i}>
+                  <span className={`tutor-row-icon tutor-row-icon--${row.tone}`}>{row.tone === "good" ? "✓" : "→"}</span>
+                  <span>{row.text}</span>
                 </div>
-              )}
-              {strongTheoryCount > 0 && (
-                <div className="tutor-row">
-                  <span className="tutor-row-icon tutor-row-icon--good">✓</span>
-                  <span>Strong depth on {strongTheoryCount} theory {strongTheoryCount === 1 ? "question" : "questions"}.</span>
-                </div>
-              )}
-              {pct >= 70 && (
-                <div className="tutor-row">
-                  <span className="tutor-row-icon tutor-row-icon--good">✓</span>
-                  <span>Solid overall grasp of the material.</span>
-                </div>
-              )}
-              {incorrectMcqCount > 0 && (
-                <div className="tutor-row">
-                  <span className="tutor-row-icon tutor-row-icon--warn">→</span>
-                  <span>Review the {incorrectMcqCount} missed MCQ{incorrectMcqCount === 1 ? "" : "s"}.</span>
-                </div>
-              )}
-              {weakTheoryCount > 0 && (
-                <div className="tutor-row">
-                  <span className="tutor-row-icon tutor-row-icon--warn">→</span>
-                  <span>Deepen understanding on {weakTheoryCount} theory response{weakTheoryCount === 1 ? "" : "s"}.</span>
-                </div>
-              )}
-              {skippedCount > 0 && (
-                <div className="tutor-row">
-                  <span className="tutor-row-icon tutor-row-icon--warn">→</span>
-                  <span>You skipped {skippedCount} question{skippedCount === 1 ? "" : "s"}. Try answering {skippedCount === 1 ? "it" : "them"} on your next attempt.</span>
-                </div>
-              )}
-              {pct < 70 && (
-                <div className="tutor-row">
-                  <span className="tutor-row-icon tutor-row-icon--warn">→</span>
-                  <span>Re-watch sections you found tricky before retaking.</span>
-                </div>
-              )}
+              ))}
             </div>
           </div>
 
@@ -409,6 +457,13 @@ export default function QuizResultsScreen() {
               Back to Quiz History
             </button>
           )}
+
+          <button className="retake-btn" onClick={shareResult} disabled={sharing}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+            {sharing ? "Making card…" : "Share result"}
+          </button>
 
           <button className="retake-btn" onClick={() => navigate(`/course/${courseId}`)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
