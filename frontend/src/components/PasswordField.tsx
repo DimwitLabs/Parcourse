@@ -35,10 +35,11 @@ export default function PasswordField({
         />
         <button
           type="button"
-          className="icon-btn"
+          className="icon-btn tip"
+          data-tip={copied ? "Copied" : "Copy password"}
+          aria-label={copied ? "Copied" : "Copy password"}
           onClick={copy}
           disabled={disabled || !value}
-          title={copied ? "Copied" : "Copy password"}
         >
           {copied ? (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -48,10 +49,11 @@ export default function PasswordField({
         </button>
         <button
           type="button"
-          className="icon-btn"
+          className="icon-btn tip"
+          data-tip="Generate a new password"
+          aria-label="Generate a new password"
           onClick={() => onChange(generatePassword())}
           disabled={disabled}
-          title="Generate a new password"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
         </button>

@@ -2136,8 +2136,11 @@ body {
 }
 
 .icon-btn:disabled {
+  cursor: default;
+}
+
+.icon-btn:disabled svg {
   opacity: 0.4;
-  pointer-events: none;
 }
 
 .confirm-bar {
@@ -2291,6 +2294,11 @@ body {
 .done-toggle.done:hover {
   opacity: 0.6;
   background: var(--color-secondary-container);
+}
+
+.icon-btn:disabled:hover {
+  opacity: 1;
+  background: none;
 }
 
 .course-card-title {
@@ -3055,6 +3063,10 @@ body {
 .tip {
   position: relative;
   cursor: help;
+}
+
+button.tip {
+  cursor: pointer;
 }
 
 .tip::after {
