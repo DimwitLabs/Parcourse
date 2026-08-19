@@ -1221,6 +1221,17 @@ body {
   margin: 0;
 }
 
+@media (max-width: 640px) {
+  .submit-bar {
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .submit-bar .button {
+    width: 100%;
+  }
+}
+
 .results-headline {
   font-size: 2rem;
   font-weight: 800;
