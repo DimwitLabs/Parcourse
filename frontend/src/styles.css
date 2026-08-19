@@ -806,6 +806,19 @@ body {
   max-width: 100vw;
 }
 
+.course-actions-mobile {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .course-actions-mobile {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+}
+
 @media (max-width: 860px) {
   .course-layout {
     grid-template-columns: 1fr;
@@ -1365,6 +1378,33 @@ body {
   color: var(--color-ink-soft);
   font-size: 0.9rem;
   white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  /* Two words on two lines beside a heading reads as damage; the button takes
+     its own row instead. */
+  .admin-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .user-row {
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    padding: 0.75rem;
+  }
+  /* Avatar and identity hold the first line; the count and the controls take
+     the second rather than pushing themselves off the card. */
+  .user-info {
+    flex: 1 1 calc(100% - 3.25rem);
+    min-width: 0;
+  }
+  .user-row-email {
+    overflow-wrap: anywhere;
+  }
+  .user-row-actions {
+    margin-left: auto;
+  }
 }
 
 .graph-view {
@@ -1978,6 +2018,14 @@ body {
     transparent 100%
   );
   pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
 }
 
 .page-header-title {
@@ -3915,6 +3963,54 @@ a.modal-field-hint {
   gap: 0.4rem;
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+@media (max-width: 640px) {
+  /* The pills were competing with the score for the same line and winning,
+     so they drop below it and the row reads top to bottom. */
+  .attempt-row {
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    padding: 1rem 1.75rem;
+  }
+  .attempt-score {
+    order: 1;
+  }
+  /* Beside the score, not below it: an extra line only on tagged rows would
+     leave the list unevenly tall. */
+  .attempt-tags {
+    order: 2;
+    justify-content: flex-start;
+  }
+  /* Out of the flow entirely, so it sits against the middle of the row
+     however many lines the row turns out to be. */
+  .attempt-row {
+    position: relative;
+    padding-right: 3.5rem;
+  }
+  .attempt-arrow {
+    position: absolute;
+    right: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .attempt-row:hover .attempt-arrow {
+    transform: translate(0.25rem, -50%);
+  }
+  .attempt-detail {
+    order: 4;
+    flex: 1 1 100%;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+  .attempt-meta::before {
+    content: "·";
+    margin-right: 0.4rem;
+  }
+  .attempt-back {
+    padding-right: 1.75rem;
+  }
 }
 
 .attempt-badge.mastery {

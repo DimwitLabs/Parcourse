@@ -229,6 +229,24 @@ export default function CourseScreen() {
     }, 50);
   }
 
+  // The sidebar is gone below 860px, so these travel with the quiz instead of
+  // disappearing along with it.
+  const courseActions = (
+    <>
+      {hasAttempts && (
+      <button className="icon-btn" onClick={() => navigate(`/course/${courseId}/history`)} title="Quiz history">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 14"/></svg>
+      </button>
+      )}
+      <button className="icon-btn" onClick={() => setCourseAction("regenerate")} title="Regenerate course">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </button>
+      <button className="icon-btn danger" onClick={() => setCourseAction("delete")} title="Delete course">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      </button>
+    </>
+  );
+
   return (
     <div className="course-layout">
       <aside className="course-sidebar">
@@ -254,19 +272,7 @@ export default function CourseScreen() {
             </button>
           </div>
 
-          <div className="sidebar-actions">
-            {hasAttempts && (
-              <button className="icon-btn" onClick={() => navigate(`/course/${courseId}/history`)} title="Quiz history">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 14"/></svg>
-              </button>
-            )}
-            <button className="icon-btn" onClick={() => setCourseAction("regenerate")} title="Regenerate course">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-            </button>
-            <button className="icon-btn danger" onClick={() => setCourseAction("delete")} title="Delete course">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            </button>
-          </div>
+          <div className="sidebar-actions">{courseActions}</div>
         </nav>
       </aside>
 
@@ -375,6 +381,8 @@ export default function CourseScreen() {
               {submitting ? "Grading…" : "Submit Quiz"}
             </button>
           </div>
+
+          <div className="course-actions-mobile">{courseActions}</div>
         </div>
       </div>
 
