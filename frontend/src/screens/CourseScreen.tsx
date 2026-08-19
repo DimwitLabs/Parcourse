@@ -278,7 +278,7 @@ export default function CourseScreen() {
           <div className={`quiz-sidebar-box${barVisible ? " fading" : ""}`} ref={quizBoxRef}>
             {lastAttempt ? (
               <button className="quiz-last-attempt" onClick={() => navigate(`/course/${courseId}/results?attempt=${lastAttempt.id}`)}>
-                Last attempt {attemptPoints.score}/{attemptPoints.outOf}
+                Last attempt <b>{attemptPoints.score}/{attemptPoints.outOf}</b>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
             ) : (
@@ -393,7 +393,7 @@ export default function CourseScreen() {
           <div className="submit-bar card" ref={submitBarRef}>
             {lastAttempt ? (
               <button className="quiz-last-attempt" onClick={() => navigate(`/course/${courseId}/results?attempt=${lastAttempt.id}`)}>
-                Last attempt {attemptPoints.score}/{attemptPoints.outOf}
+                Last attempt <b>{attemptPoints.score}/{attemptPoints.outOf}</b>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
             ) : (
