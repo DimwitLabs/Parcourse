@@ -1567,6 +1567,21 @@ body {
   font-size: 0.82rem;
 }
 
+@media (max-width: 640px) {
+  .graph-toolbar,
+  .graph-toolbar-right,
+  .graph-zoom-controls,
+  .graph-export-controls {
+    justify-content: center;
+  }
+
+  .graph-legend {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.25rem;
+  }
+}
+
 .graph-canvas-wrap {
   overflow: hidden;
   height: 62vh;
@@ -1634,12 +1649,25 @@ body {
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
   color: var(--color-secondary);
   opacity: 0.6;
   pointer-events: none;
   white-space: nowrap;
   font-size: 0.8rem;
+}
+
+@media (max-width: 640px) {
+  .graph-empty-hint {
+    width: calc(100% - 3rem);
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .graph-empty-hint span {
+    min-width: 0;
+    text-wrap: pretty;
+  }
 }
 
 .graph-node-group {
