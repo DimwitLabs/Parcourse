@@ -37,9 +37,14 @@ function tierIncluded(tier: Tier, granularity: Granularity): boolean {
   return TIER_ORDER.indexOf(tier) <= cutoff;
 }
 
+// Making a course seeds every node it touches at this score, so anything at or
+// below it has only been met, not studied. Mirrors _EXPOSURE_MASTERY in
+// backend/services/knowledge_graph.py.
+const EXPOSURE_MASTERY = 0.2;
+
 function masteryClass(score: number): "mastered" | "learning" | "new" {
   if (score >= 0.9) return "mastered";
-  if (score > 0) return "learning";
+  if (score > EXPOSURE_MASTERY) return "learning";
   return "new";
 }
 
