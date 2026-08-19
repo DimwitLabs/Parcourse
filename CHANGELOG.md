@@ -4,6 +4,18 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-08-19
+
+### Changed
+
+- **Submitting Again:** A graded quiz no longer offers to "Submit Quiz" as though nothing had happened. The button reads Submit again, and the last score sits above it, linking to that result.
+- The small icon buttons carry the app's own hint instead of the browser's tooltip. A locked one now explains itself: a course finished by passing its quiz reads Mastered.
+
+### Fixed
+
+- Opening a page starts at its top. Going back still returns to where you were.
+- The done tick on a notebook card is drawn at the size of the icons beside it.
+
 ## [1.1.0] - 2026-08-19
 
 ### Added
