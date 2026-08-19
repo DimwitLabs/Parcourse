@@ -1,17 +1,27 @@
+import { lightColors } from "./palette";
+
 const W = 1200;
 const PAD = 72;
 const RING_COL = 380;
 
-const PAPER = "#fbf9f5";
-const INK = "#1b1c1a";
-const INK_SOFT = "#434840";
-const INK_FAINT = "#8b9086";
-const PRIMARY = "#4c6546";
-const SECONDARY_CONTAINER = "#dbe6d3";
-const SURFACE_HIGH = "#eae8e4";
-const PRIMARY_LIGHT = "#89a481";
-const TERTIARY_CONTAINER = "#f2e2e7";
-const WHITE = "#ffffff";
+const TOKENS = {
+  PAPER: "--color-paper",
+  INK: "--color-ink",
+  INK_SOFT: "--color-ink-soft",
+  INK_FAINT: "--color-ink-faint",
+  PRIMARY: "--color-primary",
+  SECONDARY_CONTAINER: "--color-secondary-container",
+  SURFACE_HIGH: "--color-surface-high",
+  PRIMARY_LIGHT: "--color-primary-light",
+  TERTIARY_CONTAINER: "--color-tertiary-container",
+  WHITE: "--color-on-accent",
+};
+
+let resolved: Record<keyof typeof TOKENS, string> | null = null;
+
+function col(): Record<keyof typeof TOKENS, string> {
+  return (resolved ??= lightColors(TOKENS));
+}
 
 const FACES = [
   "400 16px 'Plus Jakarta Sans'",
@@ -78,14 +88,14 @@ function ring(c: CanvasRenderingContext2D, cx: number, cy: number, r: number, pc
   const sweep = (Math.PI * 2 * Math.min(Math.max(pct, 0), 100)) / 100;
   const trackSweep = Math.PI * 2 - sweep - GAP * 2;
 
-  c.strokeStyle = SURFACE_HIGH;
+  c.strokeStyle = col().SURFACE_HIGH;
   c.beginPath();
   if (sweep <= 0) c.arc(cx, cy, r, 0, Math.PI * 2);
   else if (trackSweep > 0) c.arc(cx, cy, r, START + sweep + GAP, START + sweep + GAP + trackSweep);
   c.stroke();
 
   if (sweep <= 0) return;
-  c.strokeStyle = PRIMARY;
+  c.strokeStyle = col().PRIMARY;
   c.beginPath();
   c.arc(cx, cy, r, START, START + sweep);
   c.stroke();
@@ -98,7 +108,7 @@ function ornaments(c: CanvasRenderingContext2D, cx: number, cy: number, size: nu
   c.rotate((6 * Math.PI) / 180);
 
   c.globalAlpha = 0.35;
-  c.strokeStyle = PRIMARY_LIGHT;
+  c.strokeStyle = col().PRIMARY_LIGHT;
   c.lineWidth = 4;
   c.setLineDash([14, 12]);
   roundRect(c, -half, -half, size, size, 62);
@@ -106,7 +116,7 @@ function ornaments(c: CanvasRenderingContext2D, cx: number, cy: number, size: nu
   c.setLineDash([]);
   c.globalAlpha = 1;
 
-  c.fillStyle = TERTIARY_CONTAINER;
+  c.fillStyle = col().TERTIARY_CONTAINER;
   c.beginPath();
   c.arc(half, -half, 22, 0, Math.PI * 2);
   c.fill();
@@ -114,7 +124,7 @@ function ornaments(c: CanvasRenderingContext2D, cx: number, cy: number, size: nu
   c.save();
   c.translate(-half, half);
   c.rotate((12 * Math.PI) / 180);
-  c.fillStyle = SECONDARY_CONTAINER;
+  c.fillStyle = col().SECONDARY_CONTAINER;
   roundRect(c, -28, -28, 56, 56, 14);
   c.fill();
   c.restore();
@@ -127,10 +137,10 @@ function edgePill(c: CanvasRenderingContext2D, label: string, x: number, edgeY: 
   c.font = "700 18px 'Plus Jakarta Sans', sans-serif";
   c.letterSpacing = "1.6px";
   const w = c.measureText(label).width + 44;
-  c.fillStyle = PRIMARY_LIGHT;
+  c.fillStyle = col().PRIMARY_LIGHT;
   roundRect(c, x, edgeY - 17, w, 34, 17);
   c.fill();
-  c.fillStyle = WHITE;
+  c.fillStyle = col().WHITE;
   c.textAlign = "center";
   c.textBaseline = "middle";
   c.fillText(label, x + w / 2, edgeY + 1);
@@ -149,18 +159,18 @@ function sparkles(c: CanvasRenderingContext2D, x: number, y: number, size: numbe
   c.save();
   c.translate(x, y);
   c.scale(size / 24, size / 24);
-  c.fillStyle = PRIMARY;
+  c.fillStyle = col().PRIMARY;
   for (const d of paths) c.fill(new Path2D(d));
   c.restore();
 }
 
 /** A summary row's icon: the page sets each glyph in its own filled circle. */
 function rowIcon(c: CanvasRenderingContext2D, tone: SummaryRow["tone"], cx: number, cy: number) {
-  c.fillStyle = tone === "good" ? PRIMARY : "rgba(27, 28, 26, 0.1)";
+  c.fillStyle = tone === "good" ? col().PRIMARY : "rgba(27, 28, 26, 0.1)";
   c.beginPath();
   c.arc(cx, cy, 17, 0, Math.PI * 2);
   c.fill();
-  c.fillStyle = tone === "good" ? WHITE : INK_SOFT;
+  c.fillStyle = tone === "good" ? col().WHITE : col().INK_SOFT;
   c.font = "700 17px 'Plus Jakarta Sans', sans-serif";
   c.textAlign = "center";
   c.textBaseline = "middle";
@@ -220,7 +230,7 @@ export async function drawResultCard(data: CardData): Promise<Blob> {
   canvas.height = H;
   c.textBaseline = "top";
 
-  c.fillStyle = PAPER;
+  c.fillStyle = col().PAPER;
   c.fillRect(0, 0, W, H);
   dots(c, H);
 
@@ -228,7 +238,7 @@ export async function drawResultCard(data: CardData): Promise<Blob> {
     const h = 44;
     c.drawImage(mark, PAD, PAD, (mark.width / mark.height) * h, h);
   } else {
-    c.fillStyle = PRIMARY;
+    c.fillStyle = col().PRIMARY;
     c.font = "800 36px 'Plus Jakarta Sans', sans-serif";
     c.fillText("Parcourse", PAD, PAD + 4);
   }
@@ -237,10 +247,10 @@ export async function drawResultCard(data: CardData): Promise<Blob> {
     const label = "MASTERY EARNED";
     c.font = "800 20px 'Plus Jakarta Sans', sans-serif";
     const w = c.measureText(label).width + 52;
-    c.fillStyle = PRIMARY;
+    c.fillStyle = col().PRIMARY;
     roundRect(c, W - PAD - w, PAD + 1, w, 44, 22);
     c.fill();
-    c.fillStyle = WHITE;
+    c.fillStyle = col().WHITE;
     c.textAlign = "center";
     c.textBaseline = "middle";
     c.fillText(label, W - PAD - w / 2, PAD + 23);
@@ -249,7 +259,7 @@ export async function drawResultCard(data: CardData): Promise<Blob> {
   }
 
   let y = PAD + headerH;
-  c.fillStyle = INK;
+  c.fillStyle = col().INK;
   c.font = "800 44px 'Plus Jakarta Sans', sans-serif";
   for (const line of titleLines) {
     c.fillText(line, PAD, y);
@@ -271,34 +281,34 @@ export async function drawResultCard(data: CardData): Promise<Blob> {
   c.font = "700 34px 'Plus Jakarta Sans', sans-serif";
   const outOfWidth = c.measureText(outOfText).width;
   const groupX = cx - (scoreWidth + outOfWidth) / 2;
-  c.fillStyle = INK;
+  c.fillStyle = col().INK;
   c.font = "800 72px 'Plus Jakarta Sans', sans-serif";
   c.fillText(scoreText, groupX, cy + 12);
-  c.fillStyle = INK_FAINT;
+  c.fillStyle = col().INK_FAINT;
   c.font = "700 34px 'Plus Jakarta Sans', sans-serif";
   c.fillText(outOfText, groupX + scoreWidth, cy + 12);
 
   c.textBaseline = "top";
   c.textAlign = "center";
-  c.fillStyle = INK_FAINT;
+  c.fillStyle = col().INK_FAINT;
   c.font = "700 18px 'Plus Jakarta Sans', sans-serif";
   c.fillText("SCORE", cx, cy + 30);
   c.textAlign = "left";
 
   if (rows.length) {
     const boxY = y + (bandH - summaryH) / 2;
-    c.fillStyle = SECONDARY_CONTAINER;
+    c.fillStyle = col().SECONDARY_CONTAINER;
     roundRect(c, sideX, boxY, sideWidth, summaryH, 34);
     c.fill();
 
-    c.fillStyle = PRIMARY;
+    c.fillStyle = col().PRIMARY;
     c.font = "800 26px 'Plus Jakarta Sans', sans-serif";
     c.fillText("Performance Summary", sideX + 34, boxY + 30);
 
     let ty = boxY + 30 + 34 + 22;
     for (const row of rows) {
       rowIcon(c, row.tone, sideX + 51, ty + 15);
-      c.fillStyle = INK_SOFT;
+      c.fillStyle = col().INK_SOFT;
       c.font = "600 23px 'Plus Jakarta Sans', sans-serif";
       for (const line of row.lines) {
         c.fillText(line, ROW_TEXT_X, ty + 4);
@@ -310,7 +320,7 @@ export async function drawResultCard(data: CardData): Promise<Blob> {
 
   if (analysisLines.length) {
     const ay = y + bandH + 40;
-    c.fillStyle = WHITE;
+    c.fillStyle = col().WHITE;
     roundRect(c, PAD, ay, bodyWidth, analysisH, 34);
     c.fill();
     c.strokeStyle = "rgba(137, 164, 129, 0.18)";
@@ -320,7 +330,7 @@ export async function drawResultCard(data: CardData): Promise<Blob> {
     edgePill(c, "AI TUTOR ANALYSIS", PAD + 40, ay);
     sparkles(c, PAD + 38, ay + 46, 34);
 
-    c.fillStyle = INK_SOFT;
+    c.fillStyle = col().INK_SOFT;
     c.font = "italic 400 25px 'Plus Jakarta Sans', sans-serif";
     let ty = ay + 46;
     for (const line of analysisLines) {

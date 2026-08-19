@@ -1,18 +1,24 @@
 :root {
-    --color-paper: #fbf9f5;
-    --color-surface-lowest: #ffffff;
-    --color-ink: #1b1c1a;
-    --color-ink-soft: #434840;
-    --color-ink-faint: #8b9086;
-    --color-primary: #4c6546;
-    --color-primary-light: #89a481;
-    --color-secondary-container: #dbe6d3;
-    --color-surface-high: #eef0e9;
-    --color-danger: #a1483c;
-    --line: rgba(27, 28, 26, 0.08);
+    color-scheme: light dark;
+    --color-paper: light-dark(#fbf9f5, #14150f);
+    --color-surface-lowest: light-dark(#ffffff, #212319);
+    --color-ink: light-dark(#1b1c1a, #e6e5df);
+    --color-ink-soft: light-dark(#434840, #b3b8ac);
+    --color-ink-faint: light-dark(#8b9086, #7e857a);
+    --color-primary: light-dark(#4c6546, #9cbf90);
+    --color-primary-hover: light-dark(#3b5334, #b0cfa4);
+    --color-primary-light: light-dark(#89a481, #6f8f66);
+    --color-secondary-container: light-dark(#dbe6d3, #2e3b29);
+    --color-secondary-hover: light-dark(#e6e8e0, #333730);
+    --color-surface-high: light-dark(#eef0e9, #2a2d26);
+    --color-danger: light-dark(#a1483c, #e08b8b);
+    --color-on-accent: light-dark(#ffffff, #14180f);
+    --color-dot: light-dark(rgba(27, 28, 26, 0.13), rgba(230, 229, 223, 0.1));
+    --color-dot-strong: light-dark(rgba(27, 28, 26, 0.38), rgba(230, 229, 223, 0.3));
+    --line: light-dark(rgba(27, 28, 26, 0.08), rgba(230, 229, 223, 0.1));
     --radius-full: 999rem;
     --radius-md: 1.5rem;
-    --shadow-lift-sm: 0 0.625rem 1.5rem -1.125rem rgba(27, 28, 26, 0.18);
+    --shadow-lift-sm: 0 0.625rem 1.5rem -1.125rem light-dark(rgba(27, 28, 26, 0.18), rgba(0, 0, 0, 0.6));
 }
 
 * {
@@ -23,7 +29,7 @@
 
 body {
     background-color: var(--color-paper);
-    background-image: radial-gradient(rgba(27, 28, 26, 0.13) 1.4px, transparent 1.4px);
+    background-image: radial-gradient(var(--color-dot) 1.4px, transparent 1.4px);
     background-size: 26px 26px;
     background-position: 13px 13px;
     color: var(--color-ink-soft);
@@ -43,7 +49,7 @@ body {
     inset: 0;
     pointer-events: none;
     z-index: 0;
-    background-image: radial-gradient(rgba(27, 28, 26, 0.38) 1.4px, transparent 1.4px);
+    background-image: radial-gradient(var(--color-dot-strong) 1.4px, transparent 1.4px);
     background-size: 26px 26px;
     background-position: var(--scroll-x, 13px) var(--scroll-y, 13px);
     -webkit-mask-image: radial-gradient(
@@ -159,11 +165,11 @@ h1 .accent {
 
 .button.primary {
     background: var(--color-primary);
-    color: white;
+    color: var(--color-on-accent);
 }
 
 .button.primary:hover {
-    background: #3b5334;
+    background: var(--color-primary-hover);
 }
 
 .button.secondary {
@@ -172,7 +178,7 @@ h1 .accent {
 }
 
 .button.secondary:hover {
-    background: #e6e8e0;
+    background: var(--color-secondary-hover);
 }
 
 .button:disabled {
@@ -290,5 +296,11 @@ h1 .accent {
     }
     .actions {
         flex-direction: column;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .wordmark {
+        content: url("parcourse-wordmark-dark.svg");
     }
 }

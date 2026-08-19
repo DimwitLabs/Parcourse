@@ -1,32 +1,87 @@
 :root {
-  --color-paper: #fbf9f5;
-  --color-surface-low: #f5f3ef;
-  --color-surface-high: #eae8e4;
-  --color-surface-lowest: #ffffff;
-  --color-ink: #1b1c1a;
-  --color-ink-soft: #434840;
-  --color-primary: #4c6546;
-  --color-primary-light: #89a481;
-  --color-secondary: #576153;
-  --color-secondary-container: #dbe6d3;
-  --color-tertiary: #7c5262;
-  --color-tertiary-container: #f2e2e7;
-  --color-danger: #a13d3d;
-  --color-danger-container: #f3dede;
-  --color-ink-faint: #8b9086;
+  color-scheme: light dark;
+  --dark: 0;
 
-  --shadow-lift: 0 1.125rem 2.5rem -1.375rem rgba(27, 28, 26, 0.22);
-  --shadow-lift-sm: 0 0.625rem 1.5rem -1.125rem rgba(27, 28, 26, 0.18);
-  /* Wide and shallow, so the menu floats rather than sits on a hard edge. */
-  --shadow-menu: 0 0.25rem 1rem -0.5rem rgba(27, 28, 26, 0.12),
-    0 1.5rem 3.5rem -1rem rgba(27, 28, 26, 0.2);
-  --line: rgba(27, 28, 26, 0.08);
+  --color-paper: light-dark(#fbf9f5, #14150f);
+  --color-surface-low: light-dark(#f5f3ef, #1c1e18);
+  --color-surface: light-dark(#f1efeb, #22241c);
+  --color-surface-high: light-dark(#eae8e4, #2a2d26);
+  --color-surface-lowest: light-dark(#ffffff, #212319);
+  --color-border: light-dark(#d4d8d0, #363a31);
+  --color-ink: light-dark(#1b1c1a, #e6e5df);
+  --color-ink-soft: light-dark(#434840, #b3b8ac);
+  --color-ink-faint: light-dark(#8b9086, #7e857a);
+  --color-ink-wash: light-dark(rgba(27, 28, 26, 0.1), rgba(230, 229, 223, 0.12));
+  --color-on-accent: light-dark(#ffffff, #14180f);
+  --color-primary: light-dark(#4c6546, #9cbf90);
+  --color-primary-hover: light-dark(#3b5334, #b0cfa4);
+  --color-primary-light: light-dark(#89a481, #6f8f66);
+  --color-primary-container: light-dark(#c6dabc, #35472f);
+  --color-primary-wash: light-dark(#edf1e8, #1f2a1b);
+  --color-secondary: light-dark(#576153, #a8b3a2);
+  --color-secondary-container: light-dark(#dbe6d3, #2e3b29);
+  --color-secondary-hover: light-dark(#e6e8e0, #333730);
+  --color-sage: light-dark(#6ab47b, #7fc48d);
+  --color-tertiary: light-dark(#7c5262, #d3a6b6);
+  --color-tertiary-container: light-dark(#f2e2e7, #3a2b31);
+  --color-danger: light-dark(#a13d3d, #e08b8b);
+  --color-danger-hover: light-dark(#8a3333, #ea9d9d);
+  --color-danger-container: light-dark(#f3dede, #3a2020);
+  --color-warn: light-dark(#d48a2e, #e0a050);
+  --color-warn-ink: light-dark(#a06820, #eab97a);
+  --color-warn-container: light-dark(#fef6ec, #2a1f0e);
+  --color-info-container: light-dark(#e0ecf0, #23343a);
+  --color-info-ink: light-dark(#3a6575, #a8cddb);
+  --color-hairline-sage: light-dark(rgba(137, 164, 129, 0.18), rgba(156, 191, 144, 0.22));
+  --color-dot: light-dark(rgba(27, 28, 26, 0.13), rgba(230, 229, 223, 0.1));
+  --color-dot-strong: light-dark(rgba(27, 28, 26, 0.38), rgba(230, 229, 223, 0.3));
+  --color-dot-faint: light-dark(rgba(27, 28, 26, 0.05), rgba(230, 229, 223, 0.05));
+  --color-scrim-modal: light-dark(rgba(27, 28, 26, 0.35), rgba(0, 0, 0, 0.6));
+  --color-scrim-nav: light-dark(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.7));
+  --line: light-dark(rgba(27, 28, 26, 0.08), rgba(230, 229, 223, 0.1));
+  --color-deco-pink: light-dark(var(--color-tertiary-container), var(--color-tertiary));
+  --color-deco-green: light-dark(var(--color-secondary-container), var(--color-primary-light));
+  --color-node-mastered: light-dark(#4c6546, #557a4b);
+  --color-node-learning: light-dark(#89a481, #3d5636);
+  --color-node-new: light-dark(#dbe6d3, #26301f);
+  --color-node-field-new: light-dark(#c6dab8, #2f3f28);
+  --color-node-label: light-dark(#ffffff, #f0f3ec);
+
+  --shadow-lift: 0 1.125rem 2.5rem -1.375rem light-dark(rgba(27, 28, 26, 0.22), rgba(0, 0, 0, 0.7));
+  --shadow-lift-sm: 0 0.625rem 1.5rem -1.125rem light-dark(rgba(27, 28, 26, 0.18), rgba(0, 0, 0, 0.6));
+  --shadow-menu: 0 0.25rem 1rem -0.5rem light-dark(rgba(27, 28, 26, 0.12), transparent),
+    0 1.5rem 3.5rem -1rem light-dark(rgba(27, 28, 26, 0.2), rgba(0, 0, 0, 0.7));
+  --shadow-pop: 0 0.5rem 2.5rem light-dark(rgba(27, 28, 26, 0.2), rgba(0, 0, 0, 0.6));
+  --shadow-toast: 0 0.75rem 2.5rem light-dark(rgba(27, 28, 26, 0.2), rgba(0, 0, 0, 0.6));
+  --shadow-tip: 0 0.375rem 1.5rem light-dark(rgba(27, 28, 26, 0.15), rgba(0, 0, 0, 0.5));
+  --shadow-pill: 0 0.0625rem 0.25rem light-dark(rgba(27, 28, 26, 0.1), rgba(0, 0, 0, 0.4));
+
+  /* At --dark: 1 these read 1px solid and brightness(0.85) saturate(0.95);
+     at 0 each is a no-op. */
+  --card-edge: calc(1px * var(--dark)) solid var(--color-border);
+  --thumb-filter: brightness(calc(1 - 0.15 * var(--dark))) saturate(calc(1 - 0.05 * var(--dark)));
 
   --radius-sm: 0.5rem;
   --radius-md: 1.5rem;
   --radius-lg: 2rem;
   --radius-xl: 3rem;
   --radius-full: 999px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --dark: 1;
+  }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --dark: 0;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --dark: 1;
 }
 
 * {
@@ -42,7 +97,7 @@ body,
 body {
   margin: 0;
   background-color: var(--color-paper);
-  background-image: radial-gradient(rgba(27, 28, 26, 0.13) 1.4px, transparent 1.4px);
+  background-image: radial-gradient(var(--color-dot) 1.4px, transparent 1.4px);
   background-size: 26px 26px;
   background-position: 13px 13px;
   color: var(--color-ink);
@@ -64,7 +119,7 @@ body {
   pointer-events: none;
   z-index: 0;
   background-color: transparent;
-  background-image: radial-gradient(rgba(27, 28, 26, 0.38) 1.4px, transparent 1.4px);
+  background-image: radial-gradient(var(--color-dot-strong) 1.4px, transparent 1.4px);
   background-size: 26px 26px;
   background-position: var(--scroll-x, 13px) var(--scroll-y, 13px);
   -webkit-mask-image: radial-gradient(
@@ -100,6 +155,23 @@ body {
   max-width: 60rem;
   margin: 0 auto;
   padding: 2rem 1.5rem 4rem;
+}
+
+.top-nav-logo img,
+.login-brand img {
+  content: url("/parcourse-wordmark.svg");
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .top-nav-logo img,
+  :root:not([data-theme="light"]) .login-brand img {
+    content: url("/parcourse-wordmark-dark.svg");
+  }
+}
+
+:root[data-theme="dark"] .top-nav-logo img,
+:root[data-theme="dark"] .login-brand img {
+  content: url("/parcourse-wordmark-dark.svg");
 }
 
 .top-nav-logo {
@@ -178,18 +250,15 @@ body {
 }
 
 .avatar:hover {
-  background: #c6dabc;
+  background: var(--color-primary-container);
 }
 
-/* The menu and the version ride together, so the second card hangs off the
-   first rather than floating on its own. */
 .user-menu {
   position: absolute;
   top: calc(100% + 0.625rem);
   right: 0;
   min-width: 16rem;
-  /* Without a ceiling a long name widens the card instead of trimming, and on
-     a phone it would run off the screen. */
+
   max-width: min(20rem, calc(100vw - 2rem));
   display: flex;
   flex-direction: column;
@@ -201,6 +270,7 @@ body {
   background: var(--color-surface-lowest);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-menu);
+  border: var(--card-edge);
   padding: 0.5rem;
   display: flex;
   flex-direction: column;
@@ -208,7 +278,7 @@ body {
 
 .user-dropdown-header {
   padding: 0.7rem 0.9rem 0.6rem;
-  border-bottom: 1px solid rgba(27, 28, 26, 0.07);
+  border-bottom: 1px solid var(--line);
   margin-bottom: 0.3rem;
   display: flex;
   flex-direction: column;
@@ -227,7 +297,7 @@ body {
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--color-ink);
-  /* A long name or address trims rather than pushing the pill off the card. */
+
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -243,6 +313,65 @@ body {
 
 .user-dropdown-header .role-pill {
   flex-shrink: 0;
+}
+
+.theme-switch {
+  display: flex;
+  gap: 0.15rem;
+  margin: 0.25rem 0.15rem;
+  padding: 0.2rem;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-low);
+}
+
+.theme-switch-option {
+  appearance: none;
+  border: none;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.3rem;
+  border-radius: var(--radius-md);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-ink-soft);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.theme-switch-option:hover {
+  color: var(--color-ink);
+}
+
+.login-theme-switch {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: auto;
+  z-index: 2;
+}
+
+.login-theme-switch .theme-switch-option {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  padding: 0.4rem 0.6rem;
+}
+
+@media (max-width: 640px) {
+  .login-theme-switch {
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+}
+
+.theme-switch-option.active {
+  background: var(--color-surface-lowest);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-pill);
 }
 
 .user-dropdown-item {
@@ -282,11 +411,9 @@ body {
   background: var(--color-secondary-container);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-menu);
-  /* The menu's own padding sits inside the card, so this row has to carry both
-     to put its icon on the same line as Settings and Log out. */
+
   padding: 0.7rem 1.4rem;
-  /* Below twice the radius the corners round each other off into a pill, which
-     the shadow now separates from the card cleanly enough to read. */
+
   border-radius: var(--radius-full);
   font-size: 0.7rem;
   font-weight: 700;
@@ -447,11 +574,11 @@ body {
 
 .button.primary {
   background: var(--color-primary);
-  color: white;
+  color: var(--color-on-accent);
 }
 
 .button.primary:hover {
-  background: #3b5334;
+  background: var(--color-primary-hover);
 }
 
 .button.secondary {
@@ -460,16 +587,16 @@ body {
 }
 
 .button.secondary:hover {
-  background: #e6e8e0;
+  background: var(--color-secondary-hover);
 }
 
 .button.danger {
   background: var(--color-danger);
-  color: white;
+  color: var(--color-on-accent);
 }
 
 .button.danger:hover {
-  background: #8a3333;
+  background: var(--color-danger-hover);
 }
 
 .button.tertiary {
@@ -512,6 +639,7 @@ body {
   border-radius: var(--radius-xl);
   padding: 2rem 1.75rem;
   box-shadow: var(--shadow-lift-sm);
+  border: var(--card-edge);
   transition: background 0.15s ease, box-shadow 0.2s ease;
 }
 
@@ -564,9 +692,6 @@ body {
   font-size: 1.05rem;
 }
 
-/* The pill is as tall as the text inside it, and the reveal button carries
-   enough padding for its own hover circle to sit taller than that. The pull
-   back keeps the password pill the same height as the email one. */
 .login-input-pill .icon-btn {
   margin: -0.45rem -0.5rem -0.45rem 0.5rem;
 }
@@ -704,7 +829,7 @@ body {
 
 .ai-card {
   position: relative;
-  background: #edf1e8;
+  background: var(--color-primary-wash);
   border-radius: var(--radius-xl);
   padding: 2.25rem 2.5rem 2.4rem;
 }
@@ -906,17 +1031,17 @@ body {
 
 .sidebar-item.active .sidebar-item-num {
   background: var(--color-primary);
-  color: white;
+  color: var(--color-on-accent);
 }
 
 .sidebar-item.done .sidebar-item-num {
   background: var(--color-primary);
-  color: white;
+  color: var(--color-on-accent);
 }
 
 .sidebar-item.done.active .sidebar-item-num {
   background: var(--color-primary);
-  color: white;
+  color: var(--color-on-accent);
 }
 
 .sidebar-item-title {
@@ -1050,7 +1175,7 @@ body {
 
 .sidebar-item-num.done {
   background: var(--color-primary);
-  color: white;
+  color: var(--color-on-accent);
 }
 
 .question-block {
@@ -1084,7 +1209,7 @@ body {
 }
 
 .mcq-option:hover {
-  border-color: #c6dabc;
+  border-color: var(--color-primary-container);
 }
 
 .mcq-option:has(input:checked) {
@@ -1100,7 +1225,7 @@ body {
   width: 1.1rem;
   height: 1.1rem;
   min-width: 1.1rem;
-  border: 2px solid var(--color-border, #d4d8d0);
+  border: 2px solid var(--color-border);
   border-radius: 50%;
   flex-shrink: 0;
   position: relative;
@@ -1131,7 +1256,7 @@ body {
 
 .mcq-option input[type="radio"]:checked::before,
 .radio-row input[type="radio"]:checked::before {
-  background: #fff;
+  background: var(--color-surface-lowest);
 }
 
 .mcq-option:hover input[type="radio"]:not(:checked),
@@ -1145,6 +1270,7 @@ body {
   background: var(--color-surface-lowest);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lift-sm);
+  border: var(--card-edge);
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -1423,8 +1549,6 @@ body {
 }
 
 @media (max-width: 640px) {
-  /* Two words on two lines beside a heading reads as damage; the button takes
-     its own row instead. */
   .admin-header {
     flex-direction: column;
     align-items: stretch;
@@ -1435,8 +1559,7 @@ body {
     gap: 0.5rem 0.75rem;
     padding: 0.75rem;
   }
-  /* Avatar and identity hold the first line; the count and the controls take
-     the second rather than pushing themselves off the card. */
+
   .user-info {
     flex: 1 1 calc(100% - 3.25rem);
     min-width: 0;
@@ -1483,7 +1606,7 @@ body {
   font-weight: 500;
   color: var(--color-ink);
   white-space: nowrap;
-  box-shadow: 0 0.375rem 1.5rem rgba(27, 28, 26, 0.15);
+  box-shadow: var(--shadow-tip);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s ease, transform 0.15s ease;
@@ -1505,17 +1628,17 @@ body {
 
 .legend-dot.mastered,
 .graph-node.mastered {
-  background: var(--color-primary);
+  background: var(--color-node-mastered);
 }
 
 .legend-dot.learning,
 .graph-node.learning {
-  background: var(--color-primary-light);
+  background: var(--color-node-learning);
 }
 
 .legend-dot.new,
 .graph-node.new {
-  background: var(--color-secondary-container);
+  background: var(--color-node-new);
 }
 
 .graph-toolbar {
@@ -1556,7 +1679,7 @@ body {
   height: 1.25rem;
   border-radius: 50%;
   background: var(--color-primary);
-  color: white;
+  color: var(--color-on-accent);
   margin: 0 0.2rem;
   user-select: none;
   flex-shrink: 0;
@@ -1586,7 +1709,7 @@ body {
 .graph-pill.active {
   background: var(--color-surface-lowest);
   color: var(--color-primary);
-  box-shadow: 0 0.0625rem 0.25rem rgba(27, 28, 26, 0.1);
+  box-shadow: var(--shadow-pill);
 }
 
 .graph-pill-count {
@@ -1628,7 +1751,7 @@ body {
   min-height: 26.25rem;
   border-radius: var(--radius-xl);
   background: var(--color-surface-low);
-  background-image: radial-gradient(rgba(27, 28, 26, 0.05) 1px, transparent 1px);
+  background-image: radial-gradient(var(--color-dot-faint) 1px, transparent 1px);
   background-size: 24px 24px;
   touch-action: none;
   position: relative;
@@ -1657,7 +1780,6 @@ body {
   stroke-width: 2;
 }
 
-/* Jiggle Physics — enter animation + hover scale; D3 drives all positional motion */
 @keyframes node-enter {
   from { transform: scale(0); }
   to   { transform: scale(1); }
@@ -1727,20 +1849,20 @@ body {
 }
 
 .graph-node-group.mastered .graph-node-circle {
-  fill: var(--color-primary);
+  fill: var(--color-node-mastered);
 }
 
 .graph-node-group.learning .graph-node-circle {
-  fill: var(--color-primary-light);
+  fill: var(--color-node-learning);
 }
 
 .graph-node-group.new .graph-node-circle {
-  fill: var(--color-secondary-container);
+  fill: var(--color-node-new);
 }
 
 .graph-node-group.tier-you .graph-node-circle {
-  fill: var(--color-primary);
-  stroke: white;
+  fill: var(--color-node-mastered);
+  stroke: var(--color-node-label);
   stroke-width: 2.5;
 }
 
@@ -1757,11 +1879,11 @@ body {
 }
 
 .graph-node-group.tier-field.mastered .graph-node-circle {
-  fill: var(--color-primary);
+  fill: var(--color-node-mastered);
 }
 
 .graph-node-group.tier-field.new .graph-node-circle {
-  fill: #c6dab8;
+  fill: var(--color-node-field-new);
 }
 
 .graph-node-group .graph-node-label {
@@ -1775,7 +1897,7 @@ body {
   font-weight: 700;
   line-height: 1.2;
   padding: 0.35rem;
-  color: white;
+  color: var(--color-node-label);
   user-select: none;
 }
 
@@ -1810,7 +1932,8 @@ body {
   border-radius: var(--radius-lg);
   padding: 1rem 1.25rem;
   max-width: 18rem;
-  box-shadow: 0 0.5rem 2.5rem rgba(27, 28, 26, 0.2);
+  box-shadow: var(--shadow-pop);
+  border: var(--card-edge);
   pointer-events: none;
   display: flex;
   flex-direction: column;
@@ -1925,7 +2048,7 @@ body {
   gap: 0.5rem;
   padding: 0.6rem 1rem;
   border-radius: var(--radius-full);
-  color: white;
+  color: var(--color-on-accent);
   font-size: 0.85rem;
   font-weight: 600;
 }
@@ -1938,8 +2061,6 @@ body {
   opacity: 0.8;
   font-size: 0.75rem;
 }
-
-
 
 .model-select {
   appearance: none;
@@ -2011,6 +2132,7 @@ body {
 }
 
 .notebook-thumb {
+  filter: var(--thumb-filter);
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
@@ -2216,7 +2338,7 @@ body {
 
 .empty-state-body {
   font-size: 0.875rem;
-  color: var(--color-ink-muted);
+  color: var(--color-ink-soft);
   margin: 0;
   max-width: 26rem;
   line-height: 1.55;
@@ -2289,6 +2411,7 @@ body {
 }
 
 .course-card-thumb img {
+  filter: var(--thumb-filter);
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -2487,7 +2610,7 @@ body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(27, 28, 26, 0.35);
+  background: var(--color-scrim-modal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2556,7 +2679,6 @@ body {
   line-height: 1.4;
 }
 
-/* .text-input.boxed has its own bottom margin; spacing here comes from gap alone. */
 .modal-form {
   display: flex;
   flex-direction: column;
@@ -2610,8 +2732,6 @@ body {
   letter-spacing: 0.02em;
 }
 
-/* Onboarding: the generated password sits among pill inputs, so it wears the
-   same shell with its buttons tucked inside. */
 .login-form .password-field {
   background: var(--color-surface-lowest);
   border: 1.5px solid var(--color-ink);
@@ -2655,7 +2775,6 @@ body {
   font-size: 0.875rem;
 }
 
-/* Scoped to out-specify .text-input.boxed (0,2,0), which sets margin and padding. */
 .modal-field .text-input.boxed {
   margin-bottom: 0;
   padding: 0.7rem 1rem;
@@ -2691,8 +2810,6 @@ body {
 }
 
 .score-orbit {
-  /* Matches the dashed frame exactly, because it is the track the shapes ride:
-     offset-path reads this box, radius and tilt included. */
   position: absolute;
   inset: 0;
   border-radius: var(--radius-xl);
@@ -2707,7 +2824,6 @@ body {
 }
 
 .score-blob-bl {
-  /* Half a lap behind, so the two are always on opposite sides. */
   animation-delay: -13s;
 }
 
@@ -2728,7 +2844,7 @@ body {
   width: 1.75rem;
   height: 1.75rem;
   border-radius: var(--radius-full);
-  background: var(--color-tertiary-container);
+  background: var(--color-deco-pink);
 }
 
 .score-blob-bl {
@@ -2738,7 +2854,7 @@ body {
   width: 2.25rem;
   height: 2.25rem;
   border-radius: var(--radius-sm);
-  background: var(--color-secondary-container);
+  background: var(--color-deco-green);
   transform: rotate(12deg);
 }
 
@@ -2778,7 +2894,7 @@ body {
   place-items: center;
   border-radius: var(--radius-full);
   background: var(--color-primary);
-  color: white;
+  color: var(--color-on-accent);
   pointer-events: none;
   animation:
     score-complete-in 420ms cubic-bezier(0.34, 1.4, 0.64, 1) both,
@@ -2889,7 +3005,7 @@ body {
   height: 1.8rem;
   border-radius: var(--radius-full);
   background: var(--color-secondary);
-  color: white;
+  color: var(--color-on-accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2902,7 +3018,7 @@ body {
   position: relative;
   background: var(--color-surface-lowest);
   border-radius: var(--radius-lg);
-  border: 2px solid rgba(137, 164, 129, 0.18);
+  border: 2px solid var(--color-hairline-sage);
   box-shadow: var(--shadow-lift-sm);
   margin-top: 1rem;
 }
@@ -2912,7 +3028,7 @@ body {
   top: -0.85rem;
   left: 1.25rem;
   background: var(--color-primary-light);
-  color: white;
+  color: var(--color-on-accent);
   font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -2986,11 +3102,11 @@ body {
 
 .tutor-row-icon--good {
   background: var(--color-primary);
-  color: white;
+  color: var(--color-on-accent);
 }
 
 .tutor-row-icon--warn {
-  background: rgba(27, 28, 26, 0.1);
+  background: var(--color-ink-wash);
   color: var(--color-ink-soft);
 }
 
@@ -3020,7 +3136,7 @@ body {
 
 .retake-btn.mark-done-btn {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-accent);
 }
 
 .retake-btn.mark-done-btn:hover {
@@ -3055,8 +3171,8 @@ body {
 }
 
 .tag.mist {
-  background: #e0ecf0;
-  color: #3a6575;
+  background: var(--color-info-container);
+  color: var(--color-info-ink);
 }
 
 .tag.brick {
@@ -3102,7 +3218,8 @@ button.tip {
   line-height: 1.5;
   letter-spacing: normal;
   white-space: nowrap;
-  box-shadow: 0 0.5rem 2.5rem rgba(27, 28, 26, 0.2);
+  box-shadow: var(--shadow-pop);
+  border: var(--card-edge);
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, 0.35rem);
@@ -3132,7 +3249,7 @@ button.tip {
   border-radius: var(--radius-full);
   font-size: 0.9rem;
   font-weight: 600;
-  box-shadow: 0 0.75rem 2.5rem rgba(27, 28, 26, 0.2);
+  box-shadow: var(--shadow-toast);
   pointer-events: auto;
   animation: toast-in 0.25s ease;
   white-space: nowrap;
@@ -3140,12 +3257,12 @@ button.tip {
 
 .toast-success {
   background: var(--color-primary);
-  color: white;
+  color: var(--color-on-accent);
 }
 
 .toast-error {
   background: var(--color-danger);
-  color: white;
+  color: var(--color-on-accent);
 }
 
 .toast-info {
@@ -3204,7 +3321,7 @@ button.tip {
     content: '';
     position: absolute;
     inset: -5rem -4rem;
-    background: radial-gradient(ellipse 85% 85% at 50% 50%, var(--color-paper) 35%, rgba(251, 249, 245, 0.6) 62%, transparent 80%);
+    background: radial-gradient(ellipse 85% 85% at 50% 50%, var(--color-paper) 35%, color-mix(in srgb, var(--color-paper) 60%, transparent) 62%, transparent 80%);
     z-index: -1;
     pointer-events: none;
   }
@@ -3221,7 +3338,6 @@ button.tip {
   }
 }
 
-/* The pills inline, for surfaces that already have a frame of their own. */
 .gen-steps {
   display: flex;
   flex-direction: column;
@@ -3246,7 +3362,7 @@ button.tip {
 
 .gen-pill.done {
   color: var(--color-ink-soft);
-  border-color: var(--color-sage, #6ab47b);
+  border-color: var(--color-sage);
 }
 
 .gen-pill.active {
@@ -3257,24 +3373,12 @@ button.tip {
 
 .gen-pill.blocked {
   border-radius: var(--radius-lg);
-  border-color: #d48a2e;
-  background: #fef6ec;
+  border-color: var(--color-warn);
+  background: var(--color-warn-container);
   color: var(--color-ink);
   align-items: flex-start;
   flex-direction: column;
   gap: 0.75rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  .gen-pill.blocked {
-    background: #2a1f0e;
-    border-color: #c87d20;
-  }
-}
-
-:root[data-theme="dark"] .gen-pill.blocked {
-  background: #2a1f0e;
-  border-color: #c87d20;
 }
 
 .gen-pill-left {
@@ -3309,16 +3413,11 @@ button.tip {
   white-space: normal;
   overflow: visible;
   text-overflow: unset;
-  color: #a06820;
+  color: var(--color-warn-ink);
 }
-
-@media (prefers-color-scheme: dark) {
-  .gen-pill-reason { color: #e0a050; }
-}
-:root[data-theme="dark"] .gen-pill-reason { color: #e0a050; }
 
 .gen-pill-warn {
-  color: #d48a2e;
+  color: var(--color-warn);
   flex-shrink: 0;
   margin-top: 0.0625rem;
 }
@@ -3351,12 +3450,12 @@ button.tip {
 
 .gen-pill-override {
   appearance: none;
-  border: 1.5px solid #d48a2e;
+  border: 1.5px solid var(--color-warn);
   background: none;
   font-family: inherit;
   font-size: 0.78rem;
   font-weight: 700;
-  color: #d48a2e;
+  color: var(--color-warn);
   padding: 0.35rem 0.85rem;
   border-radius: var(--radius-full);
   cursor: pointer;
@@ -3364,13 +3463,13 @@ button.tip {
 }
 
 .gen-pill-override:hover {
-  background: #d48a2e;
-  color: white;
+  background: var(--color-warn);
+  color: var(--color-on-accent);
 }
 
 .gen-pill-icon {
   flex-shrink: 0;
-  color: var(--color-sage, #6ab47b);
+  color: var(--color-sage);
 }
 
 .gen-pill-dot {
@@ -3406,7 +3505,7 @@ button.tip {
 }
 
 .score-dot.sage { background: var(--color-secondary-container); color: var(--color-primary); }
-.score-dot.mist { background: #e0ecf0; color: #3a6575; }
+.score-dot.mist { background: var(--color-info-container); color: var(--color-info-ink); }
 .score-dot.brick { background: var(--color-danger-container); color: var(--color-danger); }
 
 .score-dot-text {
@@ -3439,7 +3538,7 @@ button.tip {
 .mobile-nav-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--color-scrim-nav);
 }
 
 .mobile-nav-drawer {
@@ -3472,7 +3571,7 @@ button.tip {
   display: flex;
   flex-direction: column;
   padding: 0.85rem 1rem;
-  border-radius: var(--radius, 0.625rem);
+  border-radius: 0.625rem;
   text-decoration: none;
   color: var(--color-ink);
   transition: background 0.15s;
@@ -3592,7 +3691,7 @@ button.tip {
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
-  /* Roughly seven rows before scrolling, so the panel never covers the page. */
+
   max-height: 17rem;
   overflow-y: auto;
 }
@@ -3653,7 +3752,7 @@ button.tip {
   align-items: center;
   gap: 0.5rem;
   padding: 0.55rem 0.85rem;
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   font-size: 0.88rem;
   cursor: pointer;
   color: var(--color-ink-soft);
@@ -3692,10 +3791,6 @@ button.tip {
   flex-wrap: wrap;
 }
 
-
-
-
-
 a.modal-field-hint {
   color: var(--color-ink-soft);
   text-decoration: underline;
@@ -3703,7 +3798,6 @@ a.modal-field-hint {
   width: fit-content;
 }
 
-/* Onboarding renders the form inside .hero, which centres its text. */
 .login-form .provider-form {
   text-align: left;
 }
@@ -3717,11 +3811,6 @@ a.modal-field-hint {
   align-items: center;
   gap: 0.35rem;
 }
-
-
-
-
-
 
 .field-toggle {
   display: flex;
@@ -3755,23 +3844,6 @@ a.modal-field-hint {
   color: var(--color-ink);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 .connection-help-bar {
   display: flex;
   flex-direction: row;
@@ -3798,11 +3870,6 @@ a.modal-field-hint {
     align-items: stretch;
   }
 }
-
-
-
-
-
 
 .test-result {
   display: flex;
@@ -3882,8 +3949,6 @@ a.modal-field-hint {
   transition: border-color 0.6s ease, box-shadow 0.6s ease;
 }
 
-/* A circle centred on the pointer. At 200% of the bar's width its radius
-   always exceeds the distance to the far corner, so it covers from anywhere. */
 .url-form-gate::before {
   content: "";
   position: absolute;
@@ -3996,13 +4061,11 @@ a.modal-field-hint {
   }
 }
 
-
 .provider-field {
   gap: 0.6rem;
   padding-bottom: 0.35rem;
 }
 
-/* Same rhythm as .settings-section, so headings match across cards. */
 .provider-intro {
   display: flex;
   flex-direction: column;
@@ -4024,8 +4087,7 @@ a.modal-field-hint {
   font-family: inherit;
   text-align: left;
   cursor: pointer;
-  /* The corners are a full pill, so text set flush to 1.5rem reads as if it is
-     leaning on the curve. */
+
   padding: 1.25rem 1.75rem;
 }
 
@@ -4084,8 +4146,6 @@ a.modal-field-hint {
 }
 
 @media (max-width: 640px) {
-  /* The pills were competing with the score for the same line and winning,
-     so they drop below it and the row reads top to bottom. */
   .attempt-row {
     flex-wrap: wrap;
     gap: 0.5rem 1rem;
@@ -4094,14 +4154,12 @@ a.modal-field-hint {
   .attempt-score {
     order: 1;
   }
-  /* Beside the score, not below it: an extra line only on tagged rows would
-     leave the list unevenly tall. */
+
   .attempt-tags {
     order: 2;
     justify-content: flex-start;
   }
-  /* Out of the flow entirely, so it sits against the middle of the row
-     however many lines the row turns out to be. */
+
   .attempt-row {
     position: relative;
     padding-right: 3.5rem;
@@ -4136,7 +4194,7 @@ a.modal-field-hint {
   align-items: center;
   gap: 0.3rem;
   background: var(--color-primary);
-  color: white;
+  color: var(--color-on-accent);
 }
 
 .attempt-arrow {
@@ -4155,7 +4213,6 @@ a.modal-field-hint {
   color: var(--color-ink);
 }
 
-/* The same tag the model select puts on a recommendation. */
 .attempt-badge {
   font-size: 0.62rem;
   font-weight: 800;

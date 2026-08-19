@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import CanvasBackground from "../components/CanvasBackground";
-import { toast } from "../components/Toast";
 import PasswordField from "../components/PasswordField";
 import PasswordInput from "../components/PasswordInput";
 import ProviderForm from "../components/ProviderForm";
-import { apiFetch, errMsg } from "../lib/api";
+import ThemeSwitch from "../components/ThemeSwitch";
+import { toast } from "../components/Toast";
 import { PASSWORD_RULE, generatePassword, passwordError } from "../lib/password";
+import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
 
 type Stage = "mode" | "signup" | "api-key" | "add-user";
@@ -87,6 +88,7 @@ export default function SetupScreen() {
   return (
     <div className="login-page">
       <CanvasBackground />
+      <ThemeSwitch className="login-theme-switch" />
 
       <div className="login-brand">
         <img src="/parcourse-wordmark.svg" alt="Parcourse" height="44" />

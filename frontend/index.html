@@ -3,6 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#fbf9f5" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#14150f" media="(prefers-color-scheme: dark)" />
     <title>Parcourse</title>
     <link rel="icon" type="image/svg+xml" href="/parcourse.svg" />
     <link rel="icon" href="/favicon.ico" />
@@ -12,6 +15,18 @@
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
       rel="stylesheet"
     />
+    <style>
+      :root { color-scheme: light dark; }
+      :root[data-theme="light"] { color-scheme: light; }
+      :root[data-theme="dark"] { color-scheme: dark; }
+      html { background: light-dark(#fbf9f5, #14150f); }
+    </style>
+    <script>
+      try {
+        var t = localStorage.getItem("__THEME_KEY__");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

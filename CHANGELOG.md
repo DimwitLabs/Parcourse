@@ -4,6 +4,25 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-08-20
+
+### Added
+
+- **Dark Theme:** Every screen has a dark counterpart, warm charcoal rather than black, with the sage green carried through and a wordmark drawn for it. Auto, Light and Dark sit in the profile menu, and on the sign-in, setup and password screens.
+- The choice is remembered and applied before the page paints, so a dark session never flashes white, and it reaches any other tab already open. The landing page follows the system the same way.
+
+### Changed
+
+- The knowledge graph exports with a transparent background, as an SVG or a PNG, so it sits on whatever it is dropped into, and is drawn light whichever theme it was exported from.
+- A shared result card stays on light paper, since it is read wherever it is sent rather than here.
+
+### Fixed
+
+- Every colour and corner the stylesheet asks for now has a name that exists. Five were referenced and never defined: the generation pills lost their background and their pending dot, an empty-state line its softer grey, and a dropdown row its rounded corners.
+- The zoom controls on the knowledge graph carry icons rather than characters, so they sit level with Reset beside them.
+- The theme control is a radio group, so the arrow keys move through it and it reads as one choice of three rather than three switches.
+- A browser that refuses local storage no longer takes the app down on load.
+
 ## [1.1.1] - 2026-08-19
 
 ### Changed

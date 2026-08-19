@@ -1,10 +1,11 @@
 import { useState } from "react";
-import PasswordInput from "../components/PasswordInput";
 
+import PasswordInput from "../components/PasswordInput";
+import ThemeSwitch from "../components/ThemeSwitch";
 import { toast } from "../components/Toast";
+import { PASSWORD_RULE, passwordError } from "../lib/password";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import { PASSWORD_RULE, passwordError } from "../lib/password";
 
 export default function ChangePasswordScreen() {
   const { token, user, setUser, logout } = useAuth();
@@ -35,6 +36,7 @@ export default function ChangePasswordScreen() {
 
   return (
     <div className="login-page">
+      <ThemeSwitch className="login-theme-switch" />
       <div className="hero">
         <h1 className="hero-title">Choose a <span className="accent">new password.</span></h1>
         <p className="hero-subtitle">

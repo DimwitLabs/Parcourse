@@ -8,6 +8,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { apiFetch } from "../lib/api";
+import { withLightPalette } from "../lib/palette";
 import { useAuth } from "../lib/auth";
 import { gravatarUrl, userInitials } from "../lib/gravatar";
 import type { NamedUser } from "../lib/gravatar";
@@ -37,9 +38,7 @@ function tierIncluded(tier: Tier, granularity: Granularity): boolean {
   return TIER_ORDER.indexOf(tier) <= cutoff;
 }
 
-// Making a course seeds every node it touches at this score, so anything at or
-// below it has only been met, not studied. Mirrors _EXPOSURE_MASTERY in
-// backend/services/knowledge_graph.py.
+// Mirrors _EXPOSURE_MASTERY in backend/services/knowledge_graph.py.
 const EXPOSURE_MASTERY = 0.2;
 
 function masteryClass(score: number): "mastered" | "learning" | "new" {
@@ -50,7 +49,7 @@ function masteryClass(score: number): "mastered" | "learning" | "new" {
 
 function computeEffectiveMastery(nodes: Node[], edges: Edge[]): Map<string, number> {
   const scoreMap = new Map(nodes.map((n) => [n.id, n.mastery_score]));
-  // children[parentId] = list of child node ids (skill→topic, topic→field via belongs_to)
+
   const children = new Map<string, string[]>();
   for (const e of edges) {
     if (e.edge_type === "belongs_to") {
@@ -155,7 +154,6 @@ function runSimulation(
     .alphaDecay(0.02)
     .stop();
 
-  // Pre-settle into a reasonable layout, then hand back for live running
   for (let i = 0; i < 100; i++) sim.tick();
 
   return { sim, nodes: simNodes, edges: simEdges };
@@ -201,8 +199,6 @@ function inlineStylesToClone(original: SVGSVGElement, clone: SVGSVGElement) {
   });
 }
 
-/** A serialized SVG is rendered in isolation, so a remote avatar never loads
- *  and exports as a broken image. Embed it before writing the file. */
 async function inlineImages(clone: SVGSVGElement): Promise<void> {
   const images = Array.from(clone.querySelectorAll("image"));
   await Promise.all(
@@ -226,11 +222,16 @@ async function inlineImages(clone: SVGSVGElement): Promise<void> {
   );
 }
 
-async function exportSvg(svgEl: SVGSVGElement) {
+async function prepareClone(svgEl: SVGSVGElement): Promise<SVGSVGElement> {
   const clone = svgEl.cloneNode(true) as SVGSVGElement;
   clone.removeAttribute("style");
-  inlineStylesToClone(svgEl, clone);
+  withLightPalette(() => inlineStylesToClone(svgEl, clone));
   await inlineImages(clone);
+  return clone;
+}
+
+async function exportSvg(svgEl: SVGSVGElement) {
+  const clone = await prepareClone(svgEl);
   const blob = new Blob([clone.outerHTML], { type: "image/svg+xml" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -241,10 +242,7 @@ async function exportSvg(svgEl: SVGSVGElement) {
 }
 
 async function exportPng(svgEl: SVGSVGElement) {
-  const clone = svgEl.cloneNode(true) as SVGSVGElement;
-  clone.removeAttribute("style");
-  inlineStylesToClone(svgEl, clone);
-  await inlineImages(clone);
+  const clone = await prepareClone(svgEl);
   const bbox = svgEl.getBBox();
   const pad = 40;
   const w = bbox.width + pad * 2;
@@ -263,9 +261,7 @@ async function exportPng(svgEl: SVGSVGElement) {
     canvas.height = h * 2;
     const ctx = canvas.getContext("2d")!;
     ctx.scale(2, 2);
-    const bg = window.getComputedStyle(document.documentElement).getPropertyValue("--color-surface-low").trim() || "#1b1c1a";
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, w, h);
+
     ctx.drawImage(img, 0, 0, w, h);
     canvas.toBlob((b) => {
       if (!b) return;
@@ -287,8 +283,7 @@ export default function KnowledgeGraphScreen() {
   const viewingUserId = params.get("user");
 
   const [subject, setSubject] = useState<NamedUser | null>(null);
-  // An admin can open someone else's graph, and it is their concepts, their
-  // avatar and their name at the centre, not the admin's.
+
   const owner = subject ?? user ?? null;
 
   useEffect(() => {
@@ -352,18 +347,16 @@ export default function KnowledgeGraphScreen() {
     const { sim, nodes, edges } = runSimulation(filtered, filteredEdges, 900, 700, centre);
     simInstanceRef.current = sim;
 
-    // D3 mutates node objects in place — React reads live positions on each forceUpdate
     setSimData({ nodes, edges });
     setPan({ x: 0, y: 0 });
     setZoom(1);
 
     sim.alphaTarget(0).restart();
 
-    // RAF loop: trigger React re-render at ~30fps to pick up D3's position mutations
     let rafId: number;
     let last = 0;
     function loop(t: number) {
-      if (t - last >= 33) { last = t; forceUpdate(); }
+      if (t - last >= 33) { last = t; forceUpdate(); }  // 33ms ≈ 30fps
       rafId = requestAnimationFrame(loop);
     }
     rafId = requestAnimationFrame(loop);
@@ -420,13 +413,14 @@ export default function KnowledgeGraphScreen() {
     const rect = wrapRef.current.getBoundingClientRect();
     const W = rect.width;
     const H = rect.height;
-    // Undo CSS transform: translate(pan.x, pan.y) scale(zoom) with transform-origin: center
-    // native = (client_relative - pan - center) / zoom + center
+
     const rx = clientX - rect.left;
     const ry = clientY - rect.top;
+    // Undoes translate(pan) scale(zoom) with transform-origin: center, then
+    // maps pixels onto the -500..500 x -400..400 viewBox.
     const nativeX = (rx - pan.x - W / 2) / zoom + W / 2;
     const nativeY = (ry - pan.y - H / 2) / zoom + H / 2;
-    // viewBox is -500..500 × -400..400 mapped over W×H pixels
+
     return { x: (nativeX / W) * 1000 - 500, y: (nativeY / H) * 800 - 400 };
   }
 
@@ -488,7 +482,6 @@ export default function KnowledgeGraphScreen() {
     { value: "skill", label: "Skills" },
   ];
 
-
   return (
     <div className="graph-view">
       <div className="page-header">
@@ -523,8 +516,12 @@ export default function KnowledgeGraphScreen() {
             </div>
             <div className="graph-toolbar-right">
               <div className="graph-zoom-controls">
-                <button className="button secondary" onClick={() => setZoom((z) => Math.min(3, z + 0.2))}>+</button>
-                <button className="button secondary" onClick={() => setZoom((z) => Math.max(0.2, z - 0.2))}>−</button>
+                <button className="button secondary tip" data-tip="Zoom in" aria-label="Zoom in" onClick={() => setZoom((z) => Math.min(3, z + 0.2))}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+                <button className="button secondary tip" data-tip="Zoom out" aria-label="Zoom out" onClick={() => setZoom((z) => Math.max(0.2, z - 0.2))}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
                 <button className="button secondary" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>Reset</button>
               </div>
               <div className="graph-export-controls">
@@ -588,7 +585,7 @@ export default function KnowledgeGraphScreen() {
                 const showAvatar = isYou && !!avatarUrl && !avatarErr;
                 const lines = wrapText(isYou ? userInitials(owner) || "You" : n.label, n.r, fontSize);
                 const lineHeight = fontSize * 1.32;
-                const textFill = mc === "new" && !isYou ? "var(--color-secondary)" : "white";
+                const textFill = mc === "new" && !isYou ? "var(--color-secondary)" : "var(--color-node-label)";
                 const clipId = `nc-${n.id}`;
                 const enterDelay = `${Math.min(idx * 0.035, 0.5).toFixed(3)}s`;
                 return (
@@ -604,7 +601,7 @@ export default function KnowledgeGraphScreen() {
                       e.stopPropagation();
                       const dx = e.clientX - dragStartClient.current.x;
                       const dy = e.clientY - dragStartClient.current.y;
-                      if (dx * dx + dy * dy > 36) return; // was a drag, not a click
+                      if (dx * dx + dy * dy > 36) return;  // moved over 6px, so a drag
                       setTooltip((t) =>
                         t?.pinned && t.node.id === n.id
                           ? null

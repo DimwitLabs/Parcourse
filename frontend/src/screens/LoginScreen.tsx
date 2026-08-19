@@ -1,7 +1,8 @@
 import { useState } from "react";
-import PasswordInput from "../components/PasswordInput";
 
 import CanvasBackground from "../components/CanvasBackground";
+import PasswordInput from "../components/PasswordInput";
+import ThemeSwitch from "../components/ThemeSwitch";
 import { toast } from "../components/Toast";
 import { errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -27,6 +28,7 @@ export default function LoginScreen() {
   return (
     <div className="login-page">
       <CanvasBackground />
+      <ThemeSwitch className="login-theme-switch" />
 
       <div className="login-brand">
         <img src="/parcourse-wordmark.svg" alt="Parcourse" height="44" />

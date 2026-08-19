@@ -85,8 +85,7 @@ export default function NotebookScreen() {
           const allSectionsDone = c.completed_sections.length === total && total > 0;
           const isComplete = c.has_passed_quiz || allSectionsDone;
           const isToggling = togglingDone.has(c.id);
-          // Passing the quiz is what finished the course, so the toggle is
-          // locked and says why rather than offering something it will refuse.
+
           const doneHint = c.has_passed_quiz
             ? "Mastered"
             : allSectionsDone
@@ -125,7 +124,7 @@ export default function NotebookScreen() {
                 {allSectionsDone ? (
                   <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="12" r="9" fill="var(--color-primary)" />
-                    <polyline points="7,12 10.5,15.5 17,8.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                    <polyline points="7,12 10.5,15.5 17,8.5" stroke="var(--color-on-accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
                   </svg>
                 ) : (
                   <svg width="21" height="21" viewBox="0 0 24 24" fill="none">

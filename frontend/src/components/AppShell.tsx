@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate, useNavigationType } from "react-router-dom";
 
 import Avatar from "./Avatar";
+import ThemeSwitch from "./ThemeSwitch";
 import { useAuth } from "../lib/auth";
 
 const NAV_LINKS = [
@@ -12,8 +13,7 @@ const NAV_LINKS = [
 
 export default function AppShell() {
   const { user, logout } = useAuth();
-  // A first name with no last name should not carry a trailing space into the
-  // title attribute or the layout.
+
   const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(" ");
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -23,8 +23,7 @@ export default function AppShell() {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // A page opened from a link starts at its top. Going back is a return to
-    // somewhere already read, so that keeps where it was left.
+
     if (navigationType === "POP") return;
     window.scrollTo(0, 0);
   }, [pathname, navigationType]);
@@ -70,8 +69,6 @@ export default function AppShell() {
               <div className="user-dropdown">
                 <div className="user-dropdown-header">
                   <div className="user-dropdown-identity">
-                    {/* Whoever they are on one line with what they are; the
-                        address belongs underneath, not stacked as a third fact. */}
                     <span className="user-dropdown-name" title={fullName || user?.email}>
                       {fullName || user?.email}
                     </span>
@@ -105,6 +102,7 @@ export default function AppShell() {
                     Admin
                   </button>
                 )}
+                <ThemeSwitch />
                 <button className="user-dropdown-item danger" onClick={logout}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                   Log out

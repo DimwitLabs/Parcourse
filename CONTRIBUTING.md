@@ -59,6 +59,7 @@ To use anything AI-powered you need a key from a provider. The first run walks y
 - Comment the why, not the what; delete a comment that restates the code beneath it
 - Delete code you make unreachable rather than leaving it behind a flag
 - Include tests for new backend behaviour and ensure all tests pass before submitting
+- Colours live as tokens in the `:root` block of `styles.css`, each holding both its light and dark value through `light-dark()`; add a colour there rather than inline
 - Update CHANGELOG.md with your changes
 
 Thank you for contributing!
