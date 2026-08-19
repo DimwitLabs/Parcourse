@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import { MASTERY_PCT } from "../lib/score";
+import { MASTERY_PCT, shownScore } from "../lib/score";
 
 type Attempt = {
   id: string;
@@ -12,6 +12,10 @@ type Attempt = {
   percentage: number;
   created_at: string;
 };
+
+function points(a: Attempt) {
+  return shownScore({ total: a.total_score, max: a.max_score });
+}
 
 export default function QuizHistoryScreen() {
   const { courseId } = useParams();
@@ -32,7 +36,7 @@ export default function QuizHistoryScreen() {
   // Mastery is earned once. The list runs newest first, so the attempt that
   // earned it is the last one in the list that cleared the line.
   const masteryIndex = (attempts ?? []).reduce(
-    (earned, a, i) => (a.percentage >= MASTERY_PCT ? i : earned),
+    (earned, a, i) => (points(a).percentage >= MASTERY_PCT ? i : earned),
     -1,
   );
 
@@ -64,10 +68,13 @@ export default function QuizHistoryScreen() {
               className="attempt-row card"
               onClick={() => navigate(`/course/${courseId}/results?attempt=${a.id}`)}
             >
-              <span className="attempt-score">{Math.round(a.percentage)}%</span>
+              <span className="attempt-score">{Math.round(points(a).percentage)}%</span>
               <span className="attempt-detail">
                 <span className="attempt-points">
-                  {a.total_score} of {a.max_score} points
+                  {points(a).score}
+                  {points(a).note && (
+                    <sup className="tip" data-tip={points(a).note ?? undefined} aria-label={points(a).note ?? undefined}>*</sup>
+                  )} of {points(a).outOf} points
                 </span>
                 {/* Counted from the first ever try, so the number does not
                     change as newer attempts arrive above it. */}

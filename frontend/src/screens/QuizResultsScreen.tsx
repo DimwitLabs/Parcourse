@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams, useSearchParams } from "react-rout
 import { toast } from "../components/Toast";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { shownScore } from "../lib/score";
 
 type Breakdown = { accuracy: number; completeness: number; relevance: number; feedback: string };
 type QuestionResult = {
@@ -74,6 +75,11 @@ export default function QuizResultsScreen() {
       .catch(() => setNotFound(true));
   }, [data, courseId, token, attemptId]);
 
+  // The ring reads off the score on screen rather than the stored percentage,
+  // so the number in the middle and the arc around it can never disagree.
+  const shown = data ? shownScore({ total: data.result.total_score, max: data.result.max_score }) : null;
+  const percentage = shown?.percentage ?? 0;
+
   if (notFound) {
     return (
       <div className="empty-state">
@@ -95,9 +101,11 @@ export default function QuizResultsScreen() {
     for (const t of s.theory_questions) questionMap.set(t.id, t.question);
   }
 
-  const totalScore = Math.round(result.total_score);
-  const maxScore = Math.round(result.max_score);
-  const pct = Math.round(result.percentage);
+  const { score: totalScore, outOf: maxScore, note: roundingNote } = shownScore({
+    total: result.total_score,
+    max: result.max_score,
+  });
+  const pct = Math.round(percentage);
   const dashOffset = CIRCUMFERENCE - (CIRCUMFERENCE * pct) / 100;
 
   const allResults = result.results;
@@ -124,7 +132,15 @@ export default function QuizResultsScreen() {
                 strokeDasharray={CIRCUMFERENCE} strokeDashoffset={dashOffset} />
             </svg>
             <div className="score-ring-label">
-              <span className="score-ring-big">{totalScore}<span className="score-ring-denom">/{maxScore}</span></span>
+              <span className="score-ring-big">
+                {totalScore}
+                {roundingNote && (
+                  <sup className="score-ring-star tip" data-tip={roundingNote} tabIndex={0} aria-label={roundingNote}>
+                    *
+                  </sup>
+                )}
+                <span className="score-ring-denom">/{maxScore}</span>
+              </span>
               <span className="score-ring-sub">SCORE</span>
             </div>
           </div>

@@ -2547,6 +2547,14 @@ body {
   color: var(--color-ink);
 }
 
+.score-ring-star {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  vertical-align: super;
+  line-height: 0;
+}
+
 .score-ring-denom {
   font-size: 1.4rem;
   font-weight: 700;
@@ -2788,6 +2796,43 @@ body {
   letter-spacing: 0.06em;
   color: var(--color-ink-faint);
   margin: 0;
+}
+
+.tip {
+  position: relative;
+  cursor: help;
+}
+
+.tip::after {
+  /* The knowledge graph's tooltip, shrunk to a one-line hint: same surface,
+     same lift, same quiet text — just the panel sized down. */
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 50%;
+  z-index: 30;
+  padding: 0.45rem 0.8rem;
+  /* The panel's own radius would swallow a line this short, so it steps down
+     one notch and keeps the same proportions. */
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-lowest);
+  color: var(--color-ink-soft);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: normal;
+  white-space: nowrap;
+  box-shadow: 0 0.5rem 2.5rem rgba(27, 28, 26, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 0.35rem);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.tip:hover::after,
+.tip:focus-visible::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 .toast-container {
@@ -3672,6 +3717,11 @@ a.modal-field-hint {
 
 .attempt-row:hover {
   box-shadow: var(--shadow-lift);
+}
+
+.attempt-points sup {
+  color: var(--color-primary);
+  font-weight: 700;
 }
 
 .attempt-back {
