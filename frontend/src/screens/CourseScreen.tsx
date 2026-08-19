@@ -6,9 +6,11 @@ import type { CourseAction } from "../components/CourseActionModal";
 import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { shownScore } from "../lib/score";
 import { useEscapeKey } from "../lib/useEscapeKey";
 
 
+type Attempt = { id: string; total_score: number; max_score: number };
 type MCQOption = { label: string; text: string };
 type MCQ = { id: string; question: string; options: MCQOption[] };
 type TheoryQ = { id: string; question: string };
@@ -44,7 +46,7 @@ export default function CourseScreen() {
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, string>>({});
   const [theoryAnswers, setTheoryAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [hasAttempts, setHasAttempts] = useState(false);
+  const [lastAttempt, setLastAttempt] = useState<Attempt | null>(null);
   const [showSkipModal, setShowSkipModal] = useState(false);
   const [courseAction, setCourseAction] = useState<CourseAction | null>(null);
   const [doneSections, setDoneSections] = useState<Set<number>>(new Set());
@@ -71,10 +73,10 @@ export default function CourseScreen() {
       })
       .catch(() => {});
     apiFetch(`/quiz/attempts/${courseId}/history`, token)
-      .then((history: unknown[]) => {
-        // Nothing to look back on before the first submission, and a button
-        // that leads to an empty page is worse than no button.
-        if (!ignore) setHasAttempts(history.length > 0);
+      .then((history: Attempt[]) => {
+        // Newest first. Nothing to look back on before the first submission,
+        // and a button that leads to an empty page is worse than no button.
+        if (!ignore) setLastAttempt(history[0] ?? null);
       })
       .catch(() => {});
     apiFetch(`/courses/${courseId}/draft`, token)
@@ -213,6 +215,14 @@ export default function CourseScreen() {
   );
   const answeredQuestions = Object.keys(mcqAnswers).length + Object.keys(theoryAnswers).length;
 
+  // Once a quiz has been graded, the answers on screen are a previous
+  // submission being edited, so the button says what pressing it will do.
+  const submitLabel = lastAttempt ? "Submit again" : "Submit Quiz";
+  const attemptPoints = shownScore({
+    total: lastAttempt?.total_score ?? 0,
+    max: lastAttempt?.max_score ?? 0,
+  });
+
   function toggleSection(idx: number) {
     setOpenSections((prev) => {
       const next = new Set(prev);
@@ -233,7 +243,7 @@ export default function CourseScreen() {
   // disappearing along with it.
   const courseActions = (
     <>
-      {hasAttempts && (
+      {lastAttempt && (
       <button className="icon-btn" onClick={() => navigate(`/course/${courseId}/history`)} title="Quiz history">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 14"/></svg>
       </button>
@@ -266,9 +276,16 @@ export default function CourseScreen() {
           </div>
 
           <div className={`quiz-sidebar-box${barVisible ? " fading" : ""}`} ref={quizBoxRef}>
-            <div className="quiz-sidebar-count">{answeredQuestions}/{totalQuestions} answered</div>
+            {lastAttempt ? (
+              <button className="quiz-last-attempt" onClick={() => navigate(`/course/${courseId}/results?attempt=${lastAttempt.id}`)}>
+                Last attempt {attemptPoints.score}/{attemptPoints.outOf}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            ) : (
+              <div className="quiz-sidebar-count">{answeredQuestions}/{totalQuestions} answered</div>
+            )}
             <button className="button primary" style={{ width: "100%" }} onClick={handleSubmitClick} disabled={submitting}>
-              {submitting ? "Grading…" : "Submit Quiz"}
+              {submitting ? "Grading…" : submitLabel}
             </button>
           </div>
 
@@ -374,11 +391,18 @@ export default function CourseScreen() {
           })}
 
           <div className="submit-bar card" ref={submitBarRef}>
-            <span className="status-message">
-              {answeredQuestions} / {totalQuestions} answered
-            </span>
+            {lastAttempt ? (
+              <button className="quiz-last-attempt" onClick={() => navigate(`/course/${courseId}/results?attempt=${lastAttempt.id}`)}>
+                Last attempt {attemptPoints.score}/{attemptPoints.outOf}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            ) : (
+              <span className="status-message">
+                {answeredQuestions} / {totalQuestions} answered
+              </span>
+            )}
             <button className="button primary" onClick={handleSubmitClick} disabled={submitting}>
-              {submitting ? "Grading…" : "Submit Quiz"}
+              {submitting ? "Grading…" : submitLabel}
             </button>
           </div>
 

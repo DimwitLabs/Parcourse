@@ -1171,6 +1171,28 @@ body {
   text-align: center;
 }
 
+.quiz-last-attempt {
+  appearance: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-full);
+  background: var(--color-secondary-container);
+  color: var(--color-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: filter 0.12s ease;
+}
+
+.quiz-last-attempt:hover {
+  filter: brightness(0.96);
+}
+
 .sidebar-actions {
   display: flex;
   justify-content: center;
