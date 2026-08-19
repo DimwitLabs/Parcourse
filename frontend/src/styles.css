@@ -2724,7 +2724,6 @@ body {
 
 .score-complete {
   position: absolute;
-  /* Sits inside the ring, so the filled ring stays visible around it. */
   inset: 0.55rem;
   display: grid;
   place-items: center;
@@ -3036,16 +3035,12 @@ body {
 }
 
 .tip::after {
-  /* The knowledge graph's tooltip, shrunk to a one-line hint: same surface,
-     same lift, same quiet text — just the panel sized down. */
   content: attr(data-tip);
   position: absolute;
   bottom: calc(100% + 0.5rem);
   left: 50%;
   z-index: 30;
   padding: 0.45rem 0.8rem;
-  /* The panel's own radius would swallow a line this short, so it steps down
-     one notch and keeps the same proportions. */
   border-radius: var(--radius-sm);
   background: var(--color-surface-lowest);
   color: var(--color-ink-soft);
@@ -3139,7 +3134,6 @@ body {
   gap: 0.65rem;
   width: 16.25rem;
   max-width: calc(100vw - 2rem);
-  /* .hero centres its text. */
   text-align: left;
 }
 
@@ -3147,9 +3141,6 @@ body {
   .gen-pills-panel {
     position: absolute;
     top: 50%;
-    /* Wrapper is 40rem wide and centred, so its right edge sits at
-       50vw + 20rem. Pulling right by (50vw - 22rem) lands the panel 2rem
-       from the viewport edge while staying anchored to the input. */
     right: calc(22rem - 50vw);
     left: auto;
     bottom: auto;
