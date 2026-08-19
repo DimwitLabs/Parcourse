@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { toast } from "../components/Toast";
 import { apiFetch } from "../lib/api";
@@ -53,8 +53,12 @@ export default function QuizResultsScreen() {
   const navigate = useNavigate();
   const { token } = useAuth();
 
+  const [params] = useSearchParams();
+  const attemptId = params.get("attempt");
   const [data, setData] = useState<{ result: QuizResult; course: Course } | null>(
-    (location.state as { result: QuizResult; course: Course } | undefined) ?? null,
+    // An attempt asked for by name is never the one just submitted, so the
+    // state left behind by the submit is not what should be shown.
+    attemptId ? null : ((location.state as { result: QuizResult; course: Course } | undefined) ?? null),
   );
   const [notFound, setNotFound] = useState(false);
   const [markingDone, setMarkingDone] = useState(false);
@@ -63,12 +67,12 @@ export default function QuizResultsScreen() {
   useEffect(() => {
     if (data || !courseId) return;
     Promise.all([
-      apiFetch(`/quiz/attempts/${courseId}`, token),
+      apiFetch(attemptId ? `/quiz/attempt/${attemptId}` : `/quiz/attempts/${courseId}`, token),
       apiFetch(`/courses/${courseId}`, token),
     ])
       .then(([result, course]) => setData({ result, course }))
       .catch(() => setNotFound(true));
-  }, [data, courseId, token]);
+  }, [data, courseId, token, attemptId]);
 
   if (notFound) {
     return (

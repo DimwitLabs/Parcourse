@@ -14,7 +14,7 @@ from models.knowledge_graph import CourseKnowledgeNode, UserKnowledgeProgress
 from models.quiz_attempt import QuizAttempt
 from models.user import User
 from schemas.course import CourseResponse
-from schemas.quiz import QuizResultResponse, QuizSubmitRequest
+from schemas.quiz import QuizAttemptSummary, QuizResultResponse, QuizSubmitRequest
 from services.connection import NoConnectionError, resolve
 from services.quiz import score_submission
 
@@ -100,5 +100,38 @@ def get_latest_attempt(
     ).first()
     if attempt is None:
         logger.warning("[quiz]: no attempt found for course_id=%s", course_id)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No attempt found")
+    return QuizResultResponse.model_validate_json(attempt.result_json)
+
+
+@router.get("/attempts/{course_id}/history", response_model=list[QuizAttemptSummary])
+def list_attempts(
+    course_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> list[QuizAttemptSummary]:
+    """Newest first, because the last attempt is the one being looked for."""
+    logger.info("[quiz]: listing attempts for course_id=%s by user %s", course_id, user.id)
+    attempts = session.exec(
+        select(QuizAttempt)
+        .where(QuizAttempt.course_id == course_id, QuizAttempt.user_id == user.id)
+        .order_by(QuizAttempt.created_at.desc())
+    ).all()
+    return [QuizAttemptSummary.model_validate(a, from_attributes=True) for a in attempts]
+
+
+@router.get("/attempt/{attempt_id}", response_model=QuizResultResponse)
+def get_attempt(
+    attempt_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> QuizResultResponse:
+    """The owner is part of the lookup rather than a check after it, so somebody
+    else's attempt is not found rather than refused."""
+    attempt = session.exec(
+        select(QuizAttempt).where(QuizAttempt.id == attempt_id, QuizAttempt.user_id == user.id)
+    ).first()
+    if attempt is None:
+        logger.warning("[quiz]: attempt %s not found for user %s", attempt_id, user.id)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No attempt found")
     return QuizResultResponse.model_validate_json(attempt.result_json)

@@ -1,3 +1,5 @@
+import uuid
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel
@@ -34,6 +36,17 @@ class QuestionResult(BaseModel):
     max_score: float
     feedback: str
     breakdown: TheoryScoreBreakdown | None = None
+
+
+class QuizAttemptSummary(BaseModel):
+    """One row of the history: enough to compare attempts, without the weight of
+    every question and its feedback."""
+
+    id: uuid.UUID
+    total_score: float
+    max_score: float
+    percentage: float
+    created_at: datetime
 
 
 class QuizResultResponse(BaseModel):
