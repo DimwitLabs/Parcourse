@@ -118,3 +118,4 @@ class CourseListEntry(BaseModel):
     sections: list[CourseSectionPublic]
     completed_sections: list[int] = []
     has_passed_quiz: bool = False
+    has_attempts: bool = False

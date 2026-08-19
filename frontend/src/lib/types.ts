@@ -8,4 +8,5 @@ export type CourseEntry = {
   sections: { title: string }[];
   completed_sections: number[];
   has_passed_quiz: boolean;
+  has_attempts: boolean;
 };

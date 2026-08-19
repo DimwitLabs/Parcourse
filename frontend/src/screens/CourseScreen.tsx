@@ -44,6 +44,7 @@ export default function CourseScreen() {
   const [mcqAnswers, setMcqAnswers] = useState<Record<string, string>>({});
   const [theoryAnswers, setTheoryAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [hasAttempts, setHasAttempts] = useState(false);
   const [showSkipModal, setShowSkipModal] = useState(false);
   const [courseAction, setCourseAction] = useState<CourseAction | null>(null);
   const [doneSections, setDoneSections] = useState<Set<number>>(new Set());
@@ -67,6 +68,13 @@ export default function CourseScreen() {
     apiFetch(`/courses/${courseId}/progress`, token)
       .then((indices: number[]) => {
         if (!ignore) setDoneSections(new Set(indices));
+      })
+      .catch(() => {});
+    apiFetch(`/quiz/attempts/${courseId}/history`, token)
+      .then((history: unknown[]) => {
+        // Nothing to look back on before the first submission, and a button
+        // that leads to an empty page is worse than no button.
+        if (!ignore) setHasAttempts(history.length > 0);
       })
       .catch(() => {});
     apiFetch(`/courses/${courseId}/draft`, token)
@@ -247,6 +255,11 @@ export default function CourseScreen() {
           </div>
 
           <div className="sidebar-actions">
+            {hasAttempts && (
+              <button className="icon-btn" onClick={() => navigate(`/course/${courseId}/history`)} title="Quiz history">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 14"/></svg>
+              </button>
+            )}
             <button className="icon-btn" onClick={() => setCourseAction("regenerate")} title="Regenerate course">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
             </button>

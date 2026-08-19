@@ -117,6 +117,8 @@ def list_courses(
             **pub.model_dump(),
             completed_sections=sorted(completed),
             has_passed_quiz=has_passed,
+            # A course with no attempt has no history to open.
+            has_attempts=row.id in quiz_map,
         ))
     return results
 

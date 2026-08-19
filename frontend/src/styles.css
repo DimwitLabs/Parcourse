@@ -3650,3 +3650,107 @@ a.modal-field-hint {
   gap: 0.75rem;
 }
 
+.attempt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.attempt-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+  border: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  /* The corners are a full pill, so text set flush to 1.5rem reads as if it is
+     leaning on the curve. */
+  padding: 1.25rem 1.75rem;
+}
+
+.attempt-row:hover {
+  box-shadow: var(--shadow-lift);
+}
+
+.attempt-back {
+  justify-content: center;
+  gap: 0.6rem;
+  background: var(--color-surface-high);
+  box-shadow: none;
+  color: var(--color-ink-soft);
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.attempt-back:hover {
+  color: var(--color-primary);
+  box-shadow: var(--shadow-lift);
+}
+
+.attempt-score {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+  min-width: 4rem;
+}
+
+.attempt-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.attempt-meta {
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+}
+
+.attempt-tags {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.attempt-badge.mastery {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--color-primary);
+  color: white;
+}
+
+.attempt-arrow {
+  flex-shrink: 0;
+  color: var(--color-ink-faint);
+  transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.attempt-row:hover .attempt-arrow {
+  color: var(--color-primary);
+  transform: translateX(0.25rem);
+}
+
+.attempt-points {
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+/* The same tag the model select puts on a recommendation. */
+.attempt-badge {
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-full);
+  background: var(--color-secondary-container);
+  color: var(--color-primary);
+}

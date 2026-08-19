@@ -10,6 +10,7 @@ import HomeScreen from "./screens/HomeScreen";
 import KnowledgeGraphScreen from "./screens/KnowledgeGraphScreen";
 import LoginScreen from "./screens/LoginScreen";
 import NotebookScreen from "./screens/NotebookScreen";
+import QuizHistoryScreen from "./screens/QuizHistoryScreen";
 import QuizResultsScreen from "./screens/QuizResultsScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import SetupScreen from "./screens/SetupScreen";
@@ -44,6 +45,7 @@ function RootRouter() {
         <Route path="/notebook" element={<NotebookScreen />} />
         <Route path="/course/:courseId" element={<CourseScreen />} />
         <Route path="/course/:courseId/results" element={<QuizResultsScreen />} />
+        <Route path="/course/:courseId/history" element={<QuizHistoryScreen />} />
         <Route path="/graph" element={<KnowledgeGraphScreen />} />
         <Route path="/settings" element={<SettingsScreen />} />
         <Route

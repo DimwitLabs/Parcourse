@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import CourseActionModal from "../components/CourseActionModal";
 import { apiFetch, errMsg } from "../lib/api";
@@ -9,6 +9,7 @@ import type { CourseEntry } from "../lib/types";
 type ModalAction = { course: CourseEntry; type: "delete" | "regenerate" };
 
 export default function NotebookScreen() {
+  const navigate = useNavigate();
   const { token } = useAuth();
   const [courses, setCourses] = useState<CourseEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -124,6 +125,11 @@ export default function NotebookScreen() {
                   </svg>
                 )}
               </button>
+              {c.has_attempts && (
+                <button className="icon-btn" onClick={() => navigate(`/course/${c.id}/history`)} title="Quiz history">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 14"/></svg>
+                </button>
+              )}
               <button className="icon-btn" onClick={() => setModal({ course: c, type: "regenerate" })} title="Regenerate course">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
               </button>
