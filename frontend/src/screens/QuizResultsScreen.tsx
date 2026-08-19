@@ -4,7 +4,7 @@ import { useLocation, useNavigate, useParams, useSearchParams } from "react-rout
 import { toast } from "../components/Toast";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import { shownScore } from "../lib/score";
+import { MASTERY_PCT, shownScore } from "../lib/score";
 
 type Breakdown = { accuracy: number; completeness: number; relevance: number; feedback: string };
 type QuestionResult = {
@@ -33,14 +33,14 @@ type Course = {
 };
 
 function headline(pct: number): string {
-  if (pct >= 90) return "Outstanding work!";
+  if (pct >= MASTERY_PCT) return "Outstanding work!";
   if (pct >= 70) return "Great job! You've mastered the basics.";
   if (pct >= 40) return "Good start, some gaps remain.";
   return "Let's revisit the fundamentals.";
 }
 
 function subtitle(pct: number): string {
-  if (pct >= 90) return "You have a deep understanding of the material. Keep pushing forward!";
+  if (pct >= MASTERY_PCT) return "You have a deep understanding of the material. Keep pushing forward!";
   if (pct >= 70) return "You have a strong grasp of the core concepts. A few more sessions and you'll be an expert!";
   if (pct >= 40) return "You're getting there. Review the sections you found tricky and try again.";
   return "Don't worry, re-watch the course sections and give it another shot.";
@@ -48,6 +48,8 @@ function subtitle(pct: number): string {
 
 const CIRCUMFERENCE = 2 * Math.PI * 48;
 const SWEEP_MS = 1100;
+// The tick has finished drawing by now, which is the moment the news lands.
+const TICK_MS = 620;
 
 export default function QuizResultsScreen() {
   const { courseId } = useParams();
@@ -65,6 +67,7 @@ export default function QuizResultsScreen() {
   const [notFound, setNotFound] = useState(false);
   const [markingDone, setMarkingDone] = useState(false);
   const [allDone, setAllDone] = useState(false);
+  const [celebrating, setCelebrating] = useState(false);
 
   useEffect(() => {
     if (data || !courseId) return;
@@ -76,9 +79,25 @@ export default function QuizResultsScreen() {
       .catch(() => setNotFound(true));
   }, [data, courseId, token, attemptId]);
 
+  useEffect(() => {
+    // The button below claims to know whether the course is finished, so it
+    // asks rather than assuming it is looking at a course nobody has marked.
+    if (!courseId || !data) return;
+    let ignore = false;
+    apiFetch(`/courses/${courseId}/progress`, token)
+      .then((indices: number[]) => {
+        const sections = data.course.sections.length;
+        if (!ignore && sections > 0 && indices.length >= sections) setAllDone(true);
+      })
+      .catch(() => {});
+    return () => {
+      ignore = true;
+    };
+  }, [courseId, data, token]);
+
+  const ringRef = useRef<SVGCircleElement>(null);
   // The ring reads off the score on screen rather than the stored percentage,
   // so the number in the middle and the arc around it can never disagree.
-  const ringRef = useRef<SVGCircleElement>(null);
   const shown = data ? shownScore({ total: data.result.total_score, max: data.result.max_score }) : null;
   const percentage = shown?.percentage ?? 0;
 
@@ -94,6 +113,37 @@ export default function QuizResultsScreen() {
       easing: "cubic-bezier(0.16, 1, 0.3, 1)",
     });
   }, [percentage]);
+
+  useEffect(() => {
+    // A mastery score means the course has been learned, so it marks itself
+    // done — but only once the ring has finished filling, because the
+    // celebration is the end of that sweep rather than a separate event.
+    // Reading an old attempt out of the history is not earning it again, so
+    // that view watches the ring fill and nothing more.
+    if (attemptId || percentage < MASTERY_PCT || !courseId || !data || allDone) return;
+    let live = true;
+    const timers = [
+      setTimeout(() => {
+        if (!live) return;
+        setCelebrating(true);
+        Promise.all(
+          data.course.sections.map((_, i) =>
+            apiFetch(`/courses/${courseId}/progress/${i}`, token, { method: "POST" }),
+          ),
+        )
+          .then(() => live && setAllDone(true))
+          .catch(() => live && toast("Couldn't mark the course as completed.", "error"));
+      }, SWEEP_MS),
+      setTimeout(() => live && toast("Course marked as completed!", "success"), SWEEP_MS + TICK_MS),
+    ];
+    return () => {
+      live = false;
+      timers.forEach(clearTimeout);
+    };
+    // allDone is deliberately absent: it flips inside this effect, and reacting
+    // to it would cancel the celebration halfway through.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [percentage, courseId, data, token, attemptId]);
 
   if (notFound) {
     return (
@@ -160,6 +210,14 @@ export default function QuizResultsScreen() {
               </span>
               <span className="score-ring-sub">SCORE</span>
             </div>
+            {celebrating && (
+              <div className="score-complete">
+                <svg className="score-complete-tick" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+            )}
           </div>
         </div>
         <h1 className="results-headline">{headline(pct)}</h1>
@@ -315,6 +373,17 @@ export default function QuizResultsScreen() {
               </>
             )}
           </button>
+
+          {/* Only when this page was reached from the history, because that is
+              the only time there is a list to go back to. */}
+          {attemptId && (
+            <button className="retake-btn" onClick={() => navigate(`/course/${courseId}/history`)}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+              </svg>
+              Back to Quiz History
+            </button>
+          )}
 
           <button className="retake-btn" onClick={() => navigate(`/course/${courseId}`)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -2562,6 +2562,47 @@ body {
   transition: stroke-dashoffset 0.8s ease;
 }
 
+.score-complete {
+  position: absolute;
+  /* Sits inside the ring, so the filled ring stays visible around it. */
+  inset: 0.55rem;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: white;
+  pointer-events: none;
+  animation:
+    score-complete-in 420ms cubic-bezier(0.34, 1.4, 0.64, 1) both,
+    score-complete-out 600ms ease-in 1500ms forwards;
+}
+
+@keyframes score-complete-in {
+  from { opacity: 0; transform: scale(0.2); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes score-complete-out {
+  to { opacity: 0; transform: scale(1.6); }
+}
+
+.score-complete-tick {
+  width: 45%;
+  height: 45%;
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: score-tick-draw 380ms ease-out 200ms forwards;
+}
+
+@keyframes score-tick-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .score-complete { animation: score-complete-out 400ms ease-in 1500ms forwards; }
+  .score-complete-tick { animation: none; stroke-dashoffset: 0; }
+}
+
 .score-ring-label {
   position: absolute;
   inset: 0;
