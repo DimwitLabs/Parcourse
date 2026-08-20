@@ -71,6 +71,19 @@ body {
     width: 100%;
 }
 
+.container::before {
+    content: "";
+    position: absolute;
+    inset: -2rem -4rem;
+    z-index: -1;
+    background: radial-gradient(
+        ellipse 60% 80% at 50% 45%,
+        var(--color-paper) 40%,
+        transparent 100%
+    );
+    pointer-events: none;
+}
+
 .wordmark {
     height: 3.25rem;
     width: auto;
