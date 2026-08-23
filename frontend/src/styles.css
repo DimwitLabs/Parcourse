@@ -4386,7 +4386,7 @@ a.modal-field-hint {
 
 .cheatsheet-waiting {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 1rem;
 }
 
@@ -4530,4 +4530,137 @@ a.modal-field-hint {
 .graph-tooltip-forget:disabled {
   cursor: default;
   opacity: 0.6;
+}
+
+.cheatsheet-export {
+  position: fixed;
+  left: -20000px;
+  top: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  padding: 3.5rem 3.5rem 2.5rem;
+  font-family: inherit;
+}
+
+.cheatsheet-export-masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.cheatsheet-export-logo {
+  height: 2.25rem;
+  display: block;
+}
+
+.cheatsheet-export-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--color-primary);
+}
+
+.cheatsheet-export-course {
+  margin: 2rem 0 0;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.cheatsheet-export-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+  margin-top: 2.5rem;
+}
+
+.cheatsheet-export-section {
+  background: var(--color-surface-lowest);
+  border-radius: 1.75rem;
+  padding: 1.75rem 2rem;
+  break-inside: avoid;
+}
+
+.cheatsheet-export-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+}
+
+.cheatsheet-export-num {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  align-self: flex-start;
+  border-radius: var(--radius-full);
+  background: var(--color-secondary-container);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.cheatsheet-export-title {
+  margin: 0;
+  flex: 1;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.cheatsheet-export-stamp {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary);
+  background: var(--color-secondary-container);
+  border-radius: var(--radius-full);
+  padding: 0.2rem 0.7rem;
+}
+
+.cheatsheet-export-points {
+  list-style: none;
+  margin: 1.25rem 0 0 2.6rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.cheatsheet-export-points li {
+  position: relative;
+  padding-left: 1.5rem;
+  font-size: 1.02rem;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--color-ink);
+}
+
+.cheatsheet-export-points li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--color-tertiary);
+}
+
+.cheatsheet-export-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-ink-faint);
 }

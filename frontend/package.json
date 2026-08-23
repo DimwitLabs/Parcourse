@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@zumer/snapdom": "^2.24.7",
     "d3-drag": "^3.0.0",
     "d3-force": "^3.0.0",
     "jspdf": "^4.2.1",
