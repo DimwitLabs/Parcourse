@@ -4,13 +4,14 @@ import {
   forceManyBody,
   forceSimulation,
 } from "d3-force";
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { withLightPalette } from "../lib/palette";
 import { useAuth } from "../lib/auth";
+import { useEscapeKey } from "../lib/useEscapeKey";
 import { gravatarUrl, userInitials } from "../lib/gravatar";
 import type { NamedUser } from "../lib/gravatar";
 
@@ -312,10 +313,37 @@ export default function KnowledgeGraphScreen() {
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [tooltip, setTooltip] = useState<{ node: Node; x: number; y: number; pinned: boolean } | null>(null);
   const [forgetting, setForgetting] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState<Node | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const [simData, setSimData] = useState<{ nodes: SimNode[]; edges: SimEdge[] } | null>(null);
   const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
   const simInstanceRef = useRef<LiveSim | null>(null);
+
+  useEscapeKey(!!confirming, () => { if (!forgetting) setConfirming(null); });
+
+  const stackRef = useRef<HTMLDivElement>(null);
+  const [placed, setPlaced] = useState<{ left: number; top: number } | null>(null);
+
+  // Pinning grows the card by a row, which near an edge would push that row off
+  // the screen, so the card moves to where it fits instead.
+  useLayoutEffect(() => {
+    if (!tooltip) {
+      setPlaced(null);
+      return;
+    }
+    const stack = stackRef.current;
+    if (!stack) return;
+    const { width, height } = stack.getBoundingClientRect();
+    const margin = 12;
+    let left = tooltip.x + 20;
+    let top = tooltip.y + 16;
+    if (left + width > window.innerWidth - margin) left = tooltip.x - 20 - width;
+    if (top + height > window.innerHeight - margin) top = tooltip.y - 16 - height;
+    setPlaced({
+      left: Math.max(margin, Math.min(left, window.innerWidth - width - margin)),
+      top: Math.max(margin, Math.min(top, window.innerHeight - height - margin)),
+    });
+  }, [tooltip]);
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -335,20 +363,68 @@ export default function KnowledgeGraphScreen() {
       .catch((err) => setError(String(err.message ?? err)));
   }, [token, viewingUserId, user]);
 
+  // What the server will take with it, so the warning can name it beforehand.
+  // Mirrors _falling in backend/routers/knowledge_graph.py.
+  function falling(node: Node): Node[] {
+    if (!graph) return [];
+    const parents = new Map<string, Set<string>>();
+    const children = new Map<string, Set<string>>();
+    for (const edge of graph.edges) {
+      if (edge.edge_type !== "belongs_to") continue;
+      parents.set(edge.source_id, (parents.get(edge.source_id) ?? new Set()).add(edge.target_id));
+      children.set(edge.target_id, (children.get(edge.target_id) ?? new Set()).add(edge.source_id));
+    }
+
+    const going = new Set([node.id]);
+    let frontier = [node.id];
+    while (frontier.length > 0) {
+      const below: string[] = [];
+      for (const above of frontier) {
+        for (const child of children.get(above) ?? []) {
+          if (going.has(child)) continue;
+          going.add(child);
+          below.push(child);
+        }
+      }
+      frontier = below;
+    }
+
+    for (let spared = true; spared; ) {
+      spared = false;
+      for (const candidate of going) {
+        if (candidate === node.id) continue;
+        const held = [...(parents.get(candidate) ?? [])].some((parent) => !going.has(parent));
+        if (held) {
+          going.delete(candidate);
+          spared = true;
+          break;
+        }
+      }
+    }
+    return graph.nodes.filter((n) => going.has(n.id));
+  }
+
   async function forget(node: Node) {
     setForgetting(node.id);
     try {
-      await apiFetch(`/knowledge-graph/nodes/${node.id}`, token, { method: "DELETE" });
+      const { forgotten } = await apiFetch(`/knowledge-graph/nodes/${node.id}`, token, { method: "DELETE" });
+      const gone = new Set<string>(forgotten);
       setGraph((current) =>
         current
           ? {
-              nodes: current.nodes.filter((n) => n.id !== node.id),
-              edges: current.edges.filter((e) => e.source_id !== node.id && e.target_id !== node.id),
+              nodes: current.nodes.filter((n) => !gone.has(n.id)),
+              edges: current.edges.filter((e) => !gone.has(e.source_id) && !gone.has(e.target_id)),
             }
           : current,
       );
+      setConfirming(null);
       setTooltip(null);
-      toast(`${node.label} was removed from your graph.`, "success");
+      toast(
+        gone.size > 1
+          ? `${node.label} and ${gone.size - 1} concept${gone.size === 2 ? "" : "s"} under it were removed from your graph.`
+          : `${node.label} was removed from your graph.`,
+        "success",
+      );
     } catch (err) {
       toast(errMsg(err), "error");
     } finally {
@@ -727,8 +803,9 @@ export default function KnowledgeGraphScreen() {
 
       {tooltip && (
         <div
+          ref={stackRef}
           className={`graph-tooltip-stack${tooltip.pinned ? " pinned" : ""}`}
-          style={{ left: tooltip.x + 20, top: tooltip.y + 16 }}
+          style={placed ?? { left: tooltip.x + 20, top: tooltip.y + 16 }}
           onMouseEnter={() => { if (!tooltip.pinned) setTooltip(null); }}
         >
           <div className={`graph-tooltip${tooltip.pinned ? " pinned" : ""}`}>
@@ -755,10 +832,10 @@ export default function KnowledgeGraphScreen() {
             </div>
           )}
           </div>
-          {tooltip.pinned && tooltip.node.tier !== "you" && (
+          {tooltip.pinned && tooltip.node.tier !== "you" && !viewingUserId && (
             <button
               className="graph-tooltip-forget"
-              onClick={() => forget(tooltip.node)}
+              onClick={() => setConfirming(tooltip.node)}
               disabled={forgetting === tooltip.node.id}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -772,6 +849,43 @@ export default function KnowledgeGraphScreen() {
           )}
         </div>
       )}
+
+      {confirming && (() => {
+        const going = falling(confirming);
+        const others = going.filter((n) => n.id !== confirming.id);
+        return (
+          <div className="modal-overlay" onClick={() => !forgetting && setConfirming(null)}>
+            <div className="modal-card card" onClick={(e) => e.stopPropagation()}>
+              <h2 className="graph-confirm-title">Forget {confirming.label}?</h2>
+              <p className="graph-confirm-body">
+                {others.length === 0
+                  ? "This drops the concept from your graph. It comes back if another course teaches it."
+                  : others.length === 1
+                    ? "One other concept belongs to this one and to nothing else, so it goes too:"
+                    : `${others.length} other concepts belong to this one and to nothing else, so they go too:`}
+              </p>
+              {others.length > 0 && (
+                <ul className="graph-confirm-list">
+                  {others.map((n) => (
+                    <li key={n.id}>
+                      {n.label}
+                      <span className="graph-confirm-tier">{n.tier}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div className="graph-confirm-actions">
+                <button className="button secondary" onClick={() => setConfirming(null)} disabled={!!forgetting}>
+                  {others.length === 0 ? "Keep it" : "Keep them"}
+                </button>
+                <button className="button danger" onClick={() => forget(confirming)} disabled={!!forgetting}>
+                  {forgetting ? "Forgetting…" : others.length === 0 ? "Forget it" : "Forget them"}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

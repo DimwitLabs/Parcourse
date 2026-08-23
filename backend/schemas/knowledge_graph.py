@@ -43,3 +43,7 @@ class EdgeOut(BaseModel):
 class KnowledgeGraphResponse(BaseModel):
     nodes: list[NodeOut]
     edges: list[EdgeOut]
+
+
+class ForgottenNodes(BaseModel):
+    forgotten: list[str]

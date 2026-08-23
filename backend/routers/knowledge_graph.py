@@ -7,9 +7,9 @@ from sqlmodel import Session, select
 from database import get_session
 from dependencies import get_current_user, require_admin
 from models.course_cache import CachedCourse
-from models.knowledge_graph import CourseKnowledgeNode, KnowledgeEdge, KnowledgeNode, UserKnowledgeProgress
+from models.knowledge_graph import CourseKnowledgeNode, EdgeType, KnowledgeEdge, KnowledgeNode, UserKnowledgeProgress
 from models.user import User
-from schemas.knowledge_graph import CourseRef, EdgeOut, KnowledgeGraphResponse, NodeOut
+from schemas.knowledge_graph import CourseRef, EdgeOut, ForgottenNodes, KnowledgeGraphResponse, NodeOut
 
 router = APIRouter(prefix="/knowledge-graph", tags=["knowledge-graph"])
 
@@ -91,21 +91,57 @@ def get_user_knowledge_graph(
     return _build_graph(session, target.id)
 
 
-@router.delete("/nodes/{node_id}", status_code=status.HTTP_204_NO_CONTENT)
+def _falling(session: Session, node_id: uuid.UUID, owned: set[uuid.UUID]) -> set[uuid.UUID]:
+    """This concept, plus everything that only reaches the graph through it. A
+    concept that also belongs to one being kept stays where it is."""
+    edges = session.exec(
+        select(KnowledgeEdge).where(
+            KnowledgeEdge.source_id.in_(owned),
+            KnowledgeEdge.target_id.in_(owned),
+            KnowledgeEdge.edge_type == EdgeType.belongs_to,
+        )
+    ).all()
+    parents: dict[uuid.UUID, set[uuid.UUID]] = {}
+    children: dict[uuid.UUID, set[uuid.UUID]] = {}
+    for edge in edges:
+        parents.setdefault(edge.source_id, set()).add(edge.target_id)
+        children.setdefault(edge.target_id, set()).add(edge.source_id)
+
+    falling = {node_id}
+    frontier = {node_id}
+    while frontier:
+        below = set().union(*(children.get(n, set()) for n in frontier))
+        frontier = below - falling
+        falling |= frontier
+
+    spared = True
+    while spared:
+        spared = False
+        for candidate in falling - {node_id}:
+            if parents.get(candidate, set()) - falling:
+                falling.discard(candidate)
+                spared = True
+                break
+    return falling
+
+
+@router.delete("/nodes/{node_id}", response_model=ForgottenNodes)
 def forget_node(
     node_id: uuid.UUID,
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
-) -> None:
+) -> ForgottenNodes:
     """Drops one concept from this user's graph. The node itself is shared with
     everyone else who has met it, so only their claim on it goes."""
-    progress = session.exec(
-        select(UserKnowledgeProgress).where(
-            UserKnowledgeProgress.user_id == user.id,
-            UserKnowledgeProgress.node_id == node_id,
-        )
-    ).first()
-    if progress is None:
+    progress_rows = session.exec(
+        select(UserKnowledgeProgress).where(UserKnowledgeProgress.user_id == user.id)
+    ).all()
+    by_node = {p.node_id: p for p in progress_rows}
+    if node_id not in by_node:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Concept not found")
-    session.delete(progress)
+
+    falling = _falling(session, node_id, set(by_node))
+    for lost in falling:
+        session.delete(by_node[lost])
     session.commit()
+    return ForgottenNodes(forgotten=[str(lost) for lost in falling])

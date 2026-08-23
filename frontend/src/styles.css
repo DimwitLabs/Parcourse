@@ -4443,6 +4443,54 @@ a.modal-field-hint {
   pointer-events: auto;
 }
 
+.graph-confirm-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.graph-confirm-body {
+  margin: 0 0 1rem;
+  color: var(--color-ink-soft);
+}
+
+.graph-confirm-list {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 12rem;
+  overflow-y: auto;
+  background: var(--color-surface-low);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.graph-confirm-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.graph-confirm-tier {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-ink-faint);
+}
+
+.graph-confirm-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
 .graph-tooltip-forget {
   display: flex;
   align-items: center;
