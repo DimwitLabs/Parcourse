@@ -172,6 +172,7 @@ def list_courses(
             # A course with no attempt has no history to open.
             has_attempts=row.id in quiz_map,
             cheatsheet_status=sheet_map.get(row.id, SheetStatus.pending).value,
+            created_at=row.created_at,
         ))
     return results
 

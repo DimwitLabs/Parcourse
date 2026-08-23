@@ -12,4 +12,5 @@ export type CourseEntry = {
   has_passed_quiz: boolean;
   has_attempts: boolean;
   cheatsheet_status: SheetStatus;
+  created_at: string | null;
 };

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 from schemas.transcript import TranscriptSegment
@@ -120,6 +122,7 @@ class CourseListEntry(BaseModel):
     has_passed_quiz: bool = False
     has_attempts: bool = False
     cheatsheet_status: str = "pending"
+    created_at: datetime | None = None
 
 
 class CheatsheetSection(BaseModel):
