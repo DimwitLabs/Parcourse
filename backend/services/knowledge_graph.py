@@ -113,3 +113,55 @@ def extract_and_merge(
 
     session.commit()
     logger.info("[knowledge_graph]: merged %d nodes and %d edges for course %s", len(extraction.nodes), len(extraction.edges), course_id)
+
+
+def ancestors(session: Session, nodes: set[uuid.UUID]) -> set[uuid.UUID]:
+    """Everything the given concepts hang from. A skill outlives its course when
+    another one teaches it, and removing the topic it belongs to would leave it
+    floating with nothing to join it to the rest."""
+    reached = set(nodes)
+    frontier = set(nodes)
+    while frontier:
+        above = session.exec(
+            select(KnowledgeEdge.target_id).where(
+                KnowledgeEdge.source_id.in_(frontier),
+                KnowledgeEdge.edge_type == EdgeType.belongs_to,
+            )
+        ).all()
+        frontier = set(above) - reached
+        reached |= frontier
+    return reached
+
+
+def falling(session: Session, node_id: uuid.UUID, owned: set[uuid.UUID]) -> set[uuid.UUID]:
+    """This concept, plus everything that only reaches the graph through it. A
+    concept that also belongs to one being kept stays where it is."""
+    edges = session.exec(
+        select(KnowledgeEdge).where(
+            KnowledgeEdge.source_id.in_(owned),
+            KnowledgeEdge.target_id.in_(owned),
+            KnowledgeEdge.edge_type == EdgeType.belongs_to,
+        )
+    ).all()
+    parents: dict[uuid.UUID, set[uuid.UUID]] = {}
+    children: dict[uuid.UUID, set[uuid.UUID]] = {}
+    for edge in edges:
+        parents.setdefault(edge.source_id, set()).add(edge.target_id)
+        children.setdefault(edge.target_id, set()).add(edge.source_id)
+
+    going = {node_id}
+    frontier = {node_id}
+    while frontier:
+        below = set().union(*(children.get(n, set()) for n in frontier))
+        frontier = below - going
+        going |= frontier
+
+    spared = True
+    while spared:
+        spared = False
+        for candidate in going - {node_id}:
+            if parents.get(candidate, set()) - going:
+                going.discard(candidate)
+                spared = True
+                break
+    return going

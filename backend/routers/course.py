@@ -27,7 +27,7 @@ from schemas.course import (
 from services import cheatsheet
 from services.connection import NoConnectionError, resolve
 from services.course import generate
-from services.knowledge_graph import extract_and_merge
+from services.knowledge_graph import ancestors, extract_and_merge
 
 logger = logging.getLogger(__name__)
 
@@ -192,24 +192,6 @@ def get_course(
     return CourseResponsePublic.from_full(course, id=str(cached.id))
 
 
-def _keeping(session: Session, surviving: set[uuid.UUID]) -> set[uuid.UUID]:
-    """Everything a surviving concept still hangs from. A skill outlives its
-    course when another one teaches it, and removing the topic it belongs to
-    would leave it floating with nothing to join it to the rest."""
-    keeping = set(surviving)
-    frontier = set(surviving)
-    while frontier:
-        parents = session.exec(
-            select(KnowledgeEdge.target_id).where(
-                KnowledgeEdge.source_id.in_(frontier),
-                KnowledgeEdge.edge_type == EdgeType.belongs_to,
-            )
-        ).all()
-        frontier = set(parents) - keeping
-        keeping |= frontier
-    return keeping
-
-
 @router.delete("/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_course(
     course_id: uuid.UUID,
@@ -248,7 +230,7 @@ def delete_course(
                 select(UserKnowledgeProgress).where(UserKnowledgeProgress.user_id == user.id)
             ).all()
         }
-        for node_id in losing - _keeping(session, set(owned) - losing):
+        for node_id in losing - ancestors(session, set(owned) - losing):
             progress = owned.get(node_id)
             if progress is not None:
                 session.delete(progress)
