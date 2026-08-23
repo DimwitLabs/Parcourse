@@ -3218,7 +3218,8 @@ body {
   cursor: help;
 }
 
-button.tip {
+button.tip,
+a.tip {
   cursor: pointer;
 }
 
@@ -4405,28 +4406,59 @@ a.modal-field-hint {
 
 .cheatsheet-cta {
   text-decoration: none;
-  align-self: flex-start;
   gap: 0.6rem;
 }
 
-.cheatsheet-cta-state {
-  font-size: 0.68rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.15rem 0.5rem;
-  border-radius: var(--radius-full);
-  background: var(--color-secondary-container);
-  color: var(--color-primary);
+.cheatsheet-sidebar {
+  margin-top: 1rem;
 }
 
-.cheatsheet-cta.waiting .cheatsheet-cta-state,
+.cheatsheet-sidebar .cheatsheet-cta {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.cheatsheet-cta.disabled,
+.retake-btn.disabled {
+  cursor: default;
+}
+
+.cheatsheet-cta.disabled > *,
+.retake-btn.disabled > * {
+  opacity: 0.5;
+}
+
+.cheatsheet-bar-mobile {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .cheatsheet-bar-mobile {
+    display: block;
+  }
+
+  .cheatsheet-bar-mobile .cheatsheet-cta {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 1.5rem 1.75rem;
+    border-radius: var(--radius-xl);
+  }
+}
+
+.cheatsheet-cta-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cheatsheet-cta-download {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .icon-btn.waiting {
   color: var(--color-ink-faint);
-}
-
-.retake-btn .cheatsheet-cta-state {
-  margin-left: auto;
 }
 
 .graph-tooltip-stack {

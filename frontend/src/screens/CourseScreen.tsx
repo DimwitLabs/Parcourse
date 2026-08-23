@@ -11,6 +11,12 @@ import { shownScore } from "../lib/score";
 import { useEscapeKey } from "../lib/useEscapeKey";
 
 
+const CHEATSHEET_CAPTION: Record<SheetStatus, string> = {
+  pending: "Your cheatsheet will be ready soon",
+  ready: "Your cheatsheet is ready",
+  failed: "Your cheatsheet could not be written",
+};
+
 const CHEATSHEET_HINT: Record<SheetStatus, string> = {
   pending: "Your cheatsheet is being written",
   ready: "Your cheatsheet is ready",
@@ -87,11 +93,6 @@ export default function CourseScreen() {
         if (!ignore) setLastAttempt(history[0] ?? null);
       })
       .catch(() => {});
-    apiFetch(`/courses/${courseId}/cheatsheet`, token)
-      .then((sheet: { status: SheetStatus }) => {
-        if (!ignore) setSheetStatus(sheet.status);
-      })
-      .catch(() => {});
     apiFetch(`/courses/${courseId}/draft`, token)
       .then((draft: { mcq_answers: Record<string, string>; theory_answers: Record<string, string> }) => {
         if (ignore) return;
@@ -103,6 +104,34 @@ export default function CourseScreen() {
       ignore = true;
     };
   }, [courseId, token, navigate]);
+
+  // The sheet is written after the course is, so the button has to find out
+  // for itself rather than waiting to be opened.
+  useEffect(() => {
+    if (!courseId) return;
+    let ignore = false;
+    let timer = 0;
+
+    function check() {
+      apiFetch(`/courses/${courseId}/cheatsheet`, token)
+        .then((sheet: { status: SheetStatus }) => {
+          if (ignore) return;
+          setSheetStatus(sheet.status);
+          if (sheet.status === "pending") timer = window.setTimeout(check, 5000);
+        })
+        .catch(() => {
+          // A blip must not leave the button spinning for good, so the next
+          // attempt is scheduled either way.
+          if (!ignore) timer = window.setTimeout(check, 5000);
+        });
+    }
+
+    check();
+    return () => {
+      ignore = true;
+      window.clearTimeout(timer);
+    };
+  }, [courseId, token]);
 
   useEffect(() => {
     if (!course) return;
@@ -252,6 +281,54 @@ export default function CourseScreen() {
     }, 50);
   }
 
+  const sheetIcon = (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="16" y2="7"/><line x1="9" y1="11" x2="16" y2="11"/></svg>
+  );
+
+  const sheetReady = sheetStatus !== "pending";
+
+  const sheetLeading = sheetStatus === "pending" ? <span className="gen-pill-spinner" /> : sheetIcon;
+
+  const downloadIcon = (
+    <svg className="cheatsheet-cta-download" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  );
+
+  const sidebarInner = (
+    <>
+      {sheetLeading}
+      <span className="cheatsheet-cta-label">Cheatsheet</span>
+      {downloadIcon}
+    </>
+  );
+
+  const cheatsheetSidebar = sheetReady ? (
+    <Link
+      className="button secondary cheatsheet-cta tip"
+      data-tip={CHEATSHEET_HINT[sheetStatus]}
+      to={`/course/${courseId}/cheatsheet`}
+    >
+      {sidebarInner}
+    </Link>
+  ) : (
+    <span className="button secondary cheatsheet-cta tip disabled" data-tip={CHEATSHEET_HINT[sheetStatus]} aria-disabled="true">
+      {sidebarInner}
+    </span>
+  );
+
+  const barInner = (
+    <>
+      {sheetLeading}
+      <span className="cheatsheet-cta-label">{CHEATSHEET_CAPTION[sheetStatus]}</span>
+      {downloadIcon}
+    </>
+  );
+
+  const cheatsheetBar = sheetReady ? (
+    <Link className="button secondary cheatsheet-cta" to={`/course/${courseId}/cheatsheet`}>{barInner}</Link>
+  ) : (
+    <span className="button secondary cheatsheet-cta disabled" aria-disabled="true">{barInner}</span>
+  );
+
   // The sidebar is gone below 860px, so these travel with the quiz instead of
   // disappearing along with it.
   const courseActions = (
@@ -287,6 +364,8 @@ export default function CourseScreen() {
               </button>
             ))}
           </div>
+
+          <div className="cheatsheet-sidebar">{cheatsheetSidebar}</div>
 
           <div className={`quiz-sidebar-box${barVisible ? " fading" : ""}`} ref={quizBoxRef}>
             {lastAttempt ? (
@@ -403,17 +482,7 @@ export default function CourseScreen() {
             );
           })}
 
-          <Link
-            className={`button secondary cheatsheet-cta tip${sheetStatus === "pending" ? " waiting" : ""}`}
-            data-tip={CHEATSHEET_HINT[sheetStatus]}
-            to={`/course/${courseId}/cheatsheet`}
-          >
-            {sheetStatus === "pending"
-              ? <span className="gen-pill-spinner" />
-              : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="16" y2="7"/><line x1="9" y1="11" x2="16" y2="11"/></svg>}
-            Cheatsheet
-            <span className="cheatsheet-cta-state">{sheetStatus === "ready" ? "Ready" : sheetStatus === "pending" ? "Writing" : "Retry"}</span>
-          </Link>
+          <div className="cheatsheet-bar-mobile">{cheatsheetBar}</div>
 
           <div className="submit-bar card" ref={submitBarRef}>
             {lastAttempt ? (
