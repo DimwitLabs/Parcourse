@@ -4,6 +4,24 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Cheatsheet:** Every course has a one-page recap of its sections, each with its summary, its takeaways and a timestamp that opens the video at that point. Reachable from the course page, the notebook card and a finished quiz.
+- The cheatsheet saves as a PDF, laid out for A4 and always on light paper.
+- **Only YouTube Links:** The bar on the home screen takes a YouTube link and nothing else. Anything else is refused as it is pasted, and the button stays closed until what is in the field is a link the app can read. Every shape YouTube uses is accepted: watch, youtu.be, shorts, embed, live, the mobile and music subdomains.
+- **Changing Servers:** A deployment behind the VPN no longer gives up the first time YouTube turns it away. It asks for a different server and tries again, and only says so once the reconnects run out. `VPN_ROTATIONS` sets how many, and zero keeps the old behaviour.
+- Work now lands on a `development` branch and publishes images tagged `development`, so `latest` and anything running it stay on released code.
+
+### Changed
+
+- A blocked fetch waits less on each attempt when there is somewhere else to go, since the reconnect is the retry and yt-dlp repeating itself only spends the clock.
+
+### Fixed
+
+- The borders and backgrounds accidentally set on the generation pills by the dark theme are reverted.
+
 ## [1.2.0] - 2026-08-20
 
 ### Added
