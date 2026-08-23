@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import type { CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { ClipboardEvent, CSSProperties } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import GenerationSteps, { FALLBACK_MESSAGES, useRotatingMessage } from "../components/GenerationSteps";
@@ -7,6 +7,7 @@ import type { GenStep } from "../components/GenerationSteps";
 import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { youTubeVideoId } from "../lib/youtube";
 import type { CourseEntry, Segment } from "../lib/types";
 
 type Step = "idle" | "transcript" | "guardrail" | "guardrail-blocked" | "generating";
@@ -21,6 +22,19 @@ const GEN_STEPS: readonly GenStep[] = [
 const URL_PLACEHOLDER = "youtube.com/watch?v=…";
 const SUBMIT_LABEL = "Create course";
 
+const NOT_YOUTUBE = [
+  "Hmm, that doesn't look like a YouTube link",
+  "Are you sure that is a YouTube video?",
+  "Parcourse only works with YouTube links",
+];
+
+const HOME_HINT = "Best with tutorials, lectures and explainers.";
+const TYPED_HINTS = [
+  "Typing a link by hand? Interesting.",
+  "Waiting for this to turn into a YouTube link",
+  "This is not a YouTube link. Yet.",
+];
+
 export default function HomeScreen() {
   const { token, user } = useAuth();
   const navigate = useNavigate();
@@ -33,6 +47,9 @@ export default function HomeScreen() {
   // Fails closed: an unanswered status call shows the gate, not a dead submit.
   const [aiReady, setAiReady] = useState(false);
   const [fillOrigin, setFillOrigin] = useState({ x: "50%", y: "50%" });
+  const rejection = useRef(0);
+  const typedHint = useRef(0);
+  const [hint, setHint] = useState(TYPED_HINTS[0]);
 
   useEffect(() => {
     apiFetch("/courses", token)
@@ -120,6 +137,25 @@ export default function HomeScreen() {
   const totalSections = courses?.reduce((n, c) => n + c.sections.length, 0) ?? 0;
 
   const blocked = step === "guardrail-blocked";
+  const linkOk = youTubeVideoId(videoUrl) !== null;
+  const halfWritten = videoUrl !== "" && !linkOk;
+
+  useEffect(() => {
+    if (!halfWritten) return;
+    setHint(TYPED_HINTS[typedHint.current % TYPED_HINTS.length]);
+    typedHint.current += 1;
+  }, [halfWritten]);
+
+  function guardPaste(e: ClipboardEvent<HTMLInputElement>) {
+    const input = e.currentTarget;
+    const start = input.selectionStart ?? input.value.length;
+    const end = input.selectionEnd ?? start;
+    const next = input.value.slice(0, start) + e.clipboardData.getData("text") + input.value.slice(end);
+    if (youTubeVideoId(next)) return;
+    e.preventDefault();
+    toast(NOT_YOUTUBE[rejection.current % NOT_YOUTUBE.length], "error");
+    rejection.current += 1;
+  }
 
   return (
     <>
@@ -150,9 +186,10 @@ export default function HomeScreen() {
                 placeholder={URL_PLACEHOLDER}
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
+                onPaste={guardPaste}
                 disabled={busy}
               />
-              <button className="button primary" type="submit" disabled={busy || !videoUrl}>
+              <button className="button primary" type="submit" disabled={busy || !linkOk}>
                 {busy ? "Working…" : SUBMIT_LABEL}
               </button>
             </form>
@@ -193,7 +230,7 @@ export default function HomeScreen() {
           )}
         </div>
 
-        <p className="home-hint">Best with tutorials, lectures and explainers.</p>
+        <p className="home-hint">{halfWritten ? hint : HOME_HINT}</p>
       </div>
 
       {recentCourses.length > 0 && (
