@@ -4,31 +4,24 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.3.0] - 2026-08-24
 
 ### Added
 
-- **Cheatsheet:** Every course has a one-page recap, written back over the transcript as points worth remembering rather than a list of what each section covered. Definitions, figures and the mistakes the speaker warns about, one line each, with a timestamp that opens the video at that point.
-- The cheatsheet is written in the background as the course is generated, so it is waiting by the time it is wanted. Courses made before this are written the first time their sheet is opened.
-- The cheatsheet saves as one tall image or as a PDF. Both are drawn from the same sheet, on Parcourse paper with the wordmark above it and the dotted ground behind it, so what is saved is the app's own layout rather than a plain transcription of it. However long the course, the image stays a single picture. The PDF cuts that same sheet into A4 pages, edge to edge, and cuts between sections rather than through one.
-- A pending cheatsheet finds out for itself when it is written, so the button says so without the page being opened again. It is reachable from the course, from its notebook card and from a quiz result, and stays shut while there is nothing to open.
-- **Forgetting a Concept:** A pinned node on the knowledge graph can be dropped from your own graph without touching anyone else's. Forgetting one asks first, and where the concept holds others up it names every one that goes with it, since a topic without its field has nothing left to hang from. A concept that also belongs to something you are keeping stays where it is.
-- **Only YouTube Links:** The bar on the home screen takes a YouTube link and nothing else. Anything else is refused as it is pasted, and the button stays closed until what is in the field is a link the app can read. Every shape YouTube uses is accepted: watch, youtu.be, shorts, embed, live, the mobile and music subdomains.
-- **Changing Servers:** A deployment behind the VPN no longer gives up the first time YouTube turns it away. It asks for a different server and tries again, and only says so once the reconnects run out. `VPN_ROTATIONS` sets how many, and zero keeps the old behaviour.
-- Work now lands on a `development` branch and publishes images tagged `development`, so `latest` and anything running it stay on released code.
-- The home screen answers a link typed by hand, or something pasted that is not a link, with one of a few lines rather than the same one every time.
+- **Cheatsheets:** Every course has a one-page recap, written back over the transcript as the points worth remembering rather than a summary of what each section covered. Definitions, figures and the mistakes the speaker warns about, one line each, with a timestamp that opens the video at that moment. It is written in the background while the course is generated, so it is waiting by the time it is wanted, and it saves as an image or a PDF on Parcourse paper.
+- **Forgetting a Concept:** A concept can be dropped from your knowledge graph without touching anyone else's. Forgetting one asks first, and names everything that goes with it, since a topic without its field has nothing left to hang from.
+- **Only YouTube Links:** The bar on the home screen takes a YouTube link and nothing else. Anything else is refused as it is pasted, and every shape YouTube uses is accepted: watch, youtu.be, shorts, embed, live, and the mobile and music subdomains.
+- **Changing Servers:** A deployment behind the VPN no longer gives up the first time YouTube turns it away. It asks for a different server and tries again, waiting less on each attempt, and only says so once the reconnects run out. `VPN_ROTATIONS` sets how many, and zero keeps the old behaviour.
 
 ### Changed
 
-- A blocked fetch waits less on each attempt when there is somewhere else to go, since the reconnect is the retry and yt-dlp repeating itself only spends the clock.
+- The `development` branch and image is now the more cutting-edge set of features while `main` and `latest` are more about stability.
 
 ### Fixed
 
-- The borders and backgrounds accidentally set on the generation pills by the dark theme are reverted.
-- Deleting a course no longer strands the concepts around it. Cleaning up left a surviving concept with nothing to hang from when the course that reached its parent went, so anything a kept concept belongs to is now kept as well.
-- A concept on the knowledge graph can be clicked without being dragged out of place. A press only becomes a drag once the pointer has actually moved, and a node under the pointer carries a ring so it reads as something to click.
-- The tier on a pinned concept sits under its name rather than beside it, so the close button no longer lands on top of it, and a concept near an edge of the screen moves its card to where the whole of it fits.
-- The tick on a finished generation step has room inside its circle instead of meeting the edge.
+- Deleting a course no longer strands the concepts around it. Anything a surviving concept still belongs to is kept as well.
+- A concept on the knowledge graph can be clicked without being dragged out of place, and carries a ring under the pointer so it reads as something to click.
+- The generation pills are back to the look the dark theme accidentally changed.
 
 ## [1.2.0] - 2026-08-20
 
