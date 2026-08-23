@@ -284,15 +284,15 @@ export default function CourseScreen() {
 
   const sheetLeading = sheetStatus === "pending" ? <span className="gen-pill-spinner" /> : sheetIcon;
 
-  const downloadIcon = (
-    <svg className="cheatsheet-cta-download" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  const goIcon = (
+    <svg className="cheatsheet-cta-go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
   );
 
   const sidebarInner = (
     <>
       {sheetLeading}
       <span className="cheatsheet-cta-label">Cheatsheet</span>
-      {downloadIcon}
+      {goIcon}
     </>
   );
 
@@ -314,7 +314,7 @@ export default function CourseScreen() {
     <>
       {sheetLeading}
       <span className="cheatsheet-cta-label">{CHEATSHEET_CAPTION[sheetStatus]}</span>
-      {downloadIcon}
+      {goIcon}
     </>
   );
 
