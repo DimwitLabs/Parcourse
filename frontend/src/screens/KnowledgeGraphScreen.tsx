@@ -41,6 +41,7 @@ function tierIncluded(tier: Tier, granularity: Granularity): boolean {
 
 // Mirrors _EXPOSURE_MASTERY in backend/services/knowledge_graph.py.
 const EXPOSURE_MASTERY = 0.2;
+const DRAG_SLOP_PX = 6;
 
 function masteryClass(score: number): "mastered" | "learning" | "new" {
   if (score >= 0.9) return "mastered";
@@ -311,6 +312,7 @@ export default function KnowledgeGraphScreen() {
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [tooltip, setTooltip] = useState<{ node: Node; x: number; y: number; pinned: boolean } | null>(null);
   const [forgetting, setForgetting] = useState<string | null>(null);
+  const [hovered, setHovered] = useState<string | null>(null);
   const [simData, setSimData] = useState<{ nodes: SimNode[]; edges: SimEdge[] } | null>(null);
   const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
   const simInstanceRef = useRef<LiveSim | null>(null);
@@ -320,6 +322,7 @@ export default function KnowledgeGraphScreen() {
   const isPanning = useRef(false);
   const panStart = useRef({ x: 0, y: 0 });
   const draggingNode = useRef<SimNode | null>(null);
+  const pendingDrag = useRef<SimNode | null>(null);
   const dragStartClient = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -447,10 +450,17 @@ export default function KnowledgeGraphScreen() {
     return { x: (nativeX / W) * 1000 - 500, y: (nativeY / H) * 800 - 400 };
   }
 
+  // Grabbing the node on mousedown made every click on a small one shove it
+  // across the canvas, so it is only picked up once the pointer has travelled.
   function onNodeMouseDown(e: React.MouseEvent, n: SimNode) {
     if (n.tier === "you") return;
     e.stopPropagation();
     dragStartClient.current = { x: e.clientX, y: e.clientY };
+    pendingDrag.current = n;
+  }
+
+  function startDrag(n: SimNode) {
+    pendingDrag.current = null;
     draggingNode.current = n;
     n.fx = n.x;
     n.fy = n.y;
@@ -465,6 +475,13 @@ export default function KnowledgeGraphScreen() {
     panStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
   }
   function onMouseMove(e: React.MouseEvent) {
+    const waiting = pendingDrag.current;
+    if (waiting) {
+      const dx = e.clientX - dragStartClient.current.x;
+      const dy = e.clientY - dragStartClient.current.y;
+      if (dx * dx + dy * dy <= DRAG_SLOP_PX * DRAG_SLOP_PX) return;
+      startDrag(waiting);
+    }
     if (draggingNode.current) {
       const { x, y } = clientToSvg(e.clientX, e.clientY);
       draggingNode.current.fx = x;
@@ -475,6 +492,7 @@ export default function KnowledgeGraphScreen() {
     setPan({ x: e.clientX - panStart.current.x, y: e.clientY - panStart.current.y });
   }
   function onMouseUp() {
+    pendingDrag.current = null;
     if (draggingNode.current) {
       const node = draggingNode.current;
       node.fx = null;
@@ -615,16 +633,16 @@ export default function KnowledgeGraphScreen() {
                   <g
                     key={n.id}
                     transform={`translate(${n.x}, ${n.y})`}
-                    className={`graph-node-group ${mc} tier-${n.tier}${isPinned ? " pinned" : ""}`}
+                    className={`graph-node-group ${mc} tier-${n.tier}${isPinned ? " pinned" : ""}${hovered === n.id && !isYou ? " hovered" : ""}`}
                     onMouseDown={(e) => onNodeMouseDown(e, n)}
-                    onMouseEnter={(e) => { if (!tooltip?.pinned && !draggingNode.current) setTooltip({ node: n, x: e.clientX, y: e.clientY, pinned: false }); }}
+                    onMouseEnter={(e) => { setHovered(n.id); if (!tooltip?.pinned && !draggingNode.current) setTooltip({ node: n, x: e.clientX, y: e.clientY, pinned: false }); }}
                     onMouseMove={(e) => { if (!tooltip?.pinned && !draggingNode.current) setTooltip({ node: n, x: e.clientX, y: e.clientY, pinned: false }); }}
-                    onMouseLeave={() => { if (!tooltip?.pinned) setTooltip(null); }}
+                    onMouseLeave={() => { setHovered((h) => (h === n.id ? null : h)); if (!tooltip?.pinned) setTooltip(null); }}
                     onClick={(e) => {
                       e.stopPropagation();
                       const dx = e.clientX - dragStartClient.current.x;
                       const dy = e.clientY - dragStartClient.current.y;
-                      if (dx * dx + dy * dy > 36) return;  // moved over 6px, so a drag
+                      if (dx * dx + dy * dy > DRAG_SLOP_PX * DRAG_SLOP_PX) return;
                       setTooltip((t) =>
                         t?.pinned && t.node.id === n.id
                           ? null
@@ -641,6 +659,8 @@ export default function KnowledgeGraphScreen() {
                         className="graph-node-circle"
                         filter={isYou || isField ? "url(#glow-field)" : mc === "mastered" ? "url(#glow-mastered)" : undefined}
                       />
+                      {!isYou && <circle r={n.r + 5} className="graph-node-ring" />}
+                      {!isYou && <circle r={n.r + 8} className="graph-node-hit" />}
                       {showAvatar ? (
                         <image
                           href={avatarUrl!}
