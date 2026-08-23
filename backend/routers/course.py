@@ -10,7 +10,7 @@ from sqlmodel import Session, select
 from database import get_session
 from dependencies import get_current_user
 from models.course_cache import CachedCourse
-from models.knowledge_graph import CourseKnowledgeNode, UserKnowledgeProgress
+from models.knowledge_graph import CourseKnowledgeNode, EdgeType, KnowledgeEdge, UserKnowledgeProgress
 from models.quiz_attempt import QuizAttempt
 from models.quiz_draft import QuizDraft
 from models.section_progress import SectionProgress
@@ -139,6 +139,24 @@ def get_course(
     return CourseResponsePublic.from_full(course, id=str(cached.id))
 
 
+def _keeping(session: Session, surviving: set[uuid.UUID]) -> set[uuid.UUID]:
+    """Everything a surviving concept still hangs from. A skill outlives its
+    course when another one teaches it, and removing the topic it belongs to
+    would leave it floating with nothing to join it to the rest."""
+    keeping = set(surviving)
+    frontier = set(surviving)
+    while frontier:
+        parents = session.exec(
+            select(KnowledgeEdge.target_id).where(
+                KnowledgeEdge.source_id.in_(frontier),
+                KnowledgeEdge.edge_type == EdgeType.belongs_to,
+            )
+        ).all()
+        frontier = set(parents) - keeping
+        keeping |= frontier
+    return keeping
+
+
 @router.delete("/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_course(
     course_id: uuid.UUID,
@@ -155,6 +173,7 @@ def delete_course(
     links = session.exec(select(CourseKnowledgeNode).where(CourseKnowledgeNode.course_id == course_id)).all()
 
     if cleanup_graph:
+        losing = set()
         for link in links:
             # A course the user still holds is the only thing keeping a
             # concept alive, so ask that rather than keeping a tally.
@@ -167,14 +186,17 @@ def delete_course(
                     CachedCourse.user_id == user.id,
                 )
             ).first()
-            if still_reached is not None:
-                continue
-            progress = session.exec(
-                select(UserKnowledgeProgress).where(
-                    UserKnowledgeProgress.user_id == user.id,
-                    UserKnowledgeProgress.node_id == link.node_id,
-                )
-            ).first()
+            if still_reached is None:
+                losing.add(link.node_id)
+
+        owned = {
+            p.node_id: p
+            for p in session.exec(
+                select(UserKnowledgeProgress).where(UserKnowledgeProgress.user_id == user.id)
+            ).all()
+        }
+        for node_id in losing - _keeping(session, set(owned) - losing):
+            progress = owned.get(node_id)
             if progress is not None:
                 session.delete(progress)
         session.flush()
