@@ -1,5 +1,14 @@
 export type SheetStatus = "pending" | "ready" | "failed";
 
+/** How often a screen asks again while the sheet is still being written. */
+export const POLL_MS = 4000;
+
+export const CHEATSHEET_HINT: Record<SheetStatus, string> = {
+  pending: "Your cheatsheet is being written",
+  ready: "Your cheatsheet is ready",
+  failed: "The cheatsheet could not be written. Open it to try again",
+};
+
 export type CheatsheetSection = {
   number: number;
   title: string;
@@ -56,11 +65,11 @@ export function buildCheatsheet(sheet: SourceSheet): Cheatsheet {
   };
 }
 
-export function fileNameOf(sheet: Cheatsheet) {
+export function fileNameOf(sheet: Cheatsheet, extension: string) {
   const title = sheet.title
     .replace(/[\\/:*?"<>|]/g, " ")
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 120);
-  return `[Parcourse] Cheatsheet - ${title || "Untitled course"}.pdf`;
+  return `[Parcourse] Cheatsheet - ${title || "Untitled course"}.${extension}`;
 }

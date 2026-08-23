@@ -4,10 +4,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import { buildCheatsheet, fileNameOf, watchUrl } from "../lib/cheatsheet";
+import { POLL_MS, buildCheatsheet, fileNameOf, watchUrl } from "../lib/cheatsheet";
 import type { Cheatsheet } from "../lib/cheatsheet";
-
-const POLL_MS = 4000;
 
 export default function CheatsheetScreen() {
   const { courseId } = useParams();
@@ -52,7 +50,7 @@ export default function CheatsheetScreen() {
         await cheatsheetPdf(sheet);
       } else {
         const { sheetPng } = await import("../lib/sheetImage");
-        await sheetPng(sheet, fileNameOf(sheet).replace(/\.pdf$/, ".png"));
+        await sheetPng(sheet, fileNameOf(sheet, "png"));
       }
     } catch {
       toast(`Couldn't build the ${kind.toUpperCase()}. Try again.`, "error");

@@ -6,6 +6,7 @@ import type { CourseAction } from "../components/CourseActionModal";
 import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { CHEATSHEET_HINT, POLL_MS } from "../lib/cheatsheet";
 import type { SheetStatus } from "../lib/cheatsheet";
 import { shownScore } from "../lib/score";
 import { useEscapeKey } from "../lib/useEscapeKey";
@@ -15,12 +16,6 @@ const CHEATSHEET_CAPTION: Record<SheetStatus, string> = {
   pending: "Your cheatsheet will be ready soon",
   ready: "Your cheatsheet is ready",
   failed: "Your cheatsheet could not be written",
-};
-
-const CHEATSHEET_HINT: Record<SheetStatus, string> = {
-  pending: "Your cheatsheet is being written",
-  ready: "Your cheatsheet is ready",
-  failed: "The cheatsheet could not be written. Open it to try again",
 };
 
 type Attempt = { id: string; total_score: number; max_score: number };
@@ -117,12 +112,12 @@ export default function CourseScreen() {
         .then((sheet: { status: SheetStatus }) => {
           if (ignore) return;
           setSheetStatus(sheet.status);
-          if (sheet.status === "pending") timer = window.setTimeout(check, 5000);
+          if (sheet.status === "pending") timer = window.setTimeout(check, POLL_MS);
         })
         .catch(() => {
           // A blip must not leave the button spinning for good, so the next
           // attempt is scheduled either way.
-          if (!ignore) timer = window.setTimeout(check, 5000);
+          if (!ignore) timer = window.setTimeout(check, POLL_MS);
         });
     }
 

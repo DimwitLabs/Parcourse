@@ -4,16 +4,12 @@ import { useLocation, useNavigate, useParams, useSearchParams } from "react-rout
 import { toast } from "../components/Toast";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { CHEATSHEET_HINT } from "../lib/cheatsheet";
+import { download } from "../lib/download";
 import type { SheetStatus } from "../lib/cheatsheet";
 import { MASTERY_PCT, shownScore } from "../lib/score";
 import { drawResultCard } from "../lib/shareCard";
 import type { SummaryRow } from "../lib/shareCard";
-
-const CHEATSHEET_HINT: Record<SheetStatus, string> = {
-  pending: "Your cheatsheet is being written",
-  ready: "Your cheatsheet is ready",
-  failed: "The cheatsheet could not be written. Open it to try again",
-};
 
 type Breakdown = { accuracy: number; completeness: number; relevance: number; feedback: string };
 type QuestionResult = {
@@ -264,12 +260,7 @@ export default function QuizResultsScreen() {
         toast("Result card copied. Paste it wherever you like.", "success");
         return;
       } catch {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "parcourse-result.png";
-        link.click();
-        URL.revokeObjectURL(url);
+        download(blob, "parcourse-result.png");
         toast("Result card saved.", "success");
       }
     } catch (err) {

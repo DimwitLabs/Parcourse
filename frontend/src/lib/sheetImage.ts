@@ -1,6 +1,7 @@
 import { snapdom } from "@zumer/snapdom";
 
 import { stampOf } from "./cheatsheet";
+import { download } from "./download";
 import type { Cheatsheet } from "./cheatsheet";
 
 const SHEET_WIDTH = 900;
@@ -161,18 +162,9 @@ export async function sheetCanvas(sheet: Cheatsheet): Promise<SheetShot> {
   }
 }
 
-function save(blob: Blob, name: string) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = name;
-  link.click();
-  URL.revokeObjectURL(url);
-}
-
 export async function sheetPng(sheet: Cheatsheet, name: string) {
   const { canvas } = await sheetCanvas(sheet);
   const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
   if (!blob) throw new Error("The image could not be written.");
-  save(blob, name);
+  download(blob, name);
 }

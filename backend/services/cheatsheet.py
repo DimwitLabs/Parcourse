@@ -11,7 +11,7 @@ from models.user import User
 from schemas.course import CourseResponse
 from schemas.transcript import TranscriptSegment
 from services.connection import resolve
-from services.course import _format_transcript, _sanitize_title
+from services.transcript_text import format_transcript, sanitize_title
 from services.llm import complete_json
 from services.prompts import load
 from services.transcript import load_video
@@ -59,11 +59,11 @@ def write(session: Session, course_id: uuid.UUID) -> None:
         course = CourseResponse.model_validate_json(cached.course_json)
         video = load_video(session, course.video_id)
 
-        title_block = f"\nVideo title: {_sanitize_title(course.video_title)}\n" if course.video_title else ""
+        title_block = f"\nVideo title: {sanitize_title(course.video_title)}\n" if course.video_title else ""
         listed = "\n".join(f"{i + 1}. {s.title}" for i, s in enumerate(course.sections))
         prompt = _PROMPT.format(
             title_block=title_block,
-            formatted=_format_transcript([TranscriptSegment(**s) for s in video.segments]),
+            formatted=format_transcript([TranscriptSegment(**s) for s in video.segments]),
             sections=listed,
         )
         logger.info("[cheatsheet]: writing for course %s with model=%s", course_id, connection.model)

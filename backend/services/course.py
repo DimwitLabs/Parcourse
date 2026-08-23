@@ -1,49 +1,25 @@
 import logging
-import re
 import uuid
-from collections import defaultdict
 
 
 from schemas.course import CourseResponse, CourseSection, MCQOption, MCQQuestion, TheoryQuestion
 from schemas.transcript import TranscriptSegment
 from services.llm import complete_json
+from services.transcript_text import format_transcript, sanitize_title
 from services.prompts import load
 
 logger = logging.getLogger(__name__)
-
-_NOISE = re.compile(r"^\s*[\[\(][\w\s,]+[\]\)]\s*$")
-_WINDOW = 30  # seconds per merged chunk
-
-
-def _format_transcript(segments: list[TranscriptSegment]) -> str:
-    clean = [s for s in segments if not _NOISE.match(s.text)]
-    buckets: dict[int, list[str]] = defaultdict(list)
-    for s in clean:
-        buckets[int(s.start / _WINDOW) * _WINDOW].append(
-            s.text.strip().replace("\n", " ")
-        )
-    return "\n".join(
-        f"[{t}] {' '.join(texts)}"
-        for t, texts in sorted(buckets.items())
-    )
 
 _PROMPT = load("course")
 
 
 _MAX_FEEDBACK_CHARS = 1000
-_MAX_TITLE_CHARS = 200
 
 
 def _sanitize_feedback(feedback: str) -> str:
     """Collapse the delimiter so a note cannot close the quoted block early, and
     cap the length so a large paste cannot crowd out the transcript."""
     return feedback.strip().replace('"""', '"')[:_MAX_FEEDBACK_CHARS]
-
-
-def _sanitize_title(title: str) -> str:
-    """Titles come from YouTube, so collapse all whitespace to keep them to a
-    single line. That alone stops a crafted title adding prompt structure."""
-    return " ".join(title.split())[:_MAX_TITLE_CHARS]
 
 
 _FEEDBACK_TEMPLATE = load("course_feedback")
@@ -75,7 +51,7 @@ def generate(video_id: str, segments: list[TranscriptSegment], credentials: dict
     min_section_seconds = approx_seconds * 0.4   # allow down to 40% of average
     max_section_seconds = approx_seconds * 2.5   # cap at 250% of average
 
-    formatted = _format_transcript(segments)
+    formatted = format_transcript(segments)
     estimated_tokens = len(formatted) // 4
     logger.info(
         "[course]: formatted transcript %d chars (~%d tokens), total=%.1fmin, sections=%d–%d",
@@ -86,7 +62,7 @@ def generate(video_id: str, segments: list[TranscriptSegment], credentials: dict
         max_sections,
     )
     # Both are substituted values, so any braces inside them are never re-parsed.
-    clean_title = _sanitize_title(video_title)
+    clean_title = sanitize_title(video_title)
     title_block = f"\nVideo title: {clean_title}\n" if clean_title else ""
     clean_feedback = _sanitize_feedback(feedback)
     feedback_block = _FEEDBACK_TEMPLATE.format(feedback=clean_feedback) if clean_feedback else ""

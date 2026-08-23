@@ -43,5 +43,5 @@ export async function cheatsheetPdf(sheet: Cheatsheet) {
     doc.addImage(slice.toDataURL("image/png"), "PNG", 0, 0, PAGE.width, PAGE.height);
   });
 
-  doc.save(fileNameOf(sheet));
+  doc.save(fileNameOf(sheet, "pdf"));
 }

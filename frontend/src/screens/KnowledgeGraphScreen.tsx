@@ -9,6 +9,7 @@ import { Link, useSearchParams } from "react-router-dom";
 
 import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
+import { download } from "../lib/download";
 import { withLightPalette } from "../lib/palette";
 import { useAuth } from "../lib/auth";
 import { useEscapeKey } from "../lib/useEscapeKey";
@@ -236,12 +237,7 @@ async function prepareClone(svgEl: SVGSVGElement): Promise<SVGSVGElement> {
 async function exportSvg(svgEl: SVGSVGElement) {
   const clone = await prepareClone(svgEl);
   const blob = new Blob([clone.outerHTML], { type: "image/svg+xml" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "knowledge-graph.svg";
-  a.click();
-  URL.revokeObjectURL(url);
+  download(blob, "knowledge-graph.svg");
 }
 
 async function exportPng(svgEl: SVGSVGElement) {
@@ -267,11 +263,7 @@ async function exportPng(svgEl: SVGSVGElement) {
 
     ctx.drawImage(img, 0, 0, w, h);
     canvas.toBlob((b) => {
-      if (!b) return;
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(b);
-      a.download = "knowledge-graph.png";
-      a.click();
+      if (b) download(b, "knowledge-graph.png");
     }, "image/png");
     URL.revokeObjectURL(url);
   };
