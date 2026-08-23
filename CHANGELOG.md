@@ -4,6 +4,20 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-08-24
+
+### Added
+
+- **Finding a Course:** The notebook sorts, filters and searches. Sort by when a course was made, by title, or by how far through it you are. Filter to what has not been started, what is underway, or what is finished. And search everything a course holds, its heading, its section titles and summaries, the takeaways and the quiz questions, rather than the title alone, so a course can be found by something said inside it.
+
+### Changed
+
+- Loading states show as a toast at the foot of the window, with a spinner, rather than a line of plain text.
+
+### Fixed
+
+- The cheatsheet reads on the page the way it reads in the saved image. The points were set a weight heavier and a line tighter than the sheet they export to.
+
 ## [1.3.0] - 2026-08-24
 
 ### Added
