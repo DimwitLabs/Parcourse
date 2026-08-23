@@ -26,18 +26,38 @@ def extracting(result=None, error=None):
 
 
 class ExtractVideoIdTests(unittest.TestCase):
-    def test_it_reads_the_usual_link_shapes(self):
+    def test_it_reads_every_shape_the_front_lets_through(self):
         for url in (
             "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
             "https://youtu.be/dQw4w9WgXcQ",
             "https://www.youtube.com/shorts/dQw4w9WgXcQ",
+            "https://www.youtube.com/embed/dQw4w9WgXcQ",
+            "https://www.youtube.com/live/dQw4w9WgXcQ",
+            "https://www.youtube.com/v/dQw4w9WgXcQ",
+            "https://m.youtube.com/watch?v=dQw4w9WgXcQ",
+            "https://music.youtube.com/watch?v=dQw4w9WgXcQ",
+            "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+            "youtube.com/watch?v=dQw4w9WgXcQ",
         ):
-            self.assertEqual(extract_video_id(url), "dQw4w9WgXcQ")
+            with self.subTest(url=url):
+                self.assertEqual(extract_video_id(url), "dQw4w9WgXcQ")
 
     def test_something_that_is_not_a_link_is_refused(self):
         with self.assertRaises(ValueError) as caught:
             extract_video_id("https://vimeo.com/12345")
         self.assertIn("YouTube link", str(caught.exception))
+
+    def test_another_host_wearing_a_youtube_path_is_refused(self):
+        # The old regex looked only at the path, so any site could carry a
+        # watch?v= and be taken for YouTube.
+        for url in (
+            "https://example.com/watch?v=dQw4w9WgXcQ",
+            "https://notyoutube.com/shorts/dQw4w9WgXcQ",
+            "https://youtube.com.evil.test/watch?v=dQw4w9WgXcQ",
+        ):
+            with self.subTest(url=url):
+                with self.assertRaises(ValueError):
+                    extract_video_id(url)
 
 
 class FetchVideoTests(unittest.TestCase):

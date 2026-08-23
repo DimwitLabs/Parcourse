@@ -2,6 +2,7 @@ import json
 import logging
 import re
 from dataclasses import dataclass
+from urllib.parse import parse_qs, urlparse
 
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
@@ -11,7 +12,19 @@ from services import vpn
 
 logger = logging.getLogger(__name__)
 
-_YOUTUBE_ID_RE = re.compile(r"(?:v=|youtu\.be/|shorts/|embed/)([\w-]{11})")
+_HOSTS = frozenset({
+    "youtube.com",
+    "www.youtube.com",
+    "m.youtube.com",
+    "music.youtube.com",
+    "gaming.youtube.com",
+    "youtube-nocookie.com",
+    "www.youtube-nocookie.com",
+    "youtu.be",
+    "www.youtu.be",
+})
+_PATH_PREFIXES = frozenset({"shorts", "embed", "live", "v"})
+_VIDEO_ID_RE = re.compile(r"^[\w-]{11}$")
 
 # Generation is synchronous, so an extraction that retries forever holds a
 # worker thread and stalls requests that have nothing to do with it.
@@ -104,13 +117,39 @@ class TranscriptBlocked(Exception):
     every video fails until the block lifts."""
 
 
+def _video_id(url: str) -> str | None:
+    """Mirrors youTubeVideoId in frontend/src/lib/youtube.ts. The host is checked
+    here rather than only the shape of the path, since this is what a request
+    actually reaches."""
+    text = url.strip()
+    if not text:
+        return None
+    parsed = urlparse(text if re.match(r"^[a-z][a-z\d+.-]*:", text, re.I) else f"https://{text}")
+    if parsed.scheme not in ("http", "https"):
+        return None
+    if (parsed.hostname or "").lower() not in _HOSTS:
+        return None
+
+    parts = [p for p in parsed.path.split("/") if p]
+    host = (parsed.hostname or "").lower()
+    if host.endswith("youtu.be"):
+        found = parts[0] if parts else None
+    elif parts and parts[0] == "watch":
+        found = parse_qs(parsed.query).get("v", [None])[0]
+    elif parts and parts[0] in _PATH_PREFIXES:
+        found = parts[1] if len(parts) > 1 else None
+    else:
+        found = None
+
+    return found if found and _VIDEO_ID_RE.match(found) else None
+
+
 def extract_video_id(url: str) -> str:
     logger.info("[youtube]: extracting video ID from URL")
-    match = _YOUTUBE_ID_RE.search(url)
-    if not match:
+    video_id = _video_id(url)
+    if video_id is None:
         logger.error("[youtube]: no video ID found in URL")
         raise ValueError("That doesn't look like a YouTube link, so check the URL and try again.")
-    video_id = match.group(1)
     logger.info("[youtube]: extracted video ID: %s", video_id)
     return video_id
 
