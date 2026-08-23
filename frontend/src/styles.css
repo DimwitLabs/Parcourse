@@ -4217,3 +4217,157 @@ a.modal-field-hint {
   background: var(--color-secondary-container);
   color: var(--color-primary);
 }
+
+.cheatsheet-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cheatsheet-head {
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.cheatsheet-head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cheatsheet-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.cheatsheet-sheet {
+  display: flex;
+  flex-direction: column;
+}
+
+.cheatsheet-section {
+  padding: 1.75rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.cheatsheet-section:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.cheatsheet-section:last-child {
+  padding-bottom: 0;
+}
+
+.cheatsheet-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.cheatsheet-num {
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: var(--radius-full);
+  background: var(--color-secondary-container);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.cheatsheet-section-title {
+  margin: 0;
+  flex: 1;
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.cheatsheet-stamp {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink-faint);
+  text-decoration: none;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-high);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.cheatsheet-stamp:hover {
+  background: var(--color-secondary-container);
+  color: var(--color-primary);
+}
+
+.cheatsheet-summary {
+  margin: 0.75rem 0 0 2.15rem;
+  color: var(--color-ink-faint);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.cheatsheet-points {
+  list-style: none;
+  margin: 1rem 0 0 2.15rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cheatsheet-points li {
+  font-size: 1rem;
+  font-weight: 600;
+  padding-left: 1.6rem;
+  position: relative;
+  line-height: 1.45;
+}
+
+.cheatsheet-points li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--color-tertiary);
+}
+
+@media (max-width: 640px) {
+  .cheatsheet-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .cheatsheet-actions .button {
+    width: 100%;
+  }
+
+  .cheatsheet-sheet {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .cheatsheet-section {
+    padding: 1.25rem 0;
+  }
+
+  .cheatsheet-section-head {
+    flex-wrap: wrap;
+  }
+
+  .cheatsheet-summary,
+  .cheatsheet-points {
+    margin-left: 0;
+  }
+}

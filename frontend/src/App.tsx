@@ -5,6 +5,7 @@ import AppShell from "./components/AppShell";
 import { API_BASE_URL, useAuth } from "./lib/auth";
 import AdminScreen from "./screens/AdminScreen";
 import ChangePasswordScreen from "./screens/ChangePasswordScreen";
+import CheatsheetScreen from "./screens/CheatsheetScreen";
 import CourseScreen from "./screens/CourseScreen";
 import HomeScreen from "./screens/HomeScreen";
 import KnowledgeGraphScreen from "./screens/KnowledgeGraphScreen";
@@ -44,6 +45,7 @@ function RootRouter() {
         <Route path="/" element={<HomeScreen />} />
         <Route path="/notebook" element={<NotebookScreen />} />
         <Route path="/course/:courseId" element={<CourseScreen />} />
+        <Route path="/course/:courseId/cheatsheet" element={<CheatsheetScreen />} />
         <Route path="/course/:courseId/results" element={<QuizResultsScreen />} />
         <Route path="/course/:courseId/history" element={<QuizHistoryScreen />} />
         <Route path="/graph" element={<KnowledgeGraphScreen />} />
