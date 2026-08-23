@@ -89,3 +89,23 @@ def get_user_knowledge_graph(
     if target is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return _build_graph(session, target.id)
+
+
+@router.delete("/nodes/{node_id}", status_code=status.HTTP_204_NO_CONTENT)
+def forget_node(
+    node_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> None:
+    """Drops one concept from this user's graph. The node itself is shared with
+    everyone else who has met it, so only their claim on it goes."""
+    progress = session.exec(
+        select(UserKnowledgeProgress).where(
+            UserKnowledgeProgress.user_id == user.id,
+            UserKnowledgeProgress.node_id == node_id,
+        )
+    ).first()
+    if progress is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Concept not found")
+    session.delete(progress)
+    session.commit()

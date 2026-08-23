@@ -7,7 +7,8 @@ import {
 import { useEffect, useReducer, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
-import { apiFetch } from "../lib/api";
+import { toast } from "../components/Toast";
+import { apiFetch, errMsg } from "../lib/api";
 import { withLightPalette } from "../lib/palette";
 import { useAuth } from "../lib/auth";
 import { gravatarUrl, userInitials } from "../lib/gravatar";
@@ -309,6 +310,7 @@ export default function KnowledgeGraphScreen() {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [tooltip, setTooltip] = useState<{ node: Node; x: number; y: number; pinned: boolean } | null>(null);
+  const [forgetting, setForgetting] = useState<string | null>(null);
   const [simData, setSimData] = useState<{ nodes: SimNode[]; edges: SimEdge[] } | null>(null);
   const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
   const simInstanceRef = useRef<LiveSim | null>(null);
@@ -329,6 +331,27 @@ export default function KnowledgeGraphScreen() {
       .then(setGraph)
       .catch((err) => setError(String(err.message ?? err)));
   }, [token, viewingUserId, user]);
+
+  async function forget(node: Node) {
+    setForgetting(node.id);
+    try {
+      await apiFetch(`/knowledge-graph/nodes/${node.id}`, token, { method: "DELETE" });
+      setGraph((current) =>
+        current
+          ? {
+              nodes: current.nodes.filter((n) => n.id !== node.id),
+              edges: current.edges.filter((e) => e.source_id !== node.id && e.target_id !== node.id),
+            }
+          : current,
+      );
+      setTooltip(null);
+      toast(`${node.label} was removed from your graph.`, "success");
+    } catch (err) {
+      toast(errMsg(err), "error");
+    } finally {
+      setForgetting(null);
+    }
+  }
 
   useEffect(() => {
     if (!graph) return;
@@ -684,10 +707,11 @@ export default function KnowledgeGraphScreen() {
 
       {tooltip && (
         <div
-          className={`graph-tooltip${tooltip.pinned ? " pinned" : ""}`}
+          className={`graph-tooltip-stack${tooltip.pinned ? " pinned" : ""}`}
           style={{ left: tooltip.x + 20, top: tooltip.y + 16 }}
           onMouseEnter={() => { if (!tooltip.pinned) setTooltip(null); }}
         >
+          <div className={`graph-tooltip${tooltip.pinned ? " pinned" : ""}`}>
           {tooltip.pinned && (
             <button className="graph-tooltip-close" onClick={() => setTooltip(null)} aria-label="Close">×</button>
           )}
@@ -709,6 +733,22 @@ export default function KnowledgeGraphScreen() {
                 </Link>
               ))}
             </div>
+          )}
+          </div>
+          {tooltip.pinned && tooltip.node.tier !== "you" && (
+            <button
+              className="graph-tooltip-forget"
+              onClick={() => forget(tooltip.node)}
+              disabled={forgetting === tooltip.node.id}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 7h16" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12" /><path d="M9 7V4h6v3" />
+              </svg>
+              {forgetting === tooltip.node.id ? "Forgetting…" : "Forget this concept"}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+              </svg>
+            </button>
           )}
         </div>
       )}
