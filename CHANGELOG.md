@@ -8,8 +8,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
-- **Cheatsheet:** Every course has a one-page recap of its sections, each with its summary, its takeaways and a timestamp that opens the video at that point. Reachable from the course page, the notebook card and a finished quiz.
-- The cheatsheet saves as a PDF, laid out for A4 and always on light paper.
+- **Cheatsheet:** Every course has a one-page recap, written back over the transcript as points worth remembering rather than a list of what each section covered. Definitions, figures and the mistakes the speaker warns about, one line each, with a timestamp that opens the video at that point.
+- The cheatsheet is written in the background as the course is generated, so it is waiting by the time it is wanted. Courses made before this are written the first time their sheet is opened.
+- The cheatsheet saves as a PDF, laid out for A4 on Parcourse paper and always light.
+- **Forgetting a Concept:** A pinned node on the knowledge graph can be dropped from your own graph without touching anyone else's.
 - **Only YouTube Links:** The bar on the home screen takes a YouTube link and nothing else. Anything else is refused as it is pasted, and the button stays closed until what is in the field is a link the app can read. Every shape YouTube uses is accepted: watch, youtu.be, shorts, embed, live, the mobile and music subdomains.
 - **Changing Servers:** A deployment behind the VPN no longer gives up the first time YouTube turns it away. It asks for a different server and tries again, and only says so once the reconnects run out. `VPN_ROTATIONS` sets how many, and zero keeps the old behaviour.
 - Work now lands on a `development` branch and publishes images tagged `development`, so `latest` and anything running it stay on released code.
@@ -21,6 +23,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ### Fixed
 
 - The borders and backgrounds accidentally set on the generation pills by the dark theme are reverted.
+- Deleting a course no longer strands the concepts around it. Cleaning up left a surviving concept with nothing to hang from when the course that reached its parent went, so anything a kept concept belongs to is now kept as well.
 
 ## [1.2.0] - 2026-08-20
 
