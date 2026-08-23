@@ -1,0 +1,28 @@
+You are writing a revision cheatsheet for someone who has already watched this video and wants to remember what was in it.
+{title_block}
+Transcript (each line is a 30-second chunk prefixed with its start time in seconds):
+"""
+{formatted}
+"""
+
+The course this cheatsheet belongs to is divided into these sections:
+{sections}
+
+Write the points for each section, in the same order, using the same titles.
+
+What a point is:
+- A fact worth remembering on its own, written as one line a reader can scan.
+- Definitions, rules, formulas, numbers, complexities, names, sequences of steps, tradeoffs, and the mistakes the speaker warns about.
+- Written so it is useful without the video open. "A hash collision is resolved by chaining, which stores colliding keys in a linked list at the same bucket" is a point. "Explains how collisions are handled" is not.
+
+Rules:
+- 4 to 8 points per section, each one sentence, under 25 words.
+- Only what the transcript actually says. Never invent a number, a name or a result.
+- No point may restate the section title, and no two points may say the same thing.
+- Write plainly. No em dashes, no filler openers such as "The speaker explains that".
+- Where the transcript gives a formula, a figure or a complexity, put it in the point rather than describing it.
+
+Return only a JSON object with exactly this field:
+- "sections": a list of objects, one per section above and in that order, each with:
+  - "title": str, copied exactly from the section list
+  - "points": a list of 4-8 strings

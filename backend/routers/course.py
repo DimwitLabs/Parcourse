@@ -3,19 +3,28 @@ import logging
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
 from database import get_session
 from dependencies import get_current_user
+from models.cheatsheet_cache import CachedCheatsheet, SheetStatus
 from models.course_cache import CachedCourse
 from models.knowledge_graph import CourseKnowledgeNode, EdgeType, KnowledgeEdge, UserKnowledgeProgress
 from models.quiz_attempt import QuizAttempt
 from models.quiz_draft import QuizDraft
 from models.section_progress import SectionProgress
 from models.user import User
-from schemas.course import CourseGenerateRequest, CourseListEntry, CourseResponse, CourseResponsePublic
+from schemas.course import (
+    CheatsheetResponse,
+    CheatsheetSection,
+    CourseGenerateRequest,
+    CourseListEntry,
+    CourseResponse,
+    CourseResponsePublic,
+)
+from services import cheatsheet
 from services.connection import NoConnectionError, resolve
 from services.course import generate
 from services.knowledge_graph import extract_and_merge
@@ -33,6 +42,7 @@ router = APIRouter(prefix="/courses", tags=["courses"])
 @router.post("/generate", response_model=CourseResponsePublic, status_code=status.HTTP_201_CREATED)
 def generate_course(
     body: CourseGenerateRequest,
+    background: BackgroundTasks,
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ) -> CourseResponsePublic:
@@ -74,7 +84,43 @@ def generate_course(
         logger.exception("Knowledge graph extraction failed for course %s", cached.id)
         session.rollback()
 
+    if cheatsheet.claim(session, cached.id):
+        background.add_task(cheatsheet.write_in_background, cached.id)
+
     return CourseResponsePublic.from_full(course, id=str(cached.id))
+
+
+@router.get("/{course_id}/cheatsheet", response_model=CheatsheetResponse)
+def get_cheatsheet(
+    course_id: uuid.UUID,
+    background: BackgroundTasks,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> CheatsheetResponse:
+    cached = session.get(CachedCourse, course_id)
+    if cached is None or cached.user_id != user.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+
+    course = CourseResponse.model_validate_json(cached.course_json)
+    if cheatsheet.claim(session, course_id):
+        logger.info("[course]: cheatsheet for course_id=%s is being written", course_id)
+        background.add_task(cheatsheet.write_in_background, course_id)
+
+    row = cheatsheet.read(session, course_id)
+    if row is None or row.status is not SheetStatus.ready:
+        return CheatsheetResponse(
+            status=row.status.value if row else SheetStatus.pending.value,
+            video_id=course.video_id,
+            video_title=course.video_title,
+        )
+
+    stored = json.loads(row.sheet_json or "{}")
+    return CheatsheetResponse(
+        status=SheetStatus.ready.value,
+        video_id=course.video_id,
+        video_title=course.video_title,
+        sections=[CheatsheetSection(**s) for s in stored.get("sections", [])],
+    )
 
 
 @router.get("", response_model=list[CourseListEntry])
@@ -106,6 +152,12 @@ def list_courses(
     for cid, pct in quiz_rows:
         quiz_map[cid] = max(quiz_map.get(cid, 0.0), pct)
 
+    sheet_rows = session.exec(
+        select(CachedCheatsheet.course_id, CachedCheatsheet.status)
+        .where(CachedCheatsheet.course_id.in_(course_ids))
+    ).all()
+    sheet_map = {cid: st for cid, st in sheet_rows}
+
     results = []
     for row in rows:
         course = CourseResponse.model_validate_json(row.course_json)
@@ -119,6 +171,7 @@ def list_courses(
             has_passed_quiz=has_passed,
             # A course with no attempt has no history to open.
             has_attempts=row.id in quiz_map,
+            cheatsheet_status=sheet_map.get(row.id, SheetStatus.pending).value,
         ))
     return results
 

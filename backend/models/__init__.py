@@ -1,4 +1,5 @@
 from models.cached_transcript import CachedTranscript
+from models.cheatsheet_cache import CachedCheatsheet, SheetStatus
 from models.course_cache import CachedCourse
 from models.instance_config import InstanceConfig, InstanceMode
 from models.knowledge_graph import (
@@ -15,6 +16,7 @@ from models.section_progress import SectionProgress
 from models.user import User, UserRole
 
 __all__ = [
+    "CachedCheatsheet",
     "CachedCourse",
     "CachedTranscript",
     "CourseKnowledgeNode",
@@ -27,6 +29,7 @@ __all__ = [
     "QuizAttempt",
     "QuizDraft",
     "SectionProgress",
+    "SheetStatus",
     "User",
     "UserKnowledgeProgress",
     "UserRole",

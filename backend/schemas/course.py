@@ -119,3 +119,17 @@ class CourseListEntry(BaseModel):
     completed_sections: list[int] = []
     has_passed_quiz: bool = False
     has_attempts: bool = False
+    cheatsheet_status: str = "pending"
+
+
+class CheatsheetSection(BaseModel):
+    title: str
+    start_seconds: float
+    points: list[str]
+
+
+class CheatsheetResponse(BaseModel):
+    status: str
+    video_id: str = ""
+    video_title: str = ""
+    sections: list[CheatsheetSection] = []
