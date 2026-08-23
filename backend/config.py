@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     log_level: str = "info"
     cors_origins: list[str] = ["http://localhost:5173"]
     ytdlp_proxy: str = ""
+    vpn_control_url: str = ""
+    vpn_rotations: int = 2
     jwt_secret: str
     jwt_expiry_hours: int = 24
     encryption_key: str
@@ -50,6 +52,8 @@ def _checked_log_level(name: str) -> str:
 
 
 YTDLP_PROXY = settings.ytdlp_proxy.strip()
+VPN_CONTROL_URL = settings.vpn_control_url.strip().rstrip("/")
+VPN_ROTATIONS = max(0, settings.vpn_rotations)
 DATABASE_URL = _with_driver(settings.database_url)
 IS_POSTGRES = DATABASE_URL.startswith("postgresql")
 # Tables carry the schema themselves, so nothing depends on search_path and

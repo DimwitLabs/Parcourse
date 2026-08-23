@@ -29,6 +29,11 @@ the app for this, and any provider's proxy works just as well:
 docker compose -f docker-compose.ghcr-vpn.yml up
 ```
 
+A single address runs out of welcome eventually. When YouTube turns one away,
+the VPN is asked for a different server and the fetch is tried again from
+there, and only once `VPN_ROTATIONS` reconnects have all been refused does
+anyone hear about it. Set it to zero to keep the address it started on.
+
 Set `JWT_SECRET` and `ENCRYPTION_KEY` in `.env`. Generate the encryption key with:
 
 ```bash

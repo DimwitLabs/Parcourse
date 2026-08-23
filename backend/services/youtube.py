@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
 
-from config import YTDLP_PROXY
+from config import VPN_ROTATIONS, YTDLP_PROXY
+from services import vpn
 
 logger = logging.getLogger(__name__)
 
@@ -24,12 +25,30 @@ _OPTIONS = {
 }
 
 
+_IMPATIENT = {"socket_timeout": 8, "retries": 0, "extractor_retries": 0}
+
+
 def _options() -> dict:
     """A datacenter address is refused by YouTube whatever it asks for, so a
-    deployment that has one fetches through somewhere else instead."""
+    deployment that has one fetches through somewhere else instead.
+
+    Waiting out a full timeout before each reconnect is the slow way to fail,
+    so a deployment that can move gives each attempt less of the clock.
+    Asking the same address twice is what the reconnect is for, so yt-dlp
+    does not also retry it."""
+    options = dict(_OPTIONS)
+    if _rotations():
+        options.update(_IMPATIENT)
     if not YTDLP_PROXY:
-        return _OPTIONS
-    return {**_OPTIONS, "proxy": YTDLP_PROXY}
+        return options
+    options["proxy"] = YTDLP_PROXY
+    return options
+
+
+def _rotations() -> int:
+    """Reconnecting only changes the address when the fetch goes through the
+    VPN in the first place."""
+    return VPN_ROTATIONS if YTDLP_PROXY and vpn.available() else 0
 
 
 # yt-dlp reports failures as prose, so these match phrases rather than types.
@@ -148,10 +167,9 @@ def _from_download_error(video_id: str, exc: DownloadError) -> Exception:
     return ValueError(_UNREADABLE)
 
 
-def fetch_video(video_id: str) -> Video:
+def _fetch_once(video_id: str) -> Video:
     """Title and transcript arrive from one extraction, so asking separately
     would only spend a second request on the same answer."""
-    logger.info("[youtube]: fetching video %s", video_id)
     try:
         with YoutubeDL(_options()) as ydl:
             info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
@@ -178,3 +196,28 @@ def fetch_video(video_id: str) -> Video:
 
     logger.info("[youtube]: fetched %d transcript segments for video %s", len(segments), video_id)
     return Video(title=info.get("title") or "", segments=segments)
+
+
+def fetch_video(video_id: str) -> Video:
+    """A refusal is about the address the request left from and not about the
+    video, so the VPN is asked for a different server and the fetch tried
+    again. Only once no reconnect is left does the user hear about it."""
+    logger.info("[youtube]: fetching video %s", video_id)
+    attempts = 1 + _rotations()
+
+    for attempt in range(1, attempts + 1):
+        try:
+            return _fetch_once(video_id)
+        except TranscriptBlocked as refused:
+            if attempt == attempts:
+                logger.error("[youtube]: still refused after %d attempts for video %s", attempts, video_id)
+                raise
+            logger.warning(
+                "[youtube]: attempt %d of %d was turned away for video %s: %s",
+                attempt, attempts, video_id, refused,
+            )
+            if not vpn.rotate():
+                logger.error("[youtube]: no different server was available, so nothing changes by asking again")
+                raise
+
+    raise TranscriptBlocked(_REFUSED)

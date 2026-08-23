@@ -132,6 +132,88 @@ class ProxyTests(unittest.TestCase):
         opener.assert_called_once()
 
 
+class VpnRotationTests(unittest.TestCase):
+    """YouTube refuses the address the request left from, so the VPN is asked
+    for a different server and the fetch tried again from there."""
+
+    def rotating(self, times, reconnects=True):
+        return (
+            patch("services.youtube.YTDLP_PROXY", "http://vpn:8888"),
+            patch("services.youtube.VPN_ROTATIONS", times),
+            patch("services.vpn.VPN_CONTROL_URL", "http://vpn:8000"),
+            patch("services.youtube.vpn.rotate", return_value=reconnects),
+        )
+
+    def running(self, patches):
+        for p in patches:
+            started = p.start()
+            self.addCleanup(p.stop)
+        return started
+
+    def test_a_refusal_reconnects_and_tries_again(self):
+        rotate = self.running(self.rotating(2))
+        blocked = DownloadError("Sign in to confirm you're not a bot")
+        answers = [blocked, blocked, {"title": "t", "subtitles": CAPTIONS}]
+
+        def extract(url, download=False):
+            answer = answers.pop(0)
+            if isinstance(answer, Exception):
+                raise answer
+            return answer
+
+        with patch("services.youtube.YoutubeDL.extract_info", side_effect=extract):
+            with patch("services.youtube.YoutubeDL.urlopen", side_effect=lambda u: io.BytesIO(json.dumps(EVENTS).encode())):
+                video = fetch_video("abc")
+        self.assertEqual(video.title, "t")
+        self.assertEqual(rotate.call_count, 2)
+
+    def test_the_error_only_arrives_once_the_reconnects_run_out(self):
+        rotate = self.running(self.rotating(2))
+        with extracting(error=DownloadError("Sign in to confirm you're not a bot")):
+            with self.assertRaises(TranscriptBlocked):
+                fetch_video("abc")
+        self.assertEqual(rotate.call_count, 2)
+
+    def test_a_vpn_that_will_not_move_is_not_asked_twice(self):
+        rotate = self.running(self.rotating(3, reconnects=False))
+        with extracting(error=DownloadError("Sign in to confirm you're not a bot")):
+            with self.assertRaises(TranscriptBlocked):
+                fetch_video("abc")
+        self.assertEqual(rotate.call_count, 1)
+
+    def test_a_video_problem_is_not_worth_a_reconnect(self):
+        """Nothing about a private video changes with the address it is asked
+        for, so moving the tunnel would only be slower."""
+        rotate = self.running(self.rotating(2))
+        with extracting(error=DownloadError("ERROR: Private video")):
+            with self.assertRaises(ValueError) as caught:
+                fetch_video("abc")
+        self.assertNotIsInstance(caught.exception, TranscriptBlocked)
+        self.assertEqual(rotate.call_count, 0)
+
+    def test_without_a_vpn_nothing_is_retried(self):
+        rotate = self.running((
+            patch("services.youtube.YTDLP_PROXY", ""),
+            patch("services.youtube.VPN_ROTATIONS", 2),
+            patch("services.vpn.VPN_CONTROL_URL", ""),
+            patch("services.youtube.vpn.rotate", return_value=True),
+        ))
+        with extracting(error=DownloadError("Sign in to confirm you're not a bot")):
+            with self.assertRaises(TranscriptBlocked):
+                fetch_video("abc")
+        self.assertEqual(rotate.call_count, 0)
+
+    def test_a_movable_deployment_waits_less_on_each_attempt(self):
+        with patch("services.youtube.YTDLP_PROXY", "http://vpn:8888"):
+            with patch("services.youtube.VPN_ROTATIONS", 2):
+                with patch("services.vpn.VPN_CONTROL_URL", "http://vpn:8000"):
+                    self.assertEqual(_options()["socket_timeout"], 8)
+                    self.assertEqual(_options()["retries"], 0)
+                with patch("services.vpn.VPN_CONTROL_URL", ""):
+                    self.assertEqual(_options()["socket_timeout"], 20)
+                    self.assertEqual(_options()["retries"], 2)
+
+
 class FailuresThatMustNotBecomeServerErrors(unittest.TestCase):
     """Every one of these reached the user as a bare HTTP 500 at some point."""
 

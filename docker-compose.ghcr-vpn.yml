@@ -29,6 +29,8 @@ services:
       - DB_SCHEMA=${DB_SCHEMA:-public}
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - YTDLP_PROXY=${YTDLP_PROXY:-http://vpn:8888}
+      - VPN_CONTROL_URL=${VPN_CONTROL_URL:-http://vpn:8000}
+      - VPN_ROTATIONS=${VPN_ROTATIONS:-2}
       - JWT_SECRET=${JWT_SECRET:-change-this-in-production}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY:-uvSAXyWG429v7tYFyht42Jud0v--hr42pitofMf0pTY=}
       - CORS_ORIGINS=${CORS_ORIGINS:-["http://localhost:5173"]}
@@ -61,6 +63,7 @@ services:
       # reads as a wrong password rather than the wrong server.
       - FREE_ONLY=${FREE_ONLY:-off}
       - HTTPPROXY=on
+      - HTTP_CONTROL_SERVER_ADDRESS=:8000
 
 volumes:
   postgres_data:
