@@ -2,11 +2,92 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import CourseActionModal from "../components/CourseActionModal";
+import IconMenu from "../components/IconMenu";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import type { CourseEntry } from "../lib/types";
 
 type ModalAction = { course: CourseEntry; type: "delete" | "regenerate" };
+
+type Sort = "newest" | "oldest" | "title" | "progress";
+type Filter = "all" | "unstarted" | "started" | "done";
+
+const SORTS = [
+  { value: "newest", label: "Newest first" },
+  { value: "oldest", label: "Oldest first" },
+  { value: "title", label: "Title A to Z" },
+  { value: "progress", label: "Furthest along" },
+];
+
+const FILTERS = [
+  { value: "all", label: "All courses" },
+  { value: "unstarted", label: "Not started" },
+  { value: "started", label: "In progress" },
+  { value: "done", label: "Finished" },
+];
+
+const sortIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 16 7 20 11 16" />
+    <line x1="7" y1="20" x2="7" y2="4" />
+    <line x1="11" y1="4" x2="21" y2="4" />
+    <line x1="11" y1="8" x2="18" y2="8" />
+    <line x1="11" y1="12" x2="15" y2="12" />
+  </svg>
+);
+
+const filterIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+  </svg>
+);
+
+function titleOf(c: CourseEntry) {
+  return c.video_title || c.sections[0]?.title || "Untitled course";
+}
+
+/** Every word a course carries, so a search finds it by any of its parts. */
+function textOf(c: CourseEntry) {
+  const parts = [titleOf(c)];
+  for (const section of c.sections) {
+    parts.push(section.title, section.summary ?? "", ...(section.key_takeaways ?? []));
+    for (const mcq of section.mcqs ?? []) {
+      parts.push(mcq.question, ...mcq.options.map((o) => o.text));
+    }
+    for (const theory of section.theory_questions ?? []) parts.push(theory.question);
+  }
+  return parts.join(" ").toLowerCase();
+}
+
+function madeAt(c: CourseEntry) {
+  return c.created_at ? Date.parse(c.created_at) : 0;
+}
+
+/** How much of a course is behind you, so a half-read one sorts above a fresh one. */
+function progressOf(c: CourseEntry) {
+  if (c.has_passed_quiz) return 1;
+  return c.sections.length > 0 ? c.completed_sections.length / c.sections.length : 0;
+}
+
+function shown(courses: CourseEntry[], query: string, filter: Filter, sort: Sort) {
+  const needle = query.trim().toLowerCase();
+  const matched = courses.filter((c) => {
+    if (needle && !textOf(c).includes(needle)) return false;
+    const done = progressOf(c);
+    if (filter === "unstarted") return done === 0;
+    if (filter === "started") return done > 0 && done < 1;
+    if (filter === "done") return done === 1;
+    return true;
+  });
+
+  const order: Record<Sort, (a: CourseEntry, b: CourseEntry) => number> = {
+    newest: (a, b) => madeAt(b) - madeAt(a),
+    oldest: (a, b) => madeAt(a) - madeAt(b),
+    title: (a, b) => titleOf(a).localeCompare(titleOf(b)),
+    progress: (a, b) => progressOf(b) - progressOf(a),
+  };
+  return [...matched].sort(order[sort]);
+}
 
 export default function NotebookScreen() {
   const navigate = useNavigate();
@@ -15,6 +96,9 @@ export default function NotebookScreen() {
   const [error, setError] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalAction | null>(null);
   const [togglingDone, setTogglingDone] = useState<Set<string>>(new Set());
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<Sort>("newest");
+  const [filter, setFilter] = useState<Filter>("all");
 
   function refresh() {
     apiFetch("/courses", token)
@@ -49,13 +133,35 @@ export default function NotebookScreen() {
     }
   }
 
+  const visible = shown(courses ?? [], query, filter, sort);
+
   if (error) return <p className="error-message" style={{ padding: "2rem" }}>{error}</p>;
 
   return (
     <div className="notebook-view">
-      <div className="page-header">
+      <div className="notebook-header">
         <h1 className="page-header-title">Notebook</h1>
         <p className="page-header-sub">All the courses you have generated so far.</p>
+        {courses && courses.length > 0 && (
+          <div className="notebook-header-tools">
+            <IconMenu
+              icon={sortIcon}
+              label="Sort"
+              value={sort}
+              options={SORTS}
+              active={sort !== "newest"}
+              onChange={(v) => setSort(v as Sort)}
+            />
+            <IconMenu
+              icon={filterIcon}
+              label="Filter"
+              value={filter}
+              options={FILTERS}
+              active={filter !== "all"}
+              onChange={(v) => setFilter(v as Filter)}
+            />
+          </div>
+        )}
       </div>
 
       {!courses ? (
@@ -78,8 +184,30 @@ export default function NotebookScreen() {
         </div>
       ) : null}
 
+      {courses && courses.length > 0 && (
+        <label className="notebook-search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="7" /><line x1="20" y1="20" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            className="text-input"
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search your courses"
+            aria-label="Search your courses"
+          />
+        </label>
+      )}
+
+      {courses && courses.length > 0 && <hr className="notebook-rule" />}
+
+      {courses && courses.length > 0 && visible.length === 0 && (
+        <p className="status-message">Nothing here matches that. Try another search or filter.</p>
+      )}
+
       {courses && courses.length > 0 && <div className="notebook-grid">
-        {courses.map((c) => {
+        {visible.map((c) => {
           const progress = c.completed_sections?.length ?? 0;
           const total = c.sections.length;
           const allSectionsDone = c.completed_sections.length === total && total > 0;
