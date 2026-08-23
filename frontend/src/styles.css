@@ -1925,22 +1925,19 @@ body {
 }
 
 .graph-tooltip {
-  position: fixed;
-  z-index: 20;
+  position: relative;
   background: var(--color-surface-lowest);
   border-radius: var(--radius-lg);
   padding: 1rem 1.25rem;
   max-width: 18rem;
   box-shadow: var(--shadow-pop);
   border: var(--card-edge);
-  pointer-events: none;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
 .graph-tooltip.pinned {
-  pointer-events: auto;
   border: 1.5px solid var(--color-primary);
 }
 
@@ -4308,13 +4305,6 @@ a.modal-field-hint {
   color: var(--color-primary);
 }
 
-.cheatsheet-summary {
-  margin: 0.75rem 0 0 2.15rem;
-  color: var(--color-ink-faint);
-  font-size: 0.95rem;
-  line-height: 1.6;
-}
-
 .cheatsheet-points {
   list-style: none;
   margin: 1rem 0 0 2.15rem;
@@ -4366,8 +4356,107 @@ a.modal-field-hint {
     flex-wrap: wrap;
   }
 
-  .cheatsheet-summary,
   .cheatsheet-points {
     margin-left: 0;
   }
+}
+
+.cheatsheet-waiting {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.cheatsheet-waiting-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.cheatsheet-waiting-body {
+  margin: 0;
+  color: var(--color-ink-faint);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.cheatsheet-cta {
+  text-decoration: none;
+  align-self: flex-start;
+  gap: 0.6rem;
+}
+
+.cheatsheet-cta-state {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+  background: var(--color-secondary-container);
+  color: var(--color-primary);
+}
+
+.cheatsheet-cta.waiting .cheatsheet-cta-state,
+.icon-btn.waiting {
+  color: var(--color-ink-faint);
+}
+
+.retake-btn .cheatsheet-cta-state {
+  margin-left: auto;
+}
+
+.graph-tooltip-stack {
+  position: fixed;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 18rem;
+  pointer-events: none;
+}
+
+.graph-tooltip-stack.pinned {
+  pointer-events: auto;
+}
+
+.graph-tooltip-forget {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--color-danger-container);
+  border: none;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-menu);
+  padding: 0.7rem 1.4rem;
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-danger);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.graph-tooltip-forget svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.graph-tooltip-forget svg:last-child {
+  margin-left: auto;
+  transition: transform 0.15s ease;
+}
+
+.graph-tooltip-forget:hover {
+  background: var(--color-danger);
+  color: var(--color-on-accent);
+}
+
+.graph-tooltip-forget:hover svg:last-child {
+  transform: translateX(0.15rem);
+}
+
+.graph-tooltip-forget:disabled {
+  cursor: default;
+  opacity: 0.6;
 }

@@ -1,3 +1,5 @@
+import type { SheetStatus } from "./cheatsheet";
+
 export type Segment = { text: string; start: number; duration: number };
 
 export type CourseEntry = {
@@ -9,4 +11,5 @@ export type CourseEntry = {
   completed_sections: number[];
   has_passed_quiz: boolean;
   has_attempts: boolean;
+  cheatsheet_status: SheetStatus;
 };

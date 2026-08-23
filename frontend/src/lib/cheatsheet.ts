@@ -1,13 +1,15 @@
+export type SheetStatus = "pending" | "ready" | "failed";
+
 export type CheatsheetSection = {
   number: number;
   title: string;
   stamp: string;
   startSeconds: number;
-  summary: string;
   points: string[];
 };
 
 export type Cheatsheet = {
+  status: SheetStatus;
   title: string;
   videoId: string;
   sections: CheatsheetSection[];
@@ -15,12 +17,12 @@ export type Cheatsheet = {
 
 type SourceSection = {
   title: string;
-  summary: string;
-  key_takeaways: string[];
   start_seconds: number;
+  points: string[];
 };
 
-type SourceCourse = {
+type SourceSheet = {
+  status: SheetStatus;
   video_id: string;
   video_title?: string;
   sections: SourceSection[];
@@ -39,17 +41,17 @@ export function watchUrl(videoId: string, seconds: number) {
   return `https://www.youtube.com/watch?v=${videoId}&t=${Math.max(0, Math.floor(seconds))}s`;
 }
 
-export function buildCheatsheet(course: SourceCourse): Cheatsheet {
+export function buildCheatsheet(sheet: SourceSheet): Cheatsheet {
   return {
-    title: course.video_title?.trim() || "Untitled course",
-    videoId: course.video_id,
-    sections: course.sections.map((s, i) => ({
+    status: sheet.status,
+    title: sheet.video_title?.trim() || "Untitled course",
+    videoId: sheet.video_id,
+    sections: (sheet.sections ?? []).map((s, i) => ({
       number: i + 1,
       title: s.title,
       stamp: stampOf(s.start_seconds),
       startSeconds: s.start_seconds,
-      summary: s.summary,
-      points: s.key_takeaways,
+      points: s.points ?? [],
     })),
   };
 }

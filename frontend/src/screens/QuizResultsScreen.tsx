@@ -4,9 +4,16 @@ import { useLocation, useNavigate, useParams, useSearchParams } from "react-rout
 import { toast } from "../components/Toast";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import type { SheetStatus } from "../lib/cheatsheet";
 import { MASTERY_PCT, shownScore } from "../lib/score";
 import { drawResultCard } from "../lib/shareCard";
 import type { SummaryRow } from "../lib/shareCard";
+
+const CHEATSHEET_HINT: Record<SheetStatus, string> = {
+  pending: "Your cheatsheet is being written",
+  ready: "Your cheatsheet is ready",
+  failed: "The cheatsheet could not be written. Open it to try again",
+};
 
 type Breakdown = { accuracy: number; completeness: number; relevance: number; feedback: string };
 type QuestionResult = {
@@ -121,6 +128,7 @@ export default function QuizResultsScreen() {
   const [allDone, setAllDone] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [sheetStatus, setSheetStatus] = useState<SheetStatus>("pending");
 
   useEffect(() => {
     if (data || !courseId) return;
@@ -131,6 +139,19 @@ export default function QuizResultsScreen() {
       .then(([result, course]) => setData({ result, course }))
       .catch(() => setNotFound(true));
   }, [data, courseId, token, attemptId]);
+
+  useEffect(() => {
+    if (!courseId) return;
+    let ignore = false;
+    apiFetch(`/courses/${courseId}/cheatsheet`, token)
+      .then((sheet: { status: SheetStatus }) => {
+        if (!ignore) setSheetStatus(sheet.status);
+      })
+      .catch(() => {});
+    return () => {
+      ignore = true;
+    };
+  }, [courseId, token]);
 
   useEffect(() => {
     // The button below claims to know whether the course is finished, so it
@@ -458,11 +479,12 @@ export default function QuizResultsScreen() {
             </button>
           )}
 
-          <button className="retake-btn" onClick={() => navigate(`/course/${courseId}/cheatsheet`)}>
+          <button className="retake-btn tip" data-tip={CHEATSHEET_HINT[sheetStatus]} onClick={() => navigate(`/course/${courseId}/cheatsheet`)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="16" y2="7"/><line x1="9" y1="11" x2="16" y2="11"/>
             </svg>
             Cheatsheet
+            <span className="cheatsheet-cta-state">{sheetStatus === "ready" ? "Ready" : sheetStatus === "pending" ? "Writing" : "Retry"}</span>
           </button>
 
           <button className="retake-btn" onClick={shareResult} disabled={sharing}>
