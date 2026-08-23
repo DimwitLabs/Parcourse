@@ -4,7 +4,6 @@
 
   --color-paper: light-dark(#fbf9f5, #14150f);
   --color-surface-low: light-dark(#f5f3ef, #1c1e18);
-  --color-surface: light-dark(#f1efeb, #22241c);
   --color-surface-high: light-dark(#eae8e4, #2a2d26);
   --color-surface-lowest: light-dark(#ffffff, #212319);
   --color-border: light-dark(#d4d8d0, #363a31);
@@ -3352,28 +3351,23 @@ button.tip {
   gap: 0.65rem;
   padding: 0.75rem 1.1rem;
   border-radius: var(--radius-full);
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-border);
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--color-ink-faint);
-  transition: border-color 0.2s, color 0.2s;
+  transition: color 0.2s;
 }
 
 .gen-pill.done {
   color: var(--color-ink-soft);
-  border-color: var(--color-sage);
 }
 
 .gen-pill.active {
   color: var(--color-ink);
-  border-color: var(--color-primary);
   background: var(--color-secondary-container);
 }
 
 .gen-pill.blocked {
   border-radius: var(--radius-lg);
-  border-color: var(--color-warn);
   background: var(--color-warn-container);
   color: var(--color-ink);
   align-items: flex-start;
@@ -3476,7 +3470,7 @@ button.tip {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
-  background: var(--color-border);
+  background: var(--color-ink-faint);
   flex-shrink: 0;
 }
 
