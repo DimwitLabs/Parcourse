@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import Avatar from "../components/Avatar";
 import PasswordField from "../components/PasswordField";
-import { toast } from "../components/Toast";
+import { toast, useLoadingToast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { generatePassword, passwordError } from "../lib/password";
 import { useAuth } from "../lib/auth";
@@ -129,8 +129,10 @@ export default function AdminScreen() {
     }
   }
 
+  useLoadingToast(!users, "Loading users…");
+
   if (error) return <p className="error-message">{error}</p>;
-  if (!users) return <p className="status-message">Loading users…</p>;
+  if (!users) return null;
 
   const totalCourses = users.reduce((n, u) => n + u.course_count, 0);
 

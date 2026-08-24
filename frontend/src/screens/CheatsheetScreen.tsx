@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { toast } from "../components/Toast";
+import { toast, useLoadingToast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { POLL_MS, buildCheatsheet, fileNameOf, watchUrl } from "../lib/cheatsheet";
@@ -40,6 +40,8 @@ export default function CheatsheetScreen() {
       if (timer.current) window.clearTimeout(timer.current);
     };
   }, [courseId, token, navigate]);
+
+  useLoadingToast(!sheet, "Loading your cheatsheet…");
 
   async function save(kind: "pdf" | "png") {
     if (!sheet || sheet.status !== "ready" || saving) return;
@@ -85,7 +87,6 @@ export default function CheatsheetScreen() {
         </div>
       </div>
 
-      {!sheet && <p className="status-message">Loading your cheatsheet…</p>}
 
       {sheet?.status === "pending" && (
         <div className="card cheatsheet-waiting">

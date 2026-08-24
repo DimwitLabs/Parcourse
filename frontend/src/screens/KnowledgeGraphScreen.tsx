@@ -7,7 +7,7 @@ import {
 import { useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
-import { toast } from "../components/Toast";
+import { toast, useLoadingToast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { download } from "../lib/download";
 import { withLightPalette } from "../lib/palette";
@@ -583,6 +583,8 @@ export default function KnowledgeGraphScreen() {
   const counts = nodeCounts();
   const effectiveMastery = simData && graph ? computeEffectiveMastery(simData.nodes, graph.edges) : new Map<string, number>();
 
+  useLoadingToast(!graph || !simData, "Loading knowledge graph…");
+
   if (error) return <p className="error-message" style={{ padding: "2rem" }}>{error}</p>;
 
   const GRANULARITY_PILLS: { value: Granularity; label: string }[] = [
@@ -598,9 +600,7 @@ export default function KnowledgeGraphScreen() {
         <p className="page-header-sub">Every concept you've learned, connected.</p>
       </div>
 
-      {!graph || !simData ? (
-        <p className="status-message">Loading knowledge graph…</p>
-      ) : (
+      {!graph || !simData ? null : (
         <>
           <div className="graph-toolbar">
             <div className="graph-granularity-pills">

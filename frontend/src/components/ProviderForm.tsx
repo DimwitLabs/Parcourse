@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import CustomSelect from "./CustomSelect";
-import { toast } from "./Toast";
+import { toast, useLoadingToast } from "./Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
 
@@ -176,7 +176,9 @@ export default function ProviderForm({
     }
   }
 
-  if (!provider) return <p className="status-message">Loading providers…</p>;
+  useLoadingToast(!provider, "Loading providers…");
+
+  if (!provider) return null;
 
   const needsKey = provider.fields.some((f) => f.secret);
 

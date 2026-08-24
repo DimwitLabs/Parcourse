@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate, Route, BrowserRouter, Routes } from "react-router-dom";
 
 import AppShell from "./components/AppShell";
+import { useLoadingToast } from "./components/Toast";
 import { API_BASE_URL, useAuth } from "./lib/auth";
 import AdminScreen from "./screens/AdminScreen";
 import ChangePasswordScreen from "./screens/ChangePasswordScreen";
@@ -28,12 +29,13 @@ function RootRouter() {
       .catch(() => setNeedsSetup(false));
   }, [status]);
 
-  if (status === "loading") {
-    return <p className="status-message">Loading…</p>;
-  }
+  const settling = status === "loading" || (status === "signed-out" && needsSetup === null);
+  useLoadingToast(settling, "Loading…");
+
+  if (status === "loading") return null;
 
   if (status === "signed-out") {
-    if (needsSetup === null) return <p className="status-message">Loading…</p>;
+    if (needsSetup === null) return null;
     return needsSetup ? <SetupScreen /> : <LoginScreen />;
   }
 

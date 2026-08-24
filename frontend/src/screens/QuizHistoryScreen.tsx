@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import { useLoadingToast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { MASTERY_PCT, shownScore } from "../lib/score";
@@ -40,6 +41,8 @@ export default function QuizHistoryScreen() {
     -1,
   );
 
+  useLoadingToast(!attempts, "Loading your attempts…");
+
   return (
     <div className="notebook-view">
       <div className="page-header">
@@ -47,7 +50,6 @@ export default function QuizHistoryScreen() {
         <p className="page-header-sub">Every attempt you have made at this quiz, newest first.</p>
       </div>
 
-      {!attempts && <p className="status-message">Loading your attempts…</p>}
 
       {attempts && attempts.length === 0 && (
         <div className="empty-state">

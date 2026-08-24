@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import CourseActionModal from "../components/CourseActionModal";
 import type { CourseAction } from "../components/CourseActionModal";
-import { toast } from "../components/Toast";
+import { toast, useLoadingToast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { CHEATSHEET_HINT, POLL_MS } from "../lib/cheatsheet";
@@ -244,7 +244,9 @@ export default function CourseScreen() {
     }
   }
 
-  if (!course) return <p className="status-message">Loading course…</p>;
+  useLoadingToast(!course, "Loading course…");
+
+  if (!course) return null;
 
   const totalQuestions = course.sections.reduce(
     (n, s) => n + s.mcqs.length + s.theory_questions.length,

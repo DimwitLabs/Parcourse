@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import CourseActionModal from "../components/CourseActionModal";
 import IconMenu from "../components/IconMenu";
+import { useLoadingToast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import type { CourseEntry } from "../lib/types";
@@ -133,6 +134,8 @@ export default function NotebookScreen() {
     }
   }
 
+  useLoadingToast(!courses, "Loading your notebook…");
+
   const visible = shown(courses ?? [], query, filter, sort);
 
   if (error) return <p className="error-message" style={{ padding: "2rem" }}>{error}</p>;
@@ -164,9 +167,7 @@ export default function NotebookScreen() {
         )}
       </div>
 
-      {!courses ? (
-        <p className="status-message">Loading your notebook…</p>
-      ) : courses.length === 0 ? (
+      {!courses ? null : courses.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">

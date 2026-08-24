@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import { toast } from "../components/Toast";
+import { toast, useLoadingToast } from "../components/Toast";
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { CHEATSHEET_HINT } from "../lib/cheatsheet";
@@ -272,6 +272,8 @@ export default function QuizResultsScreen() {
     }
   }
 
+  useLoadingToast(!data && !notFound, "Loading results…");
+
   if (notFound) {
     return (
       <div className="empty-state">
@@ -283,7 +285,7 @@ export default function QuizResultsScreen() {
     );
   }
 
-  if (!data) return <p className="status-message">Loading results...</p>;
+  if (!data) return null;
 
   const { result, course } = data;
 
