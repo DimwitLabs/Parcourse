@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- **Documentation:** A documentation site at [docs.parcourse.dimwit.me](https://docs.parcourse.dimwit.me) is finally live!
 - **Finding a Course:** The notebook sorts, filters and searches. Sort by when a course was made, by title, or by how far through it you are. Filter to what has not been started, what is underway, or what is finished. And search everything a course holds, its heading, its section titles and summaries, the takeaways and the quiz questions, rather than the title alone, so a course can be found by something said inside it.
 
 ### Changed

@@ -8,59 +8,36 @@
 
 Parcourse is an open-source app that transforms YouTube videos into structured learning experiences. Paste any URL and get AI-generated sections, summaries, and quiz questions with instant feedback. The app builds a personal knowledge graph mapping your growth across topics, supports multi-user administration, and works with any provider LiteLLM reaches (OpenRouter, OpenAI, Anthropic, Gemini, Groq, a local Ollama, and more), configured from the Settings page and stored encrypted.
 
+It is deliberately not a discovery tool. There is no catalogue, no feed and nothing recommended, and it will never suggest what to learn next: you bring the link. Everything in a notebook is therefore there because someone put it there, and each account keeps its own courses, progress and graph rather than sharing them with the instance.
+
+Parcourse is already a word in English, an outdoor fitness trail lined with exercise stations, but that is not where this name comes from. It is a pun. *Parcours* is French for a route, a path, the way through something, and a course is, well, a course. Parcourse is the personal path you build through the videos you already enjoy.
+
 ## Running it
 
-You need Docker and an API key from a provider of your choice.
+You need Docker and an API key from a provider of your choice. Both halves of the app are published as images, so nothing is built locally.
 
 ```bash
 cp .env.example .env
-docker compose up
+docker compose -f docker-compose.ghcr.yml up -d
 ```
 
-### Running on a VPS
+That pulls `ghcr.io/dimwitlabs/parcourse-backend` and `ghcr.io/dimwitlabs/parcourse-frontend` at `latest`. Set `PARCOURSE_VERSION` to `development` or to a version such as `1.4.0` to follow a different tag. `docker-compose.yml` is the one that builds from the source instead.
 
-YouTube refuses transcript requests from datacenter addresses, so a server
-rented anywhere is told to prove it is not a bot while the same app on a home
-machine works untouched. Point `YTDLP_PROXY` at any proxy and only the YouTube
-fetches go through it. A second deployment file runs a VPN alongside
-the app for this, and any provider's proxy works just as well:
-
-```bash
-docker compose -f docker-compose.ghcr-vpn.yml up
-```
-
-A single address runs out of welcome eventually. When YouTube turns one away,
-the VPN is asked for a different server and the fetch is tried again from
-there, and only once `VPN_ROTATIONS` reconnects have all been refused does
-anyone hear about it. Set it to zero to keep the address it started on.
-`VPN_CONTROL_URL` is where that reconnect is asked for, and the bundled VPN
-already answers on it, so rotation needs both set to do anything.
-
-Set `JWT_SECRET` and `ENCRYPTION_KEY` in `.env`. Generate the encryption key with:
+Set `JWT_SECRET` and `ENCRYPTION_KEY` in `.env` first. Generate the encryption key with:
 
 ```bash
 python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 ```
 
-The app is on http://localhost:5173 and the API on http://localhost:8000. The first visit walks you through creating an admin account and connecting a provider; you can skip the provider and add it from Settings later although the app will nudge you to do it anyway.
+The app is on http://localhost:5173 and the API on http://localhost:8000. The first visit walks you through creating an admin account and connecting a provider.
 
-## Using your own database
+## Documentation
 
-The app ships with a Postgres container, but it will talk to any Postgres you already have, including Supabase and Neon. Point `DATABASE_URL` at it and use the compose file that leaves the database out:
+[docs.parcourse.dimwit.me](https://docs.parcourse.dimwit.me)
 
-```bash
-DATABASE_URL=postgresql://user:password@host:5432/postgres docker compose -f docker-compose.external-db.yml up
-```
+Running it on a VPS, using your own Postgres, connecting a provider, managing accounts, upgrading, and every setting it reads are all documented there.
 
-Paste the connection string exactly as your provider gives it; `postgresql://` and `postgres://` both work. Set `DB_SCHEMA` if you would rather the tables sat somewhere other than `public`, and the schema is created for you.
-
-Set `LOG_LEVEL` to `debug`, `info`, `warning`, `error` or `critical` to change how much the backend says for itself; it defaults to `info`.
-
-## Tests
-
-```bash
-docker compose exec backend python -m unittest discover -s tests
-```
+Contributors should read [CONTRIBUTING.md](CONTRIBUTING.md), which covers the development setup and how to run the tests.
 
 ## Credits
 
