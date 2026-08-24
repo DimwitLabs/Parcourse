@@ -1,32 +1,57 @@
 import { useEffect, useState } from "react";
 
-type ToastType = "success" | "error" | "info";
+type ToastType = "success" | "error" | "info" | "loading";
 
-let showToastGlobal: (message: string, type?: ToastType) => void = () => {};
+type Note = { id: number; message: string; type: ToastType };
+
+const ANNOUNCEMENT_MS = 3500;
+
+let notes: Note[] = [];
+let nextId = 0;
+const listeners = new Set<(notes: Note[]) => void>();
+
+function raise(message: string, type: ToastType) {
+  const id = nextId++;
+  notes = [...notes, { id, message, type }];
+  listeners.forEach((listen) => listen(notes));
+  return id;
+}
+
+function clear(id: number) {
+  notes = notes.filter((note) => note.id !== id);
+  listeners.forEach((listen) => listen(notes));
+}
 
 export function toast(message: string, type: ToastType = "info") {
-  showToastGlobal(message, type);
+  const id = raise(message, type);
+  setTimeout(() => clear(id), ANNOUNCEMENT_MS);
+}
+
+export function useLoadingToast(waiting: boolean, message: string) {
+  useEffect(() => {
+    if (!waiting) return;
+    const id = raise(message, "loading");
+    return () => clear(id);
+  }, [waiting, message]);
 }
 
 export default function ToastContainer() {
-  const [toasts, setToasts] = useState<{ id: number; message: string; type: ToastType }[]>([]);
+  const [shown, setShown] = useState(notes);
 
   useEffect(() => {
-    let nextId = 0;
-    showToastGlobal = (message, type = "info") => {
-      const id = nextId++;
-      setToasts((prev) => [...prev, { id, message, type }]);
-      setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3500);
-    };
+    listeners.add(setShown);
+    setShown(notes);
+    return () => { listeners.delete(setShown); };
   }, []);
 
-  if (toasts.length === 0) return null;
+  if (shown.length === 0) return null;
 
   return (
     <div className="toast-container">
-      {toasts.map((t) => (
-        <div key={t.id} className={`toast toast-${t.type}`}>
-          {t.message}
+      {shown.map((note) => (
+        <div key={note.id} className={`toast toast-${note.type}`}>
+          {note.type === "loading" && <span className="gen-pill-spinner" />}
+          {note.message}
         </div>
       ))}
     </div>
