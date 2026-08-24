@@ -3,10 +3,28 @@ import { fileURLToPath } from "node:url";
 
 import type * as Preset from "@docusaurus/preset-classic";
 import type { Config } from "@docusaurus/types";
+import type { PrismTheme } from "prism-react-renderer";
 
 import sectionCards from "./src/remark/sectionCards";
 
 const REPO = "https://github.com/DimwitLabs/Parcourse";
+
+const codeTheme: PrismTheme = {
+  plain: {
+    color: "var(--color-secondary)",
+    backgroundColor: "var(--color-primary-wash)",
+  },
+  styles: [
+    { types: ["comment", "prolog", "doctype", "cdata"], style: { color: "var(--color-ink-faint)", fontStyle: "italic" } },
+    { types: ["punctuation", "operator"], style: { color: "var(--color-ink-soft)" } },
+    { types: ["keyword", "builtin", "selector", "attr-name"], style: { color: "var(--color-primary)", fontWeight: "700" } },
+    { types: ["function", "class-name"], style: { color: "var(--color-primary-hover)", fontWeight: "700" } },
+    { types: ["string", "char", "inserted", "url"], style: { color: "var(--color-sage)" } },
+    { types: ["number", "boolean", "constant", "symbol"], style: { color: "var(--color-primary-light)" } },
+    { types: ["variable", "parameter", "property"], style: { color: "var(--color-secondary)" } },
+    { types: ["deleted"], style: { color: "var(--color-danger)" } },
+  ],
+};
 
 function appVersion() {
   try {
@@ -151,6 +169,11 @@ const config: Config = {
       sidebar: { hideable: false, autoCollapseCategories: false },
     },
     tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 3 },
+    prism: {
+      theme: codeTheme,
+      darkTheme: codeTheme,
+      additionalLanguages: ["bash"],
+    },
   } satisfies Preset.ThemeConfig,
 };
 

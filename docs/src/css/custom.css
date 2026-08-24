@@ -48,8 +48,8 @@
   --ifm-blockquote-color: var(--color-ink-soft);
   --ifm-blockquote-border-color: var(--color-primary-light);
 
-  --ifm-code-background: var(--color-surface-high);
-  --ifm-code-color: var(--color-ink);
+  --ifm-code-background: var(--color-primary-wash);
+  --ifm-code-color: var(--color-secondary);
   --ifm-code-font-size: 0.86em;
   --ifm-code-padding-horizontal: 0.4rem;
   --ifm-code-padding-vertical: 0.15rem;
@@ -127,10 +127,6 @@
   --ifm-toc-link-color: var(--color-ink-faint);
   --ifm-toc-padding-vertical: 0.35rem;
 }
-
-/* The paper, and the dots printed on it. Infima caps the body at height: 100%,
-   so dots asked for there stop one screen down. The root element's background
-   covers the whole canvas however far the page runs. */
 
 html {
   background-color: var(--color-paper);
@@ -218,7 +214,6 @@ body {
 }
 
 .navbar__search-input {
-  width: 14rem;
   height: var(--navbar-control-height);
   padding: 0 2.25rem;
   border-radius: var(--radius-full);
@@ -383,6 +378,16 @@ html[class*="docusaurus-search-local"] [class*="searchResultItemPath_"] {
 html[class*="docusaurus-search-local"] [class*="searchResultItemSummary_"] {
   font-style: normal;
   color: var(--color-ink-soft);
+}
+
+/* Infima narrows the field below 996px and the search theme collapses it to an
+   icon below 576px. Both of those are layered, so a width stated here would
+   win at every size and push the bar past the viewport once the field takes
+   focus. It is only widened where there is room for it. */
+@media (min-width: 997px) {
+  .navbar__search-input {
+    width: 14rem;
+  }
 }
 
 .navbar-sidebar {
@@ -581,15 +586,20 @@ html[class*="docusaurus-search-local"] [class*="searchResultItemSummary_"] {
 
 /* Code */
 
-.markdown code {
-  border: var(--card-edge);
+/* Infima defines --ifm-code-color but no rule reads it, so inline code takes
+   the colour of whatever surrounds it unless it is set here. The child
+   combinator keeps all of this off the code element inside a fenced block. */
+.markdown :not(pre) > code {
+  border: 1px solid var(--color-hairline-sage);
+  color: var(--color-secondary);
   font-weight: 600;
 }
 
 .theme-code-block {
   border-radius: var(--radius-md) !important;
-  border: var(--card-edge);
+  border: none;
   box-shadow: none !important;
+  overflow: hidden;
 }
 
 .theme-code-block pre {
@@ -601,8 +611,8 @@ html[class*="docusaurus-search-local"] [class*="searchResultItemSummary_"] {
 }
 
 div[class^="codeBlockTitle"] {
-  background: var(--color-surface-low) !important;
-  border-bottom: 1px solid var(--line) !important;
+  background: var(--color-primary-wash) !important;
+  border-bottom: 1px solid var(--color-hairline-sage) !important;
   color: var(--color-ink-soft);
   font-size: 0.78rem;
   font-weight: 700;
@@ -660,7 +670,7 @@ div[class^="codeBlockTitle"] {
 }
 
 /* Inside a table the wrapping happens between tokens, never through one. */
-.markdown code {
+.markdown :not(pre) > code {
   overflow-wrap: normal;
 }
 
@@ -900,7 +910,6 @@ div[class^="codeBlockTitle"] {
   pointer-events: none;
 }
 
-/* A chip carries its own ground, so it needs no wash under it. */
 .theme-edit-this-page {
   display: inline-flex;
   align-items: center;
@@ -940,7 +949,41 @@ div[class^="codeBlockTitle"] {
     --ifm-navbar-padding-horizontal: 1.25rem;
   }
 
+  .navbar__inner {
+    gap: 0.75rem;
+  }
+
+  /* Docusaurus pins the search to the right edge of the bar below this width,
+     out of the flow, which drops it on top of whatever else is over there. It
+     goes back in the flow so the field and the pill sit side by side. */
+  html [class*="navbarSearchContainer_"] {
+    position: static;
+    right: auto;
+  }
+
+  /* The wash reaches past the results, and past the viewport with it. */
+  html .navbar__search [class*="dropdownMenu_"]::before {
+    inset: -0.75rem -0.5rem;
+  }
+
   .footer {
     padding: 2.5rem 1.25rem 2rem;
+  }
+}
+
+/* The bar holds the field, the pill and the theme toggle at a width that fits
+   two of them. The pill loses its icon to make room, and steps aside entirely
+   while the field is focused, since focus widens it from an icon to 9rem. */
+@media (max-width: 576px) {
+  .version-pill {
+    padding: 0 0.7rem;
+  }
+
+  .version-pill svg {
+    display: none;
+  }
+
+  [class*="navbarSearchContainer_"]:has([class*="focused_"]) ~ .version-pill {
+    display: none;
   }
 }
