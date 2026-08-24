@@ -1,0 +1,946 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+:root {
+  --ifm-font-family-base: "Plus Jakarta Sans", sans-serif;
+  --ifm-font-family-monospace: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  --ifm-font-size-base: 16px;
+  --ifm-line-height-base: 1.7;
+  --ifm-font-weight-semibold: 700;
+  --ifm-font-weight-bold: 800;
+
+  --ifm-color-primary: var(--color-primary);
+  --ifm-color-primary-dark: var(--color-primary-hover);
+  --ifm-color-primary-darker: var(--color-primary-hover);
+  --ifm-color-primary-darkest: var(--color-primary-hover);
+  --ifm-color-primary-light: var(--color-primary-light);
+  --ifm-color-primary-lighter: var(--color-primary-light);
+  --ifm-color-primary-lightest: var(--color-primary-container);
+
+  --ifm-background-color: transparent;
+  --ifm-background-surface-color: var(--color-surface-lowest);
+  --ifm-font-color-base: var(--color-ink);
+  --ifm-font-color-secondary: var(--color-ink-soft);
+  --ifm-heading-color: var(--color-ink);
+  --ifm-heading-font-weight: 800;
+  /* The app's own scale: 1.5rem page titles, 1.15rem section titles. */
+  --ifm-h1-font-size: 1.5rem;
+  --ifm-h2-font-size: 1.15rem;
+  --ifm-h3-font-size: 1rem;
+  --ifm-h4-font-size: 0.9rem;
+  --ifm-heading-margin-bottom: 0.75rem;
+
+  --ifm-link-color: var(--color-primary);
+  --ifm-link-hover-color: var(--color-primary-hover);
+  --ifm-link-decoration: none;
+  --ifm-link-hover-decoration: underline;
+
+  --ifm-global-radius: var(--radius-md);
+  --ifm-global-shadow-lw: var(--shadow-pill);
+  --ifm-global-shadow-md: var(--shadow-lift-sm);
+  --ifm-global-shadow-tl: var(--shadow-lift);
+
+  --ifm-hr-background-color: var(--line);
+  --ifm-hr-border-color: var(--line);
+  --ifm-toc-border-color: var(--line);
+  --ifm-table-border-color: var(--line);
+  --ifm-table-head-background: var(--color-surface-low);
+  --ifm-table-stripe-background: var(--color-surface-low);
+  --ifm-blockquote-color: var(--color-ink-soft);
+  --ifm-blockquote-border-color: var(--color-primary-light);
+
+  --ifm-code-background: var(--color-surface-high);
+  --ifm-code-color: var(--color-ink);
+  --ifm-code-font-size: 0.86em;
+  --ifm-code-padding-horizontal: 0.4rem;
+  --ifm-code-padding-vertical: 0.15rem;
+  --ifm-code-border-radius: var(--radius-sm);
+  --ifm-pre-background: var(--color-surface-low);
+  --ifm-pre-color: var(--color-ink);
+  --docusaurus-highlighted-code-line-bg: var(--color-secondary-container);
+
+  --ifm-navbar-background-color: var(--color-paper);
+  --ifm-navbar-height: 4.5rem;
+  --ifm-navbar-padding-horizontal: 2.5rem;
+  --ifm-navbar-shadow: none;
+  --ifm-navbar-link-color: var(--color-ink-soft);
+  --ifm-navbar-link-hover-color: var(--color-ink);
+  --ifm-navbar-item-padding-horizontal: 0;
+  --ifm-navbar-search-input-background-color: var(--color-surface-low);
+  --ifm-navbar-search-input-color: var(--color-ink);
+  --ifm-navbar-search-input-placeholder-color: var(--color-ink-faint);
+
+  --search-local-modal-background: transparent;
+  --search-local-modal-shadow: none;
+  --search-local-modal-width: 26rem;
+  --search-local-modal-width-sm: 20rem;
+  --search-local-spacing: 0;
+  --search-local-hit-background: var(--color-surface-lowest);
+  --search-local-hit-shadow: var(--shadow-menu);
+  --search-local-hit-color: var(--color-ink);
+  --search-local-hit-height: 3rem;
+  --search-local-hit-active-color: var(--color-primary);
+  --search-local-highlight-color: var(--color-primary);
+  --search-local-muted-color: var(--color-ink-faint);
+  --search-local-input-active-border-color: var(--color-primary);
+  --navbar-control-height: 2.5rem;
+
+  --arrow-left: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='19' y1='12' x2='5' y2='12'/%3E%3Cpolyline points='12 19 5 12 12 5'/%3E%3C/svg%3E");
+  --arrow-right: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='5' y1='12' x2='19' y2='12'/%3E%3Cpolyline points='12 5 19 12 12 19'/%3E%3C/svg%3E");
+
+  --ifm-menu-color: var(--color-ink-soft);
+  --ifm-menu-color-active: var(--color-primary);
+  --ifm-menu-color-background-active: var(--color-secondary-container);
+  --ifm-menu-color-background-hover: var(--color-surface-high);
+  --ifm-menu-link-padding-horizontal: 1rem;
+  --ifm-menu-link-padding-vertical: 0.55rem;
+
+  --ifm-breadcrumb-color-active: var(--color-primary);
+  --ifm-breadcrumb-item-background-active: var(--color-secondary-container);
+  --ifm-breadcrumb-padding-horizontal: 0.85rem;
+  --ifm-breadcrumb-border-radius: var(--radius-full);
+
+  --ifm-footer-background-color: transparent;
+  --ifm-footer-color: var(--color-ink-soft);
+  --ifm-footer-link-color: var(--color-ink-soft);
+  --ifm-footer-link-hover-color: var(--color-primary);
+  --ifm-footer-title-color: var(--color-ink);
+
+  --ifm-alert-border-radius: var(--radius-md);
+  --ifm-alert-border-width: 0;
+  --ifm-alert-border-left-width: 0;
+  --ifm-alert-padding-horizontal: 1.5rem;
+  --ifm-alert-padding-vertical: 1.25rem;
+
+  --ifm-button-border-radius: var(--radius-full);
+  --ifm-button-font-weight: 700;
+  --ifm-button-padding-horizontal: 1.85rem;
+  --ifm-button-padding-vertical: 0.9rem;
+
+  --ifm-scrollbar-track-background-color: transparent;
+  --ifm-scrollbar-thumb-background-color: var(--color-border);
+  --ifm-scrollbar-thumb-hover-background-color: var(--color-ink-faint);
+
+  --ifm-dropdown-background-color: var(--color-surface-lowest);
+  --ifm-dropdown-link-color: var(--color-ink-soft);
+  --ifm-dropdown-hover-background-color: var(--color-surface-high);
+
+  --ifm-toc-link-color: var(--color-ink-faint);
+  --ifm-toc-padding-vertical: 0.35rem;
+}
+
+/* The paper, and the dots printed on it. Infima caps the body at height: 100%,
+   so dots asked for there stop one screen down. The root element's background
+   covers the whole canvas however far the page runs. */
+
+html {
+  background-color: var(--color-paper);
+  background-image: radial-gradient(var(--color-dot) 1.4px, transparent 1.4px);
+  background-size: 26px 26px;
+  background-position: 13px 13px;
+}
+
+body {
+  background: transparent;
+  overflow-wrap: anywhere;
+}
+
+.canvas-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background-color: transparent;
+  background-image: radial-gradient(var(--color-dot-strong) 1.4px, transparent 1.4px);
+  background-size: 26px 26px;
+  background-position: var(--scroll-x, 13px) var(--scroll-y, 13px);
+  -webkit-mask-image: radial-gradient(
+    12.5rem circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+    black 0%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    12.5rem circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+    black 0%,
+    transparent 100%
+  );
+}
+
+.navbar {
+  border-bottom: 1px solid var(--line);
+}
+
+.navbar__inner {
+  gap: 2rem;
+}
+
+.navbar__items {
+  gap: 0.5rem;
+}
+
+.navbar__items--right {
+  gap: 0.75rem;
+}
+
+.navbar__brand {
+  margin-right: 0.75rem;
+}
+
+.navbar__logo {
+  height: 1.75rem;
+}
+
+.navbar__logo img {
+  height: 100%;
+  width: auto;
+}
+
+.navbar__link {
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-full);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.navbar__link:hover {
+  background: var(--color-surface-high);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.navbar__link--active {
+  background: var(--color-secondary-container);
+  color: var(--color-primary);
+}
+
+.navbar__search {
+  padding-left: 0;
+}
+
+.navbar__search-input {
+  width: 14rem;
+  height: var(--navbar-control-height);
+  padding: 0 2.25rem;
+  border-radius: var(--radius-full);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.navbar__search-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background: var(--color-surface-lowest);
+}
+
+/* The result list is a CSS module, so its own class names carry a build hash.
+   The prefix is stable. These are the pieces the theme gives no variable for,
+   so that results read as one menu card the way the app's account menu does
+   rather than as a stack of separate boxes. The theme's own rules sit later in
+   the bundle and are unlayered, so each of these has to outrank them rather
+   than merely follow them. */
+html .navbar__search [class*="dropdownMenu_"] {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  isolation: isolate;
+}
+
+/* No panel behind the results, so the page would otherwise read through the
+   gaps between them. The same wash the footer links carry sits behind the
+   stack instead. */
+html .navbar__search [class*="dropdownMenu_"]::before {
+  content: "";
+  position: absolute;
+  inset: -1rem -1.5rem;
+  z-index: -1;
+  background: radial-gradient(
+    ellipse 70% 60% at 50% 50%,
+    var(--color-paper) 55%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+html .navbar__search [class*="dropdownMenu_"] [class*="suggestion_"] {
+  border-radius: var(--radius-md);
+  padding: 0 1.1rem;
+}
+
+html
+  .navbar__search
+  [class*="dropdownMenu_"]
+  [class*="suggestion_"]:not(:last-child) {
+  margin-bottom: 0.25rem;
+}
+
+html
+  .navbar__search
+  [class*="dropdownMenu_"]
+  [class*="suggestion_"]:hover:not([class*="cursor_"]) {
+  background-color: var(--color-surface-low);
+}
+
+/* One variable carries both the marked text and the selected row, so the
+   selected row's own colour has to be set here. */
+html
+  .navbar__search
+  [class*="dropdownMenu_"]
+  [class*="suggestion_"][class*="cursor_"] {
+  background-color: var(--color-secondary-container);
+}
+
+html .navbar__search [class*="dropdownMenu_"] [class*="hitTitle_"] {
+  font-weight: 600;
+}
+
+html .navbar__search [class*="dropdownMenu_"] [class*="noResults_"] {
+  background: var(--color-surface-lowest);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-menu);
+  padding: 1.5rem 1.1rem;
+}
+
+html .navbar__search [class*="dropdownMenu_"] [class*="hitFooter_"] {
+  margin-top: 0.25rem;
+}
+
+html .navbar__search [class*="dropdownMenu_"] [class*="hitFooter_"] a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.4rem;
+  border-radius: var(--radius-full);
+  background: var(--color-secondary-container);
+  box-shadow: var(--shadow-menu);
+  color: var(--color-primary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+html .navbar__search [class*="dropdownMenu_"] [class*="hitFooter_"] a::after {
+  content: "";
+  margin-left: auto;
+  width: 1rem;
+  height: 1rem;
+  background-color: currentColor;
+  mask: var(--arrow-right) center / contain no-repeat;
+  -webkit-mask: var(--arrow-right) center / contain no-repeat;
+  transition: transform 0.15s ease;
+}
+
+html .navbar__search [class*="dropdownMenu_"] [class*="hitFooter_"] a:hover {
+  background: var(--color-primary);
+  color: var(--color-surface-lowest);
+}
+
+html
+  .navbar__search
+  [class*="dropdownMenu_"]
+  [class*="hitFooter_"]
+  a:hover::after {
+  transform: translateX(0.15rem);
+}
+
+html[class*="docusaurus-search-local"] .main-wrapper .container {
+  background: var(--color-surface-lowest);
+  border: var(--card-edge);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lift-sm);
+  padding: 2rem 2.25rem;
+  max-width: 48rem;
+}
+
+html[class*="docusaurus-search-local"] [class*="searchQueryInput_"],
+html[class*="docusaurus-search-local"] [class*="searchContextInput_"] {
+  background: var(--color-surface-low);
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  padding: 0.85rem 1.5rem;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--color-ink);
+}
+
+html[class*="docusaurus-search-local"] [class*="searchQueryInput_"]:focus,
+html[class*="docusaurus-search-local"] [class*="searchContextInput_"]:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+html[class*="docusaurus-search-local"] [class*="searchResultItem_"] {
+  border-bottom: 1px solid var(--line);
+}
+
+html[class*="docusaurus-search-local"] [class*="searchResultItemPath_"] {
+  color: var(--color-ink-faint);
+}
+
+html[class*="docusaurus-search-local"] [class*="searchResultItemSummary_"] {
+  font-style: normal;
+  color: var(--color-ink-soft);
+}
+
+.navbar-sidebar {
+  background: var(--color-paper);
+}
+
+.navbar-sidebar__brand {
+  box-shadow: none;
+  border-bottom: 1px solid var(--line);
+}
+
+/* The theme toggle and any other icon button in the bar. */
+
+.clean-btn {
+  border-radius: var(--radius-full);
+  color: var(--color-ink-faint);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.clean-btn:hover {
+  background: var(--color-surface-high);
+  color: var(--color-ink);
+}
+
+/* The version pill, drawn to match the one in the app's profile menu. */
+
+.version-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: var(--navbar-control-height);
+  padding: 0 0.9rem;
+  border-radius: var(--radius-full);
+  background: var(--color-secondary-container);
+  color: var(--color-primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.version-pill:hover {
+  background: var(--color-primary);
+  color: var(--color-on-accent);
+  text-decoration: none;
+}
+
+.version-pill svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+/* Sidebar */
+
+.theme-doc-sidebar-container {
+  border-right: 1px solid var(--line) !important;
+}
+
+.menu {
+  padding: 1.25rem 1rem !important;
+  font-weight: 600;
+}
+
+.menu__link {
+  border-radius: var(--radius-full);
+  font-size: 0.9rem;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.menu__link--active:not(.menu__link--sublist) {
+  font-weight: 700;
+}
+
+.menu__list-item-collapsible:hover {
+  background: var(--color-surface-high);
+  border-radius: var(--radius-full);
+}
+
+.menu__caret:hover {
+  background: transparent;
+}
+
+.theme-doc-sidebar-item-category > .menu__list-item-collapsible > .menu__link {
+  color: var(--color-ink-faint);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.menu__list .menu__list {
+  padding-left: 0.35rem;
+}
+
+/* Content, on the same card the app puts a page's body on. */
+
+.theme-doc-markdown {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.doc-card {
+  background: var(--color-surface-lowest);
+  border: var(--card-edge);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lift-sm);
+  padding: 2rem 2.25rem;
+}
+
+.doc-card > *:last-child,
+.doc-card > *:last-child > *:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .doc-card {
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 1.25rem;
+  }
+}
+
+
+/* Hierarchy carries on weight and space rather than size, the way it does in
+   the app, where a page title is 1.5rem and a section title 1.15rem. */
+
+/* Infima redefines --ifm-hN-font-size on .markdown > hN itself, which outranks
+   anything said on :root, so the sizes are given here rather than as tokens. */
+
+.markdown h1,
+.markdown header h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 1.25rem;
+}
+
+.markdown h2 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 0.85rem;
+}
+
+.markdown h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 0.6rem;
+}
+
+.markdown h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-ink-soft);
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown > p,
+.markdown li {
+  color: var(--color-ink-soft);
+}
+
+.markdown strong {
+  color: var(--color-ink);
+  font-weight: 700;
+}
+
+.markdown a {
+  font-weight: 600;
+  text-decoration-color: var(--color-primary-light);
+  text-underline-offset: 0.2em;
+}
+
+.markdown hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 3rem 0;
+}
+
+.markdown blockquote {
+  border-left: 3px solid var(--color-primary-light);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--color-surface-low);
+  padding: 1rem 1.5rem;
+}
+
+.markdown img {
+  border-radius: var(--radius-md);
+  border: var(--card-edge);
+  box-shadow: var(--shadow-lift-sm);
+  filter: var(--thumb-filter);
+}
+
+/* Code */
+
+.markdown code {
+  border: var(--card-edge);
+  font-weight: 600;
+}
+
+.theme-code-block {
+  border-radius: var(--radius-md) !important;
+  border: var(--card-edge);
+  box-shadow: none !important;
+}
+
+.theme-code-block pre {
+  font-size: 0.86rem;
+}
+
+.theme-code-block .theme-code-block-highlighted-line {
+  background: var(--color-secondary-container);
+}
+
+div[class^="codeBlockTitle"] {
+  background: var(--color-surface-low) !important;
+  border-bottom: 1px solid var(--line) !important;
+  color: var(--color-ink-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+/* Tables */
+
+.markdown table {
+  display: table;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: var(--card-edge);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface-low);
+  margin-bottom: 0;
+}
+
+.markdown table thead tr {
+  border: none;
+}
+
+.markdown table th {
+  color: var(--color-ink);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.markdown table th,
+.markdown table td {
+  border: none;
+  border-bottom: 1px solid var(--line);
+  padding: 0.85rem 1.15rem;
+}
+
+.markdown table tbody tr {
+  background: transparent;
+}
+
+/* A cell holding nothing but a token is never broken mid-token. No widths are
+   set: the table's own layout gives a nowrap column the room it needs and
+   hands the rest to the columns that can wrap. */
+.markdown table th:has(> code:only-child),
+.markdown table td:has(> code:only-child) {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  margin: 0 0 2rem;
+}
+
+/* Inside a table the wrapping happens between tokens, never through one. */
+.markdown code {
+  overflow-wrap: normal;
+}
+
+.markdown table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Admonitions, as Parcourse cards rather than Infima's coloured slabs. */
+
+.theme-admonition {
+  --ifm-alert-foreground-color: var(--color-primary);
+  background: var(--color-secondary-container);
+  border: none;
+  border-radius: var(--radius-lg);
+  color: var(--color-ink-soft);
+  margin-bottom: 1.5rem;
+}
+
+.theme-admonition > div:first-child {
+  align-items: center;
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  margin-bottom: 0.65rem;
+}
+
+.theme-admonition > div:first-child svg {
+  height: 1.15rem;
+  width: 1.15rem;
+  vertical-align: -0.2rem;
+}
+
+.theme-admonition p:last-child {
+  margin-bottom: 0;
+}
+
+.theme-admonition-info {
+  background: var(--color-info-container);
+  --ifm-alert-foreground-color: var(--color-info-ink);
+  color: var(--color-ink-soft);
+}
+
+.theme-admonition-info > div:first-child {
+  color: var(--color-info-ink);
+}
+
+.theme-admonition-warning,
+.theme-admonition-caution {
+  background: var(--color-warn-container);
+  --ifm-alert-foreground-color: var(--color-warn-ink);
+}
+
+.theme-admonition-warning > div:first-child,
+.theme-admonition-caution > div:first-child {
+  color: var(--color-warn-ink);
+}
+
+.theme-admonition-danger {
+  background: var(--color-danger-container);
+  --ifm-alert-foreground-color: var(--color-danger);
+}
+
+.theme-admonition-danger > div:first-child {
+  color: var(--color-danger);
+}
+
+/* Pagination, breadcrumbs, table of contents */
+
+.pagination-nav__link {
+  border: var(--card-edge);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-lowest);
+  box-shadow: var(--shadow-lift-sm);
+  padding: 1.25rem 1.5rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.pagination-nav__link:hover {
+  transform: translateY(-0.25rem);
+  box-shadow: var(--shadow-lift);
+}
+
+.pagination-nav__link--prev .pagination-nav__label::before,
+.pagination-nav__link--next .pagination-nav__label::after {
+  content: "";
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  vertical-align: -0.15rem;
+  background-color: currentColor;
+  mask: var(--arrow) center / contain no-repeat;
+  -webkit-mask: var(--arrow) center / contain no-repeat;
+}
+
+.pagination-nav__link--prev .pagination-nav__label::before {
+  --arrow: var(--arrow-left);
+  margin-right: 0.45rem;
+}
+
+.pagination-nav__link--next .pagination-nav__label::after {
+  --arrow: var(--arrow-right);
+  margin-left: 0.45rem;
+}
+
+.pagination-nav__sublabel {
+  color: var(--color-ink-faint);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pagination-nav__label {
+  color: var(--color-ink);
+  font-weight: 700;
+}
+
+.breadcrumbs__item--active .breadcrumbs__link {
+  font-weight: 700;
+}
+
+.breadcrumbs__link {
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.table-of-contents {
+  border-left: 1px solid var(--line);
+  font-size: 0.84rem;
+}
+
+.table-of-contents__link {
+  font-weight: 600;
+}
+
+.table-of-contents__link--active {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* Buttons, matching .button in the app. */
+
+.button {
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: none;
+  gap: 0.5rem;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.button:active {
+  transform: scale(0.98);
+}
+
+.button--primary {
+  background: var(--color-primary);
+  color: var(--color-on-accent);
+  border: none;
+}
+
+.button--primary:hover {
+  background: var(--color-primary-hover);
+  color: var(--color-on-accent);
+}
+
+.button--secondary {
+  background: var(--color-surface-high);
+  color: var(--color-ink);
+  border: none;
+}
+
+.button--secondary:hover {
+  background: var(--color-secondary-hover);
+  color: var(--color-ink);
+}
+
+/* Footer */
+
+.footer {
+  background: transparent;
+  border-top: 1px solid var(--line);
+  padding: 3rem 2.5rem 2.5rem;
+  font-size: 0.88rem;
+}
+
+.footer__title {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.footer__link-item {
+  font-weight: 600;
+}
+
+.footer__bottom {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+
+.footer__copyright {
+  display: inline-block;
+  padding: 0.4rem 1.25rem;
+  color: var(--color-ink-faint);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.footer__copyright,
+.footer__link-item,
+.table-of-contents__link {
+  position: relative;
+}
+
+.table-of-contents__link {
+  display: block;
+}
+
+.footer__copyright::before,
+.footer__link-item::before,
+.table-of-contents__link::before {
+  content: "";
+  position: absolute;
+  inset: -0.3rem -0.9rem;
+  z-index: -1;
+  background: radial-gradient(
+    ellipse 85% 100% at 50% 50%,
+    var(--color-paper) 45%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* A chip carries its own ground, so it needs no wash under it. */
+.theme-edit-this-page {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.9rem;
+  border-radius: var(--radius-full);
+  background: var(--color-secondary-container);
+  color: var(--color-secondary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.theme-edit-this-page:hover {
+  background: var(--color-primary);
+  color: var(--color-on-accent);
+  text-decoration: none;
+}
+
+.theme-edit-this-page svg {
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-right: 0;
+}
+
+.DocSearch-Button {
+  border-radius: var(--radius-full);
+  background: var(--color-surface-lowest);
+  border: var(--card-edge);
+  box-shadow: var(--shadow-lift-sm);
+}
+
+@media (max-width: 996px) {
+  :root {
+    --ifm-navbar-padding-horizontal: 1.25rem;
+  }
+
+  .footer {
+    padding: 2.5rem 1.25rem 2rem;
+  }
+}
