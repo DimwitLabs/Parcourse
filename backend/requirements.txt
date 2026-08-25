@@ -7,5 +7,5 @@ bcrypt==5.0.0
 python-jose[cryptography]==3.5.0
 cryptography==50.0.0
 email-validator==2.3.0
-yt-dlp==2026.7.4
+yt-dlp==2026.8.19
 litellm==1.96.2
