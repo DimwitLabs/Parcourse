@@ -111,10 +111,10 @@ export default function GenerationSteps({
               )}
               <span className="gen-pill-label">
                 {label}
-                {isBlocked && <span className="gen-pill-sub gen-pill-reason">{blockedReason}</span>}
                 {isActive && note && <span className="gen-pill-sub">{note}</span>}
               </span>
             </div>
+            {isBlocked && <span className="gen-pill-reason">{blockedReason}</span>}
             {isBlocked && (onCancel || onOverride) && (
               <div className="gen-pill-actions">
                 {onCancel && (
