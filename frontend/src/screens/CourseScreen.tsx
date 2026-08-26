@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import CourseActionModal from "../components/CourseActionModal";
+import NotesDrawer from "../components/NotesDrawer";
 import type { CourseAction } from "../components/CourseActionModal";
 import { toast, useLoadingToast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
@@ -34,6 +35,7 @@ type Section = {
 type Course = {
   id: string;
   video_id: string;
+  video_title: string;
   thumbnail_url: string;
   sections: Section[];
 };
@@ -346,6 +348,12 @@ export default function CourseScreen() {
 
   return (
     <div className="course-layout">
+      {courseId && (
+        <NotesDrawer
+          courseId={courseId}
+          title={course.video_title || course.sections[0]?.title || "Untitled course"}
+        />
+      )}
       <aside className="course-sidebar">
         <nav className="sidebar-nav">
           <span className="sidebar-label">Sections</span>
