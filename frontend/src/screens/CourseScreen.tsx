@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import CourseActionModal from "../components/CourseActionModal";
@@ -17,6 +18,7 @@ import type { Player } from "../lib/youtubePlayer";
 
 
 const WATCH_TICK_MS = 250;
+const CARD_LINGERS_OVER_VIDEO_SECONDS = 8;
 
 const CHEATSHEET_CAPTION: Record<SheetStatus, string> = {
   pending: "Your cheatsheet will be ready soon",
@@ -56,6 +58,7 @@ export default function CourseScreen() {
   const player = useRef<Player | null>(null);
   const [playing, setPlaying] = useState(false);
   const inSection = useRef(-1);
+  const videoStage = useRef<HTMLDivElement>(null);
   const queuedStart = useRef<number | null>(null);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const videoRef = useRef<HTMLDivElement>(null);
@@ -266,7 +269,7 @@ export default function CourseScreen() {
     playerApi().then((api) => {
       made = new api.Player(host, {
         videoId: course.video_id,
-        playerVars: { rel: 0, playsinline: 1 },
+        playerVars: { rel: 0, playsinline: 1, fs: 0 },
         events: {
           onReady: () => {
             const waiting = queuedStart.current;
@@ -285,6 +288,17 @@ export default function CourseScreen() {
       host.remove();
     };
   }, [course]);
+
+  // An unanswered card shows itself out and hands the video back rather than
+  // leaving the reader parked at a stop they did not ask for.
+  useEffect(() => {
+    if (endedSection === null) return;
+    const leave = window.setTimeout(() => {
+      setEndedSection(null);
+      player.current?.playVideo();
+    }, CARD_LINGERS_OVER_VIDEO_SECONDS * 1000);
+    return () => window.clearTimeout(leave);
+  }, [endedSection]);
 
   useEffect(() => {
     if (!playing || !course) return;
@@ -335,6 +349,13 @@ export default function CourseScreen() {
       else next.add(idx);
       return next;
     });
+  }
+
+  // The card has to be inside whatever went fullscreen to be seen and clicked,
+  // so the stage holding both is what is asked to fill the screen.
+  function toggleFullscreen() {
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else videoStage.current?.requestFullscreen().catch(() => {});
   }
 
   function scrollToSection(idx: number) {
@@ -465,22 +486,37 @@ export default function CourseScreen() {
 
       <div className="course-main">
         <div className="course-view">
-          <div className="video-frame" ref={videoRef}>
-            <div ref={playerHost} />
-          </div>
+          <div className="video-stage" ref={videoStage}>
+            <div className="video-frame" ref={videoRef}>
+              <div ref={playerHost} />
+            </div>
+            {endedSection !== null && <div className="video-scrim" />}
+            <button className="video-fs" onClick={toggleFullscreen} aria-label="Toggle fullscreen">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" />
+                <line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" />
+              </svg>
+            </button>
 
           {endedSection !== null && course.sections[endedSection] && (
-            <div className="card boundary-card">
+            <div
+              className="card boundary-card"
+              key={endedSection}
+              style={{ "--boundary-linger": `${CARD_LINGERS_OVER_VIDEO_SECONDS}s` } as CSSProperties}
+            >
               <span className="boundary-eyebrow">End of section {endedSection + 1}</span>
               <span className="boundary-title">{course.sections[endedSection].title}</span>
-              <button className="button primary" onClick={() => { scrollToSection(endedSection); setEndedSection(null); }}>
-                Take quiz
-              </button>
-              <button className="boundary-dismiss" onClick={() => setEndedSection(null)} aria-label="Dismiss">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-              </button>
+              <div className="boundary-actions">
+                <button className="boundary-btn quiet" onClick={() => setEndedSection(null)}>
+                  Not now
+                </button>
+                <button className="boundary-btn loud" onClick={() => { scrollToSection(endedSection); setEndedSection(null); }}>
+                  Take quiz
+                </button>
+              </div>
             </div>
           )}
+          </div>
 
           <h2 className="section-heading">Curriculum</h2>
 

@@ -4,6 +4,7 @@ export type Player = {
   loadVideoById(options: { videoId: string; startSeconds?: number }): void;
   getCurrentTime(): number;
   pauseVideo(): void;
+  playVideo(): void;
   destroy(): void;
 };
 

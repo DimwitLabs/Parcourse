@@ -1061,6 +1061,77 @@ body {
   gap: 1.5rem;
 }
 
+.video-stage {
+  position: relative;
+}
+
+.video-fs {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 4.5rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  appearance: none;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.video-stage:hover .video-fs,
+.video-fs:focus-visible {
+  opacity: 1;
+}
+
+.video-fs:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.video-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: var(--radius-xl);
+}
+
+.video-stage:fullscreen .video-scrim {
+  border-radius: 0;
+}
+
+.video-stage:fullscreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+.video-stage:fullscreen .video-frame {
+  width: 100%;
+  max-height: 100%;
+  border-radius: 0;
+}
+
+.video-stage:fullscreen .boundary-card {
+  position: fixed;
+  inset: 0 2rem 0 auto;
+  height: fit-content;
+  margin: auto 0;
+  width: max-content;
+  max-width: calc(100vw - 4rem);
+  box-shadow: 0 1.5rem 3rem -1rem rgba(0, 0, 0, 0.5);
+}
+
+.video-stage:fullscreen .boundary-title {
+  display: none;
+}
+
 .video-frame {
   aspect-ratio: 16 / 9;
   border-radius: var(--radius-xl);
@@ -1079,9 +1150,9 @@ body {
 .boundary-card {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.25rem;
-  animation: boundary-in 0.2s ease;
+  gap: 1rem;
+  padding: 0.8rem 0.9rem 0.8rem 1.25rem;
+  animation: boundary-in 0.55s ease;
 }
 
 .boundary-eyebrow {
@@ -1103,42 +1174,108 @@ body {
   white-space: nowrap;
 }
 
-.boundary-dismiss {
-  appearance: none;
-  border: none;
-  background: none;
-  display: inline-flex;
-  padding: 0.3rem;
-  border-radius: var(--radius-full);
-  color: var(--color-ink-faint);
-  cursor: pointer;
+.boundary-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
 }
 
-.boundary-dismiss:hover {
+.boundary-btn {
+  appearance: none;
+  border: none;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.5rem 1.05rem;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.boundary-btn.quiet {
+  background: none;
+  color: var(--color-ink-faint);
+}
+
+.boundary-btn.quiet:hover {
   background: var(--color-surface-high);
   color: var(--color-ink);
 }
 
-@keyframes boundary-in {
+.boundary-btn.loud {
+  background-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-ink));
+  background-image: linear-gradient(var(--color-primary) 0 0);
+  background-repeat: no-repeat;
+  color: var(--color-on-accent);
+  animation: boundary-drain var(--boundary-linger) linear forwards;
+}
+
+.boundary-btn.loud:hover {
+  background-image: linear-gradient(var(--color-primary-hover) 0 0);
+}
+
+@keyframes boundary-drain {
   from {
+    background-size: 100% 100%;
+  }
+
+  to {
+    background-size: 0 100%;
+  }
+}
+
+@keyframes boundary-in {
+  0% {
     opacity: 0;
-    transform: translateY(-0.4rem);
+    transform: translateY(-0.4rem) rotate(0deg);
+  }
+
+  35% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: rotate(-0.6deg);
+  }
+
+  65% {
+    transform: rotate(0.6deg);
+  }
+
+  80% {
+    transform: rotate(-0.3deg);
+  }
+
+  92% {
+    transform: rotate(0.15deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
   }
 }
 
 @media (max-width: 640px) {
   .boundary-card {
-    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.9rem 0.9rem 0.9rem 1.1rem;
   }
 
   .boundary-title {
-    order: 3;
-    flex-basis: 100%;
-    white-space: normal;
+    display: none;
   }
 
   .boundary-eyebrow {
     flex: 1;
+    min-width: 0;
+    white-space: normal;
+  }
+
+  .boundary-btn {
+    padding: 0.5rem 0.9rem;
   }
 }
 
