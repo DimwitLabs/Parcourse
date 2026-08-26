@@ -10,6 +10,7 @@ from models.knowledge_graph import (
     NodeTier,
     UserKnowledgeProgress,
 )
+from models.note import CourseNote
 from models.quiz_attempt import QuizAttempt
 from models.quiz_draft import QuizDraft
 from models.section_progress import SectionProgress
@@ -20,6 +21,7 @@ __all__ = [
     "CachedCourse",
     "CachedTranscript",
     "CourseKnowledgeNode",
+    "CourseNote",
     "EdgeType",
     "InstanceConfig",
     "InstanceMode",
