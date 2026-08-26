@@ -15,7 +15,7 @@ services:
   backend:
     build:
       context: ./backend
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    command: sh -c "pip install --no-cache-dir -q -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
     depends_on:
       db:
         condition: service_healthy
@@ -35,7 +35,7 @@ services:
   frontend:
     build:
       context: ./frontend
-    command: npm run dev -- --host 0.0.0.0
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
     ports:
       - "${FRONTEND_PORT:-5173}:5173"
     volumes:
