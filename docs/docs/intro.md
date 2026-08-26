@@ -25,6 +25,7 @@ It is self-hosted, so all of that stays on your own machine, along with your API
 | --- | --- |
 | Sections | The video split at its own turns, each with a summary and its key takeaways |
 | Quiz | Multiple choice and written answers, over the whole course rather than per section |
+| Notes | A sheet of your own to write on, in light markdown, saved as you type |
 | Cheatsheet | One page of the points worth remembering, saveable as a PNG or a PDF |
 | Knowledge graph | Fields, topics and skills, connected across every course you take |
 
