@@ -37,18 +37,20 @@ const savingIcon = (
   <svg className="notes-spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
 );
 
-const MARKS: [string, string][] = [
-  ["**b**", "Bold"],
-  ["*i*", "Italic"],
-  ["~~s~~", "Struck through"],
-  ["# … #####", "Five heading levels"],
-  ["-", "Bullets"],
-  ["1.", "Numbered"],
-  [">", "Quote"],
-  ["`c`", "Code"],
-  ["[t](u)", "Link"],
-  ["---", "Divider"],
+const MARKS: { sample: React.ReactNode; meaning: React.ReactNode; name: string }[] = [
+  { sample: <>**<b>b</b>**</>, meaning: <b>Bold</b>, name: "bold" },
+  { sample: <>*<i>i</i>*</>, meaning: <i>Italic</i>, name: "italic" },
+  { sample: <>~~<s>s</s>~~</>, meaning: <s>Struck through</s>, name: "strike" },
+  { sample: <># … #####</>, meaning: <span className="notes-mark-heading">Five heading levels</span>, name: "heading" },
+  { sample: <>-</>, meaning: "Bullets", name: "bullet" },
+  { sample: <>1.</>, meaning: "Numbered", name: "number" },
+  { sample: <>&gt;</>, meaning: <span className="notes-mark-quote">Quote</span>, name: "quote" },
+  { sample: <>`<code>c</code>`</>, meaning: <code>Code</code>, name: "code" },
+  { sample: <>[t](u)</>, meaning: <span className="notes-mark-link">Link</span>, name: "link" },
+  { sample: <>---</>, meaning: "Divider", name: "divider" },
 ];
+
+
 
 const PLACEHOLDERS: Record<SheetState, string> = {
   loading: "Fetching your sheet.",
@@ -66,6 +68,8 @@ export default function NotesDrawer({ courseId, title }: { courseId: string; tit
 
   const [exporting, setExporting] = useState<"png" | "pdf" | null>(null);
 
+  const editorHost = useRef<HTMLDivElement>(null);
+  const editor = useRef<{ destroy(): void } | null>(null);
   const loaded = useRef(false);
   const pending = useRef<number | null>(null);
   const latest = useRef("");
@@ -135,6 +139,29 @@ export default function NotesDrawer({ courseId, title }: { courseId: string; tit
     [courseId, token],
   );
 
+  // Built only once the sheet has arrived, so the editor opens on the real text
+  // rather than being handed it afterwards, and the whole of CodeMirror rides
+  // with the drawer instead of the bundle everyone loads.
+  useEffect(() => {
+    if (!open || sheetState !== "ready" || !editorHost.current) return;
+    let cancelled = false;
+    import("../lib/notesEditor").then(({ notesEditor }) => {
+      if (cancelled || !editorHost.current) return;
+      editor.current = notesEditor({
+        host: editorHost.current,
+        body: latest.current,
+        hint: PLACEHOLDERS.ready,
+        longest: LONGEST_SHEET_WORTH_KEEPING,
+        onEdit: edit,
+      });
+    });
+    return () => {
+      cancelled = true;
+      editor.current?.destroy();
+      editor.current = null;
+    };
+  }, [open, sheetState]);
+
   async function exportSheet(kind: "png" | "pdf") {
     setExporting(kind);
     try {
@@ -194,24 +221,20 @@ export default function NotesDrawer({ courseId, title }: { courseId: string; tit
               </button>
             </div>
 
-            <textarea
-              className="notes-body"
-              value={body}
-              onChange={(e) => edit(e.target.value)}
-              placeholder={PLACEHOLDERS[sheetState]}
-              maxLength={LONGEST_SHEET_WORTH_KEEPING}
-              readOnly={sheetState !== "ready"}
-              spellCheck
-            />
+            {sheetState === "ready" ? (
+              <div className="notes-body" ref={editorHost} />
+            ) : (
+              <p className="notes-waiting">{PLACEHOLDERS[sheetState]}</p>
+            )}
 
             <div className={`notes-tail${guideOpen ? " open" : ""}`}>
               <div className="notes-guide">
                 {guideOpen && (
                   <dl className="notes-marks">
-                    {MARKS.map(([mark, meaning]) => (
-                      <div key={mark}>
-                        <dt><span className="notes-key">{mark}</span></dt>
-                        <dd>{meaning}</dd>
+                    {MARKS.map((mark) => (
+                      <div key={mark.name}>
+                        <dt><span className="notes-key">{mark.sample}</span></dt>
+                        <dd>{mark.meaning}</dd>
                       </div>
                     ))}
                   </dl>

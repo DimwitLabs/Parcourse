@@ -5089,20 +5089,16 @@ a.modal-field-hint {
 .notes-body {
   flex: 1;
   min-height: 0;
-  resize: none;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-family: inherit;
-  font-size: 0.86rem;
-  line-height: 1.7;
-  color: var(--color-ink-soft);
-  padding: 1.35rem;
+  overflow: hidden;
 }
 
-.notes-body::placeholder {
+.notes-waiting {
+  flex: 1;
+  margin: 0;
+  padding: 1.35rem;
+  font-size: 0.86rem;
+  line-height: 1.7;
   color: var(--color-ink-faint);
-  opacity: 0.7;
 }
 
 .notes-tail {
@@ -5184,6 +5180,27 @@ a.modal-field-hint {
 
 .notes-marks dd {
   color: var(--color-ink-soft);
+}
+
+.notes-mark-heading {
+  font-weight: 800;
+  font-size: 1.05em;
+  color: var(--color-ink);
+}
+
+.notes-mark-quote {
+  font-style: italic;
+  color: var(--color-ink-faint);
+}
+
+.notes-mark-link {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.notes-marks code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--color-secondary);
 }
 
 .notes-key {
