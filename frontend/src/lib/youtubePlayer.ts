@@ -1,3 +1,5 @@
+export const PLAYING = 1;
+
 export type Player = {
   loadVideoById(options: { videoId: string; startSeconds?: number }): void;
   getCurrentTime(): number;
@@ -11,7 +13,7 @@ type PlayerApi = {
     options: {
       videoId: string;
       playerVars: Record<string, string | number>;
-      events: { onReady?: () => void };
+      events: { onReady?: () => void; onStateChange?: (event: { data: number }) => void };
     },
   ) => Player;
 };

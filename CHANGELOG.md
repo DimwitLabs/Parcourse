@@ -8,18 +8,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
-- **Notes:** Every course has a sheet of its own, on a tab at the right edge of the course screen. It is the one place in a course that holds what the reader wrote rather than what the model did. It saves itself as typing stops, and says so on a chip that can be pressed to save at once; leaving the screen mid-edit spends the pending save rather than dropping it. Light markdown is understood, bold through dividers, and it is styled as it is typed: the marks themselves fade once they are closed. A sheet also has a page of its own, reachable from the course, the notebook and a quiz result, and saves as an image or a PDF on the same Parcourse paper the cheatsheet uses.
-- **Watching a Section:** Starting a section from "Watch this part" now stops at the end of it, so the video cannot cross into the next section without saying so. A card offers the quiz for the section that just ended. Playing from the top is left alone and runs through as before, and dragging the scrubber out of a section gives up the stop rather than interrupting a video the reader has moved on in.
-- **The Creator's Chapters:** A video the creator already divided into chapters is asked about before the course is written: keep their chapters as the sections, or have Parcourse work out its own. Chapters that sell rather than teach, sponsor reads, discount codes and subscribe pleas, are dropped either way.
+- **Notes:** Every course has a sheet of its own, on a tab at the right edge of the course screen. It saves itself as typing stops, understands light markdown and styles it as you write, and prints as an image or a PDF. It also has a page of its own, reached from the course, the notebook or a quiz result.
+- **Section Stops:** The video pauses at the end of each section rather than crossing into the next one unannounced, and offers that section's quiz. Dragging the scrubber past a boundary skips the stop.
+- **The Creator's Chapters:** A video that already has chapters asks whose to use before the course is written. Chapters that sell rather than teach are dropped either way.
 
 ### Changed
 
-- The database is versioned with Alembic and migrates itself on start. An existing install is recorded at its current shape and brought forward; a new one is built from nothing. Adding a column to a table no longer passes silently, which is what it did before.
+- The database is versioned with Alembic and migrates itself on start. Adding a column no longer passes silently.
 - Section cards carry the timestamp they begin at.
 
 ### Fixed
 
-- Deleting a course now takes its notes and its cheatsheet with it. On SQLite the two were left behind, since the database does not enforce the foreign key they were relying on.
+- Deleting a course now takes its notes and its cheatsheet with it.
 
 ## [1.4.0] - 2026-08-24
 

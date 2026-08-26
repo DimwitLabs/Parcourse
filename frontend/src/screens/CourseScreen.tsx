@@ -9,15 +9,14 @@ import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { CHEATSHEET_HINT, POLL_MS, stampOf } from "../lib/cheatsheet";
 import type { SheetStatus } from "../lib/cheatsheet";
+import { crossing } from "../lib/sections";
 import { shownScore } from "../lib/score";
 import { useEscapeKey } from "../lib/useEscapeKey";
-import { playerApi } from "../lib/youtubePlayer";
+import { playerApi, PLAYING } from "../lib/youtubePlayer";
 import type { Player } from "../lib/youtubePlayer";
 
 
-const WATCH_TICK_MS = 400;
-
-const A_JUMP_NOT_PLAYBACK_SECONDS = 2;
+const WATCH_TICK_MS = 250;
 
 const CHEATSHEET_CAPTION: Record<SheetStatus, string> = {
   pending: "Your cheatsheet will be ready soon",
@@ -55,8 +54,9 @@ export default function CourseScreen() {
   const [activeSection, setActiveSection] = useState(0);
   const [endedSection, setEndedSection] = useState<number | null>(null);
   const player = useRef<Player | null>(null);
-  const [watching, setWatching] = useState<{ section: number; start: number; end: number } | null>(null);
-  const lastSeen = useRef(0);
+  const [playing, setPlaying] = useState(false);
+  const inSection = useRef(-1);
+  const queuedStart = useRef<number | null>(null);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const videoRef = useRef<HTMLDivElement>(null);
 
@@ -267,7 +267,14 @@ export default function CourseScreen() {
       made = new api.Player(host, {
         videoId: course.video_id,
         playerVars: { rel: 0, playsinline: 1 },
-        events: {},
+        events: {
+          onReady: () => {
+            const waiting = queuedStart.current;
+            queuedStart.current = null;
+            if (waiting !== null) made?.loadVideoById({ videoId: course.video_id, startSeconds: waiting });
+          },
+          onStateChange: (event) => setPlaying(event.data === PLAYING),
+        },
       });
       player.current = made;
     });
@@ -280,35 +287,28 @@ export default function CourseScreen() {
   }, [course]);
 
   useEffect(() => {
-    if (!watching) return;
+    if (!playing || !course) return;
     const tick = window.setInterval(() => {
-      if (!player.current) return;
+      const at = player.current?.getCurrentTime();
+      if (at === undefined) return;
 
-      const at = player.current.getCurrentTime();
-      const jumped = Math.abs(at - lastSeen.current) > A_JUMP_NOT_PLAYBACK_SECONDS;
-      lastSeen.current = at;
+      const { now, ended } = crossing(course.sections, at, inSection.current);
+      if (now !== -1) inSection.current = now;
+      if (ended === -1) return;
 
-      if (jumped) {
-        if (at < watching.start || at >= watching.end) setWatching(null);
-        return;
-      }
-      if (at < watching.end) return;
-
-      player.current.pauseVideo();
-      setWatching(null);
-      setEndedSection(watching.section);
+      player.current?.pauseVideo();
+      setEndedSection(ended);
     }, WATCH_TICK_MS);
     return () => window.clearInterval(tick);
-  }, [watching]);
+  }, [playing, course]);
 
   function watchPart(index: number) {
     if (!course) return;
-    const part = course.sections[index];
-    const ends = part.end_seconds > part.start_seconds ? part.end_seconds : null;
-    setWatching(ends === null ? null : { section: index, start: part.start_seconds, end: ends });
-    lastSeen.current = part.start_seconds;
+    const from = course.sections[index].start_seconds;
     setEndedSection(null);
-    player.current?.loadVideoById({ videoId: course.video_id, startSeconds: part.start_seconds });
+    inSection.current = index;
+    if (player.current) player.current.loadVideoById({ videoId: course.video_id, startSeconds: from });
+    else queuedStart.current = from;
     videoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -322,8 +322,6 @@ export default function CourseScreen() {
   );
   const answeredQuestions = Object.keys(mcqAnswers).length + Object.keys(theoryAnswers).length;
 
-  // Once a quiz has been graded, the answers on screen are a previous
-  // submission being edited, so the button says what pressing it will do.
   const submitLabel = lastAttempt ? "Submit again" : "Submit Quiz";
   const attemptPoints = shownScore({
     total: lastAttempt?.total_score ?? 0,
@@ -471,7 +469,7 @@ export default function CourseScreen() {
             <div ref={playerHost} />
           </div>
 
-          {endedSection !== null && (
+          {endedSection !== null && course.sections[endedSection] && (
             <div className="card boundary-card">
               <span className="boundary-eyebrow">End of section {endedSection + 1}</span>
               <span className="boundary-title">{course.sections[endedSection].title}</span>
