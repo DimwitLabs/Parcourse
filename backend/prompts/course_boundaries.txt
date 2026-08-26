@@ -1,0 +1,7 @@
+Break this into {min_sections}–{max_sections} logical sections that build on each other.
+
+Rules for section boundaries:
+- The first section MUST start at 0s and the last section MUST end at exactly {total_seconds:.0f}s.
+- Every section should cover roughly {approx_seconds:.0f} seconds (~{approx_minutes:.0f} minutes).   No section may be shorter than {min_section_seconds:.0f}s or longer than {max_section_seconds:.0f}s.
+- The last section must NOT be a catch-all for the remainder of the video.   All sections, including the last, must be approximately equal in length.
+- Use the transcript chunk timestamps only as a guide — section boundaries do not need   to fall exactly on 30-second marks.

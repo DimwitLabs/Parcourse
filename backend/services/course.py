@@ -3,7 +3,7 @@ import uuid
 
 
 from schemas.course import CourseResponse, CourseSection, MCQOption, MCQQuestion, TheoryQuestion
-from schemas.transcript import TranscriptSegment
+from schemas.transcript import Chapter, TranscriptSegment
 from services.llm import complete_json
 from services.transcript_text import format_transcript, sanitize_title
 from services.prompts import load
@@ -11,6 +11,8 @@ from services.prompts import load
 logger = logging.getLogger(__name__)
 
 _PROMPT = load("course")
+_BOUNDARIES = load("course_boundaries")
+_CHAPTERS = load("course_chapters")
 
 
 _MAX_FEEDBACK_CHARS = 1000
@@ -25,11 +27,21 @@ def _sanitize_feedback(feedback: str) -> str:
 _FEEDBACK_TEMPLATE = load("course_feedback")
 
 
+def _as_lines(chapters: list[Chapter]) -> str:
+    """The delimiter is collapsed so a chapter title cannot close the quoted
+    block early and be read as instructions."""
+    lines = []
+    for c in chapters:
+        title = c.title.replace('"""', '"')
+        lines.append(f"{c.start_seconds:.0f}s - {c.end_seconds:.0f}s: {title}")
+    return "\n".join(lines)
+
+
 def thumbnail_url(video_id: str) -> str:
     return f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
 
 
-def generate(video_id: str, segments: list[TranscriptSegment], credentials: dict[str, str], model: str, video_title: str = "", feedback: str = "") -> CourseResponse:
+def generate(video_id: str, segments: list[TranscriptSegment], credentials: dict[str, str], model: str, video_title: str = "", feedback: str = "", chapters: list[Chapter] | None = None) -> CourseResponse:
     logger.info("[course]: generating course for video %s (%d segments)", video_id, len(segments))
     if segments:
         logger.info(
@@ -68,18 +80,27 @@ def generate(video_id: str, segments: list[TranscriptSegment], credentials: dict
     feedback_block = _FEEDBACK_TEMPLATE.format(feedback=clean_feedback) if clean_feedback else ""
     if feedback_block:
         logger.info("[course]: regenerating with learner feedback (%d chars)", len(clean_feedback))
+    if chapters:
+        logger.info("[course]: following %d creator chapters", len(chapters))
+        boundaries_block = _CHAPTERS.format(chapters=_as_lines(chapters))
+    else:
+        boundaries_block = _BOUNDARIES.format(
+            total_seconds=total_seconds,
+            min_sections=min_sections,
+            max_sections=max_sections,
+            approx_seconds=approx_seconds,
+            approx_minutes=approx_minutes,
+            min_section_seconds=min_section_seconds,
+            max_section_seconds=max_section_seconds,
+        )
+
     prompt = _PROMPT.format(
+        boundaries_block=boundaries_block,
         title_block=title_block,
         feedback_block=feedback_block,
         formatted=formatted,
         total_seconds=total_seconds,
         total_minutes=total_minutes,
-        min_sections=min_sections,
-        max_sections=max_sections,
-        approx_seconds=approx_seconds,
-        approx_minutes=approx_minutes,
-        min_section_seconds=min_section_seconds,
-        max_section_seconds=max_section_seconds,
     )
     logger.info("[course]: full prompt %d chars (~%d tokens)", len(prompt), len(prompt) // 4)
 

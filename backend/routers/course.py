@@ -66,7 +66,15 @@ def generate_course(
         raise HTTPException(status_code=status.HTTP_412_PRECONDITION_FAILED, detail=str(exc)) from exc
     model = connection.model
     try:
-        course = generate(body.video_id, body.segments, connection.credentials, model, body.video_title, body.feedback)
+        course = generate(
+            body.video_id,
+            body.segments,
+            connection.credentials,
+            model,
+            body.video_title,
+            body.feedback,
+            body.chapters,
+        )
     except Exception as exc:
         logger.error("[course]: AI generation failed for video_id=%s: %s", body.video_id, exc)
         raise HTTPException(

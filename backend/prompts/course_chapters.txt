@@ -1,0 +1,9 @@
+The creator divided this video into chapters, and the learner asked to follow them. Use them as the sections, in this order:
+"""
+{chapters}
+"""
+
+Rules for section boundaries:
+- Keep each chapter's title and its start_seconds and end_seconds exactly as given. Do not merge, split, reorder or rename them.
+- Drop any chapter that teaches nothing: sponsor reads, adverts, discount codes, merchandise, channel promos, subscribe pleas, and intros or outros that are only greetings and sign-offs. Judge by what the transcript says across that chapter, not by the title alone, and leave the surviving chapters otherwise untouched. The sections you return may therefore have gaps between them.
+- If dropping leaves fewer than two sections, keep the chapters as they are instead.

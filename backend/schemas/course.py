@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from schemas.transcript import TranscriptSegment
+from schemas.transcript import Chapter, TranscriptSegment
 
 
 class CourseGenerateRequest(BaseModel):
@@ -10,6 +10,7 @@ class CourseGenerateRequest(BaseModel):
     video_title: str = ""
     feedback: str = ""
     segments: list[TranscriptSegment]
+    chapters: list[Chapter] = []
 
 
 class MCQOption(BaseModel):
