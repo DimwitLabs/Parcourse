@@ -1,7 +1,7 @@
 import json
 import logging
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from urllib.parse import parse_qs, urlparse
 
 from yt_dlp import YoutubeDL
@@ -110,6 +110,7 @@ _REFUSED = "YouTube is refusing requests from this server, so courses cannot be 
 class Video:
     title: str
     segments: list[dict]
+    chapters: list[dict] = field(default_factory=list)
 
 
 class TranscriptBlocked(Exception):
@@ -206,6 +207,21 @@ def _from_download_error(video_id: str, exc: DownloadError) -> Exception:
     return ValueError(_UNREADABLE)
 
 
+def _chapters_from(info: dict) -> list[dict]:
+    """The creator's own division of the video, when they wrote one. yt-dlp also
+    invents chapters from other signals, and those carry no titles worth
+    following, so an untitled one is dropped rather than shown as a section."""
+    found = []
+    for chapter in info.get("chapters") or []:
+        title = (chapter.get("title") or "").strip()
+        start = chapter.get("start_time")
+        end = chapter.get("end_time")
+        if not title or start is None or end is None or end <= start:
+            continue
+        found.append({"title": title, "start_seconds": float(start), "end_seconds": float(end)})
+    return found
+
+
 def _fetch_once(video_id: str) -> Video:
     """Title and transcript arrive from one extraction, so asking separately
     would only spend a second request on the same answer."""
@@ -233,8 +249,14 @@ def _fetch_once(video_id: str) -> Video:
         logger.error("[youtube]: could not read captions for video %s: %s", video_id, exc)
         raise ValueError(_UNREADABLE) from exc
 
-    logger.info("[youtube]: fetched %d transcript segments for video %s", len(segments), video_id)
-    return Video(title=info.get("title") or "", segments=segments)
+    chapters = _chapters_from(info)
+    logger.info(
+        "[youtube]: fetched %d transcript segments and %d chapters for video %s",
+        len(segments),
+        len(chapters),
+        video_id,
+    )
+    return Video(title=info.get("title") or "", segments=segments, chapters=chapters)
 
 
 def fetch_video(video_id: str) -> Video:

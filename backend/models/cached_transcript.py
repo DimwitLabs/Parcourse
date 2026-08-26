@@ -10,3 +10,4 @@ class CachedTranscript(SQLModelBase, table=True):
     video_id: str = Field(primary_key=True)
     title: str
     segments_json: str
+    chapters_json: str = ""

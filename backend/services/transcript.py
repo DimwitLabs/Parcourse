@@ -16,7 +16,13 @@ def load_video(session: Session, video_id: str) -> Video:
     cached = session.get(CachedTranscript, video_id)
     if cached:
         logger.info("[transcript]: cache hit for video %s", video_id)
-        return Video(title=cached.title, segments=json.loads(cached.segments_json))
+        # A row written before the column existed carries "", and is simply
+        # never offered the choice rather than being fetched a second time.
+        return Video(
+            title=cached.title,
+            segments=json.loads(cached.segments_json),
+            chapters=json.loads(cached.chapters_json or "[]"),
+        )
 
     video = fetch_video(video_id)
     if not video.title:
@@ -30,6 +36,7 @@ def load_video(session: Session, video_id: str) -> Video:
             video_id=video_id,
             title=video.title,
             segments_json=json.dumps(video.segments),
+            chapters_json=json.dumps(video.chapters),
         )
     )
     try:

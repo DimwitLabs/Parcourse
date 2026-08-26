@@ -6,7 +6,7 @@ from sqlmodel import Session
 from database import get_session
 from dependencies import get_current_user
 from models.user import User
-from schemas.transcript import TranscriptRequest, TranscriptResponse, TranscriptSegment
+from schemas.transcript import Chapter, TranscriptRequest, TranscriptResponse, TranscriptSegment
 from services.transcript import load_video
 from services.youtube import TranscriptBlocked, extract_video_id
 
@@ -37,4 +37,5 @@ def extract(
         video_id=video_id,
         video_title=video.title,
         segments=[TranscriptSegment(**s) for s in video.segments],
+        chapters=[Chapter(**c) for c in video.chapters],
     )
