@@ -3514,6 +3514,31 @@ a.tip {
   gap: 0.75rem;
 }
 
+.gen-pill.blocked.ask {
+  background: var(--color-secondary-container);
+}
+
+.gen-pill.blocked.ask .gen-pill-reason {
+  color: var(--color-ink-soft);
+}
+
+.gen-pill-ask {
+  color: var(--color-primary);
+  flex-shrink: 0;
+  margin-top: 0.0625rem;
+}
+
+.gen-pill.blocked.ask .gen-pill-override {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-accent);
+}
+
+.gen-pill.blocked.ask .gen-pill-override:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
 .gen-pill-left {
   display: flex;
   align-items: flex-start;
@@ -3564,8 +3589,9 @@ a.tip {
 
 .gen-pill-cancel {
   appearance: none;
-  border: 1.5px solid transparent;
-  background: none;
+  white-space: nowrap;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface-lowest);
   font-family: inherit;
   font-size: 0.78rem;
   font-weight: 700;
@@ -3577,12 +3603,13 @@ a.tip {
 }
 
 .gen-pill-cancel:hover {
-  border-color: var(--color-border);
+  border-color: var(--color-ink-faint);
   color: var(--color-ink);
 }
 
 .gen-pill-override {
   appearance: none;
+  white-space: nowrap;
   border: 1.5px solid var(--color-warn);
   background: none;
   font-family: inherit;

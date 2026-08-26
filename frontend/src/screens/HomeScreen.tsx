@@ -8,16 +8,19 @@ import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { youTubeVideoId } from "../lib/youtube";
-import type { CourseEntry, Segment } from "../lib/types";
+import type { Chapter, CourseEntry, Segment } from "../lib/types";
 
-type Step = "idle" | "transcript" | "guardrail" | "guardrail-blocked" | "generating";
-type PendingTranscript = { videoId: string; videoTitle: string; segments: Segment[] };
+type Step = "idle" | "transcript" | "chapters-asked" | "guardrail" | "guardrail-blocked" | "generating";
+type PendingTranscript = { videoId: string; videoTitle: string; segments: Segment[]; chapters: Chapter[] };
 
 const GEN_STEPS: readonly GenStep[] = [
   { key: "transcript", label: "Extracting transcript" },
   { key: "guardrail", label: "Checking content" },
   { key: "generating", label: "Generating course" },
 ];
+
+/** One chapter is the whole video, so there is nothing to choose between. */
+const LEAST_CHAPTERS_WORTH_FOLLOWING = 2;
 
 const URL_PLACEHOLDER = "youtube.com/watch?v=…";
 const SUBMIT_LABEL = "Create course";
@@ -43,6 +46,7 @@ export default function HomeScreen() {
   const [funMessages, setFunMessages] = useState<readonly string[]>(FALLBACK_MESSAGES);
   const [guardrailReason, setGuardrailReason] = useState<string | null>(null);
   const [pending, setPending] = useState<PendingTranscript | null>(null);
+  const [following, setFollowing] = useState<Chapter[]>([]);
   const [courses, setCourses] = useState<CourseEntry[] | null>(null);
   // Fails closed: an unanswered status call shows the gate, not a dead submit.
   const [aiReady, setAiReady] = useState(false);
@@ -65,14 +69,40 @@ export default function HomeScreen() {
 
   const funMsg = useRotatingMessage(step === "generating", funMessages);
 
-  async function generate(videoId: string, videoTitle: string, segments: Segment[]) {
+  async function generate(video: PendingTranscript, chapters: Chapter[]) {
     setStep("generating");
     const courseData = await apiFetch("/courses/generate", token, {
       method: "POST",
-      body: JSON.stringify({ video_id: videoId, video_title: videoTitle, segments }),
+      body: JSON.stringify({
+        video_id: video.videoId,
+        video_title: video.videoTitle,
+        segments: video.segments,
+        chapters,
+      }),
     });
     toast("Course ready!", "success");
     navigate(`/course/${courseData.id}`);
+  }
+
+  async function checkThenGenerate(video: PendingTranscript, chapters: Chapter[]) {
+    setFollowing(chapters);
+    setStep("guardrail");
+    const guardrailData = await apiFetch("/guardrail/check", token, {
+      method: "POST",
+      body: JSON.stringify({ transcript: video.segments.map((s) => s.text).join(" ") }),
+    });
+
+    if (guardrailData.fun_messages?.length >= 3) {
+      setFunMessages([...guardrailData.fun_messages, ...FALLBACK_MESSAGES]);
+    }
+
+    if (!guardrailData.is_learnable) {
+      setGuardrailReason(guardrailData.reason ?? "This video isn't suitable for a course.");
+      setStep("guardrail-blocked");
+      return;
+    }
+
+    await generate(video, chapters);
   }
 
   async function createCourse() {
@@ -84,28 +114,20 @@ export default function HomeScreen() {
         body: JSON.stringify({ url: videoUrl }),
       });
 
-      const segments: Segment[] = transcriptData.segments;
-      const videoTitle: string = transcriptData.video_title ?? "";
-      const transcriptText = segments.map((s) => s.text).join(" ");
-      setPending({ videoId: transcriptData.video_id, videoTitle, segments });
+      const video: PendingTranscript = {
+        videoId: transcriptData.video_id,
+        videoTitle: transcriptData.video_title ?? "",
+        segments: transcriptData.segments,
+        chapters: transcriptData.chapters ?? [],
+      };
+      setPending(video);
 
-      setStep("guardrail");
-      const guardrailData = await apiFetch("/guardrail/check", token, {
-        method: "POST",
-        body: JSON.stringify({ transcript: transcriptText }),
-      });
-
-      if (guardrailData.fun_messages?.length >= 3) {
-        setFunMessages([...guardrailData.fun_messages, ...FALLBACK_MESSAGES]);
-      }
-
-      if (!guardrailData.is_learnable) {
-        setGuardrailReason(guardrailData.reason ?? "This video isn't suitable for a course.");
-        setStep("guardrail-blocked");
+      if (video.chapters.length >= LEAST_CHAPTERS_WORTH_FOLLOWING) {
+        setStep("chapters-asked");
         return;
       }
 
-      await generate(transcriptData.video_id, videoTitle, segments);
+      await checkThenGenerate(video, []);
     } catch (err) {
       toast(errMsg(err), "error");
       setStep("idle");
@@ -116,13 +138,26 @@ export default function HomeScreen() {
     setStep("idle");
     setGuardrailReason(null);
     setPending(null);
+    setFollowing([]);
     setVideoUrl("");
+  }
+
+  // Answering only decides what generation is told; the guardrail still has to
+  // run, so both answers rejoin the road the course was already on.
+  async function answerChapters(chapters: Chapter[]) {
+    if (!pending) return;
+    try {
+      await checkThenGenerate(pending, chapters);
+    } catch (err) {
+      toast(errMsg(err), "error");
+      setStep("idle");
+    }
   }
 
   async function proceedAnyway() {
     if (!pending) return;
     try {
-      await generate(pending.videoId, pending.videoTitle, pending.segments);
+      await generate(pending, following);
     } catch (err) {
       toast(errMsg(err), "error");
       setStep("idle");
@@ -137,6 +172,7 @@ export default function HomeScreen() {
   const totalSections = courses?.reduce((n, c) => n + c.sections.length, 0) ?? 0;
 
   const blocked = step === "guardrail-blocked";
+  const asking = step === "chapters-asked";
   const linkOk = youTubeVideoId(videoUrl) !== null;
   const halfWritten = videoUrl !== "" && !linkOk;
 
@@ -221,11 +257,20 @@ export default function HomeScreen() {
             <GenerationSteps
               className="gen-pills-panel"
               steps={GEN_STEPS}
-              current={blocked ? "guardrail" : step}
+              current={blocked ? "guardrail" : asking ? "transcript" : step}
               note={step === "generating" ? funMsg : undefined}
-              blockedReason={blocked ? guardrailReason ?? undefined : undefined}
-              onOverride={proceedAnyway}
-              onCancel={dismissBlocked}
+              tone={asking ? "ask" : "warn"}
+              blockedReason={
+                blocked
+                  ? guardrailReason ?? undefined
+                  : asking
+                    ? `It seems the creator already split this video into ${pending?.chapters.length} chapters. Use them or regenerate chapters?`
+                    : undefined
+              }
+              onOverride={asking ? () => answerChapters(pending?.chapters ?? []) : proceedAnyway}
+              overrideLabel={asking ? "Use theirs" : undefined}
+              onCancel={asking ? () => answerChapters([]) : dismissBlocked}
+              cancelLabel={asking ? "Regenerate" : undefined}
             />
           )}
         </div>

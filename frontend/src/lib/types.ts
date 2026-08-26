@@ -1,6 +1,7 @@
 import type { SheetStatus } from "./cheatsheet";
 
 export type Segment = { text: string; start: number; duration: number };
+export type Chapter = { title: string; start_seconds: number; end_seconds: number };
 
 export type CourseEntrySection = {
   title: string;

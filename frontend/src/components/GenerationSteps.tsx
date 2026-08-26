@@ -61,10 +61,14 @@ type Props = {
   /** Key of the step in flight. Steps before it read as done. */
   current: string;
   note?: string;
-  /** Turns the current step red and explains why. */
+  /** Halts the current step and explains why. */
   blockedReason?: string;
+  /** A question has two answers and no wrong one, so it is not shown in red. */
+  tone?: "warn" | "ask";
   onOverride?: () => void;
+  overrideLabel?: string;
   onCancel?: () => void;
+  cancelLabel?: string;
   className?: string;
 };
 
@@ -73,8 +77,11 @@ export default function GenerationSteps({
   current,
   note,
   blockedReason,
+  tone = "warn",
   onOverride,
+  overrideLabel = "Proceed Anyway",
   onCancel,
+  cancelLabel = "Cancel",
   className = "gen-steps",
 }: Props) {
   const currentIdx = steps.findIndex((s) => s.key === current);
@@ -88,10 +95,12 @@ export default function GenerationSteps({
         return (
           <div
             key={key}
-            className={`gen-pill${isBlocked ? " blocked" : isActive ? " active" : isDone ? " done" : ""}`}
+            className={`gen-pill${isBlocked ? ` blocked ${tone}` : isActive ? " active" : isDone ? " done" : ""}`}
           >
             <div className="gen-pill-left">
-              {isBlocked ? (
+              {isBlocked && tone === "ask" ? (
+                <svg className="gen-pill-icon gen-pill-ask" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.5"/><path d="M5.4 5.3a1.6 1.6 0 1 1 1.9 1.8V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/><circle cx="7" cy="10.2" r="0.75" fill="currentColor"/></svg>
+              ) : isBlocked ? (
                 <svg className="gen-pill-icon gen-pill-warn" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2L12.5 12H1.5L7 2Z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round"/><line x1="7" y1="6" x2="7" y2="9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="7" cy="10.5" r="0.75" fill="currentColor"/></svg>
               ) : isDone ? (
                 <svg className="gen-pill-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="currentColor" opacity="0.15"/><polyline points="4.5,8 7,10.5 11.5,5.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -110,12 +119,12 @@ export default function GenerationSteps({
               <div className="gen-pill-actions">
                 {onCancel && (
                   <button className="gen-pill-cancel" type="button" onClick={onCancel}>
-                    Cancel
+                    {cancelLabel}
                   </button>
                 )}
                 {onOverride && (
                   <button className="gen-pill-override" type="button" onClick={onOverride}>
-                    Proceed Anyway
+                    {overrideLabel}
                   </button>
                 )}
               </div>
