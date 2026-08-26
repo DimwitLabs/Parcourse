@@ -1,5 +1,5 @@
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, text
 
 from config import DATABASE_URL, SCHEMA
 from models.base import SQLModelBase
@@ -9,6 +9,9 @@ target_metadata = SQLModelBase.metadata
 
 
 def _run(connection) -> None:
+    if SCHEMA:
+        connection.execute(text(f'SET search_path TO "{SCHEMA}"'))
+
     context.configure(
         connection=connection,
         target_metadata=target_metadata,
@@ -19,8 +22,6 @@ def _run(connection) -> None:
         context.run_migrations()
 
 
-# database.py hands its own connection in, so a migration runs on the engine the
-# app already proved it can reach. The command line has none and opens one.
 handed = context.config.attributes.get("connection")
 if handed is not None:
     _run(handed)
