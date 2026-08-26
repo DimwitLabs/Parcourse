@@ -21,7 +21,7 @@ cp .env.example .env
 docker compose -f docker-compose.ghcr.yml up -d
 ```
 
-That pulls `ghcr.io/dimwitlabs/parcourse-backend` and `ghcr.io/dimwitlabs/parcourse-frontend` at `latest`. Set `PARCOURSE_VERSION` to `development` or to a version such as `1.4.0` to follow a different tag. `docker-compose.yml` is the one that builds from the source instead.
+That pulls `ghcr.io/dimwitlabs/parcourse-backend` and `ghcr.io/dimwitlabs/parcourse-frontend` at `latest`. Set `PARCOURSE_VERSION` to `development` or to a version such as `1.5.0` to follow a different tag. `docker-compose.yml` is the one that builds from the source instead.
 
 Set `JWT_SECRET` and `ENCRYPTION_KEY` in `.env` first. Generate the encryption key with:
 

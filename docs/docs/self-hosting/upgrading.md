@@ -28,7 +28,7 @@ docker pull ghcr.io/dimwitlabs/parcourse-frontend:latest
 `PARCOURSE_VERSION` decides which tag comes down. Set it in `.env` or in front of the command, and keep the two images on the same one:
 
 ```bash
-PARCOURSE_VERSION=1.4.0 docker compose -f docker-compose.ghcr.yml up -d
+PARCOURSE_VERSION=1.5.0 docker compose -f docker-compose.ghcr.yml up -d
 ```
 
 The tags are listed in [Installing](/self-hosting/install). A pinned version stays put until you change it, which is the way to sit still while `latest` moves.

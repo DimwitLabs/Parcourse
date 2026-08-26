@@ -23,8 +23,8 @@ docker pull ghcr.io/dimwitlabs/parcourse-frontend:latest
 | --- | --- | --- |
 | `latest` | `main` | Stability. Features arrive once they have settled. |
 | `development` | `development` | The newest work, with the rough edges that come with it. |
-| `1.4.0` | That release | Pinned exactly where you are, until you say otherwise. |
-| `1.4` | That minor line | Patches arrive, features do not. |
+| `1.5.0` | That release | Pinned exactly where you are, until you say otherwise. |
+| `1.5` | That minor line | Patches arrive, features do not. |
 
 Swap the tag for whichever of those you want:
 
