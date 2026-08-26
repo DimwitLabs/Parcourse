@@ -1,14 +1,17 @@
 import logging
 import time
 from collections.abc import Generator
+from pathlib import Path
 
-from sqlalchemy import text
+from alembic import command
+from alembic.config import Config
+from alembic.runtime.migration import MigrationContext
+from sqlalchemy import inspect, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import Session, create_engine
 
 from config import DATABASE_URL, IS_POSTGRES, SCHEMA
-from models.base import SQLModelBase
 
 logger = logging.getLogger(__name__)
 
@@ -54,9 +57,36 @@ def _wait_for_database(attempts: int = 5, delay: float = 2.0) -> None:
             time.sleep(delay)
 
 
+_MIGRATIONS = Path(__file__).resolve().parent / "migrations"
+
+BASELINE = "0001"
+
+
+def _alembic(connection) -> Config:
+    config = Config()
+    config.set_main_option("script_location", str(_MIGRATIONS))
+    config.attributes["connection"] = connection
+    return config
+
+
+def _built_before_migrations(connection) -> bool:
+    """An install from before Alembic has the tables and no version to go with
+    them, so it is recorded at the baseline rather than asked to create what it
+    already has."""
+    return "cached_course" in inspect(connection).get_table_names(schema=SCHEMA)
+
+
 def init_db() -> None:
     _wait_for_database()
     if IS_POSTGRES:
         with engine.begin() as conn:
             conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{SCHEMA}"'))
-    SQLModelBase.metadata.create_all(engine)
+
+    with engine.begin() as conn:
+        config = _alembic(conn)
+        stamped = MigrationContext.configure(conn, opts={"version_table_schema": SCHEMA}).get_current_revision()
+        if stamped is None and _built_before_migrations(conn):
+            logger.info("[database]: existing schema found, recording it at the baseline")
+            command.stamp(config, BASELINE)
+        command.upgrade(config, "head")
+    logger.info("[database]: schema is up to date")
