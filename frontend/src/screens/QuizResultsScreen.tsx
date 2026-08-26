@@ -472,6 +472,13 @@ export default function QuizResultsScreen() {
             </button>
           )}
 
+          <button className="retake-btn" onClick={() => navigate(`/course/${courseId}/notes`)}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2.5 21.5l1-5L17 3a2.8 2.8 0 0 1 4 4L7.5 20.5l-5 1Z" /><line x1="15.5" y1="4.5" x2="19.5" y2="8.5" />
+            </svg>
+            Notes
+          </button>
+
           <button
             className={`retake-btn tip${sheetStatus === "pending" ? " disabled" : ""}`}
             data-tip={CHEATSHEET_HINT[sheetStatus]}

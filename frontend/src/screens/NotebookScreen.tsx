@@ -266,6 +266,9 @@ export default function NotebookScreen() {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 14"/></svg>
                 </button>
               )}
+              <button className="icon-btn tip" data-tip="Notes" aria-label="Notes" onClick={() => navigate(`/course/${c.id}/notes`)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.5 21.5l1-5L17 3a2.8 2.8 0 0 1 4 4L7.5 20.5l-5 1Z"/><line x1="15.5" y1="4.5" x2="19.5" y2="8.5"/></svg>
+              </button>
               <button
                 className={`icon-btn tip${c.cheatsheet_status === "pending" ? " waiting" : ""}`}
                 data-tip={c.cheatsheet_status === "ready" ? "Cheatsheet" : c.cheatsheet_status === "pending" ? "Cheatsheet is being written" : "Cheatsheet could not be written"}
