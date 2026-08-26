@@ -7,6 +7,15 @@ export const LARGEST_KEEPALIVE_BODY = 60_000;
 
 export const LONGEST_SHEET_WORTH_KEEPING = 200_000;
 
+export type SheetState = "loading" | "ready" | "failed";
+export type SaveState = "saved" | "dirty" | "saving";
+
+export const PLACEHOLDERS: Record<SheetState, string> = {
+  loading: "Fetching your sheet.",
+  failed: "Your sheet could not be fetched. Close this and open it again.",
+  ready: "Anything worth keeping from this course.",
+};
+
 export type Note = {
   body: string;
   updated_at: string | null;

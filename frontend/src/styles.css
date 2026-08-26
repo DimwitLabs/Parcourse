@@ -5149,6 +5149,24 @@ a.modal-field-hint {
   from { transform: translateX(100%); }
 }
 
+.notes-page-card {
+  height: min(38rem, 70vh);
+  background-image: radial-gradient(var(--color-dot-faint) 1.4px, transparent 1.4px);
+  background-size: 26px 26px;
+  background-position: 13px 13px;
+}
+
+.notes-editor-page {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.notes-editor-page .cm-scroller {
+  font-size: 1rem;
+  padding: 0;
+}
+
 .notes-head {
   display: flex;
   align-items: center;
@@ -5252,6 +5270,26 @@ a.modal-field-hint {
 
 .notes-tail.open {
   box-shadow: var(--shadow-tail-lift);
+}
+
+.notes-page-tail.open {
+  box-shadow: var(--shadow-tail-lift);
+}
+
+.notes-page-tail .notes-chip {
+  padding: 0.45rem 1.05rem;
+  font-size: 0.72rem;
+}
+
+.notes-page-tail {
+  border-top: 1px solid var(--line);
+  padding-top: 1.15rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 0.6rem;
+  align-items: end;
+  font-size: 0.68rem;
+  color: var(--color-ink-faint);
 }
 
 .notes-guide {
@@ -5453,8 +5491,7 @@ a.modal-field-hint {
   line-height: 1.2;
 }
 
-.notes-export-body,
-.notes-page {
+.notes-export-body {
   margin-top: 2.5rem;
   background: var(--color-surface-lowest);
   border-radius: 1.75rem;
@@ -5464,58 +5501,46 @@ a.modal-field-hint {
   color: var(--color-ink-soft);
 }
 
-.notes-export-body > :first-child,
-.notes-page > :first-child {
+.notes-export-body > :first-child {
   margin-top: 0;
 }
 
-.notes-export-body > :last-child,
-.notes-page > :last-child {
+.notes-export-body > :last-child {
   margin-bottom: 0;
 }
 
 .notes-export-body h1,
-.notes-page h1,
 .notes-export-body h2,
-.notes-page h2,
 .notes-export-body h3,
-.notes-page h3,
 .notes-export-body h4,
-.notes-page h4,
-.notes-export-body h5,
-.notes-page h5 {
+.notes-export-body h5 {
   color: var(--color-ink);
   margin: 1.75rem 0 0.75rem;
   line-height: 1.3;
 }
 
-.notes-export-body h1,
-.notes-page h1 {
+.notes-export-body h1 {
   font-size: 1.4rem;
   font-weight: 800;
 }
 
-.notes-export-body h2,
-.notes-page h2 {
+.notes-export-body h2 {
   font-size: 1.2rem;
   font-weight: 800;
 }
 
-.notes-export-body h3,
-.notes-page h3 {
+.notes-export-body h3 {
   font-size: 1.05rem;
   font-weight: 700;
 }
 
-.notes-export-body h4,
-.notes-page h4 {
+.notes-export-body h4 {
   font-size: 1rem;
   font-weight: 700;
   color: var(--color-ink-soft);
 }
 
-.notes-export-body h5,
-.notes-page h5 {
+.notes-export-body h5 {
   font-size: 0.8rem;
   font-weight: 800;
   color: var(--color-ink-faint);
@@ -5523,21 +5548,17 @@ a.modal-field-hint {
   letter-spacing: 0.08em;
 }
 
-.notes-export-body p,
-.notes-page p {
+.notes-export-body p {
   margin: 0 0 1rem;
 }
 
-.notes-export-body strong,
-.notes-page strong {
+.notes-export-body strong {
   color: var(--color-ink);
   font-weight: 700;
 }
 
 .notes-export-body ul,
-.notes-page ul,
-.notes-export-body ol,
-.notes-page ol {
+.notes-export-body ol {
   margin: 0 0 1rem;
   padding-left: 1.5rem;
   display: flex;
@@ -5545,21 +5566,18 @@ a.modal-field-hint {
   gap: 0.35rem;
 }
 
-.notes-export-body blockquote,
-.notes-page blockquote {
+.notes-export-body blockquote {
   margin: 0 0 1rem;
   padding: 0.25rem 0 0.25rem 1.25rem;
   border-left: 3px solid var(--color-primary-light);
   color: var(--color-ink-faint);
 }
 
-.notes-export-body blockquote p:last-child,
-.notes-page blockquote p:last-child {
+.notes-export-body blockquote p:last-child {
   margin-bottom: 0;
 }
 
-.notes-export-body code,
-.notes-page code {
+.notes-export-body code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.88em;
   background: var(--color-primary-wash);
@@ -5568,14 +5586,12 @@ a.modal-field-hint {
   padding: 0.1rem 0.35rem;
 }
 
-.notes-export-body a,
-.notes-page a {
+.notes-export-body a {
   color: var(--color-primary);
   text-decoration: underline;
 }
 
-.notes-export-body hr,
-.notes-page hr {
+.notes-export-body hr {
   border: none;
   border-top: 1px solid var(--line);
   margin: 1.75rem 0;
