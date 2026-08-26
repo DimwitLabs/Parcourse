@@ -7,11 +7,17 @@ import type { CourseAction } from "../components/CourseActionModal";
 import { toast, useLoadingToast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import { CHEATSHEET_HINT, POLL_MS } from "../lib/cheatsheet";
+import { CHEATSHEET_HINT, POLL_MS, stampOf } from "../lib/cheatsheet";
 import type { SheetStatus } from "../lib/cheatsheet";
 import { shownScore } from "../lib/score";
 import { useEscapeKey } from "../lib/useEscapeKey";
+import { playerApi } from "../lib/youtubePlayer";
+import type { Player } from "../lib/youtubePlayer";
 
+
+const WATCH_TICK_MS = 400;
+
+const A_JUMP_NOT_PLAYBACK_SECONDS = 2;
 
 const CHEATSHEET_CAPTION: Record<SheetStatus, string> = {
   pending: "Your cheatsheet will be ready soon",
@@ -46,9 +52,11 @@ export default function CourseScreen() {
   const navigate = useNavigate();
 
   const [course, setCourse] = useState<Course | null>(null);
-  const [playStart, setPlayStart] = useState(0);
-  const [playKey, setPlayKey] = useState(0);
   const [activeSection, setActiveSection] = useState(0);
+  const [endedSection, setEndedSection] = useState<number | null>(null);
+  const player = useRef<Player | null>(null);
+  const [watching, setWatching] = useState<{ section: number; start: number; end: number } | null>(null);
+  const lastSeen = useRef(0);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const videoRef = useRef<HTMLDivElement>(null);
 
@@ -64,6 +72,7 @@ export default function CourseScreen() {
   const [atBottom, setAtBottom] = useState(false);
   const [barVisible, setBarVisible] = useState(false);
   const quizBoxRef = useRef<HTMLDivElement>(null);
+  const playerHost = useRef<HTMLDivElement>(null);
   const submitBarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -246,6 +255,63 @@ export default function CourseScreen() {
     }
   }
 
+  useEffect(() => {
+    if (!course) return;
+    let made: Player | null = null;
+    // YouTube replaces the element it is handed with its iframe, so it never
+    // gets a node React is holding on to.
+    const host = document.createElement("div");
+    playerHost.current?.appendChild(host);
+
+    playerApi().then((api) => {
+      made = new api.Player(host, {
+        videoId: course.video_id,
+        playerVars: { rel: 0, playsinline: 1 },
+        events: {},
+      });
+      player.current = made;
+    });
+
+    return () => {
+      made?.destroy();
+      player.current = null;
+      host.remove();
+    };
+  }, [course]);
+
+  useEffect(() => {
+    if (!watching) return;
+    const tick = window.setInterval(() => {
+      if (!player.current) return;
+
+      const at = player.current.getCurrentTime();
+      const jumped = Math.abs(at - lastSeen.current) > A_JUMP_NOT_PLAYBACK_SECONDS;
+      lastSeen.current = at;
+
+      if (jumped) {
+        if (at < watching.start || at >= watching.end) setWatching(null);
+        return;
+      }
+      if (at < watching.end) return;
+
+      player.current.pauseVideo();
+      setWatching(null);
+      setEndedSection(watching.section);
+    }, WATCH_TICK_MS);
+    return () => window.clearInterval(tick);
+  }, [watching]);
+
+  function watchPart(index: number) {
+    if (!course) return;
+    const part = course.sections[index];
+    const ends = part.end_seconds > part.start_seconds ? part.end_seconds : null;
+    setWatching(ends === null ? null : { section: index, start: part.start_seconds, end: ends });
+    lastSeen.current = part.start_seconds;
+    setEndedSection(null);
+    player.current?.loadVideoById({ videoId: course.video_id, startSeconds: part.start_seconds });
+    videoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   useLoadingToast(!course, "Loading course…");
 
   if (!course) return null;
@@ -393,16 +459,21 @@ export default function CourseScreen() {
       <div className="course-main">
         <div className="course-view">
           <div className="video-frame" ref={videoRef}>
-            <iframe
-              key={playKey}
-              width="100%"
-              height="100%"
-              src={`https://www.youtube.com/embed/${course.video_id}?start=${Math.floor(playStart)}&autoplay=${playKey > 0 ? 1 : 0}`}
-              title="course video"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+            <div ref={playerHost} />
           </div>
+
+          {endedSection !== null && (
+            <div className="card boundary-card">
+              <span className="boundary-eyebrow">End of section {endedSection + 1}</span>
+              <span className="boundary-title">{course.sections[endedSection].title}</span>
+              <button className="button primary" onClick={() => { scrollToSection(endedSection); setEndedSection(null); }}>
+                Take quiz
+              </button>
+              <button className="boundary-dismiss" onClick={() => setEndedSection(null)} aria-label="Dismiss">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+            </div>
+          )}
 
           <h2 className="section-heading">Curriculum</h2>
 
@@ -417,12 +488,13 @@ export default function CourseScreen() {
                 <button className="section-card-toggle" onClick={() => toggleSection(i)}>
                   <span className={`sidebar-item-num${doneSections.has(i) ? " done" : ""}`}>{doneSections.has(i) ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> : i + 1}</span>
                   <h3 className="section-title">{s.title}</h3>
+                  <span className="section-stamp">{stampOf(s.start_seconds)}</span>
                   <span className={`toggle-chevron${isOpen ? " open" : ""}`}>▾</span>
                 </button>
 
                 {isOpen && (
                   <div className="section-card-body">
-                    <button className="button secondary" onClick={() => { setPlayStart(s.start_seconds); setPlayKey((k) => k + 1); videoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }}>
+                    <button className="button secondary" onClick={() => watchPart(i)}>
                       ▶ Watch this part
                     </button>
 
