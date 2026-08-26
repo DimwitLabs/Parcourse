@@ -1,27 +1,23 @@
 import { jsPDF } from "jspdf";
 
-import { fileNameOf } from "./cheatsheet";
-import type { Cheatsheet } from "./cheatsheet";
 import { paintPaper, sheetCanvas } from "./sheetImage";
-import type { SheetShot } from "./sheetImage";
+import type { SheetShot, SheetSource } from "./sheetImage";
 
 const PAGE = { width: 595.28, height: 841.89 };
 
-// Cuts as late as each page allows, but at a seam between sections rather than
-// through one. A section taller than a page still has to be cut mid-way.
 function pageTops(shot: SheetShot, pageHeight: number) {
   const tops = [0];
   while (true) {
     const top = tops[tops.length - 1];
     if (top + pageHeight >= shot.canvas.height) return tops;
-    const fits = shot.seams.filter((seam) => seam > top && seam <= top + pageHeight);
+    const fits = shot.seamsInCanvasPixels.filter((seam) => seam > top && seam <= top + pageHeight);
     const next = fits.length > 0 ? fits[fits.length - 1] : top + pageHeight;
     tops.push(next);
   }
 }
 
-export async function cheatsheetPdf(sheet: Cheatsheet) {
-  const shot = await sheetCanvas(sheet);
+export async function sheetPdf(source: SheetSource, name: string) {
+  const shot = await sheetCanvas(source);
   const doc = new jsPDF({ unit: "pt", format: "a4", compress: true });
 
   const scale = PAGE.width / shot.canvas.width;
@@ -43,5 +39,5 @@ export async function cheatsheetPdf(sheet: Cheatsheet) {
     doc.addImage(slice.toDataURL("image/png"), "PNG", 0, 0, PAGE.width, PAGE.height);
   });
 
-  doc.save(fileNameOf(sheet, "pdf"));
+  doc.save(name);
 }

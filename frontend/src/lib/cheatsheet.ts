@@ -1,6 +1,7 @@
+import { sheetFileName } from "./sheetText";
+
 export type SheetStatus = "pending" | "ready" | "failed";
 
-/** How often a screen asks again while the sheet is still being written. */
 export const POLL_MS = 4000;
 
 export const CHEATSHEET_HINT: Record<SheetStatus, string> = {
@@ -66,10 +67,5 @@ export function buildCheatsheet(sheet: SourceSheet): Cheatsheet {
 }
 
 export function fileNameOf(sheet: Cheatsheet, extension: string) {
-  const title = sheet.title
-    .replace(/[\\/:*?"<>|]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 120);
-  return `[Parcourse] Cheatsheet - ${title || "Untitled course"}.${extension}`;
+  return sheetFileName("Cheatsheet", sheet.title, extension);
 }

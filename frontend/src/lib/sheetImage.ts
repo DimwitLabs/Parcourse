@@ -1,8 +1,6 @@
 import { snapdom } from "@zumer/snapdom";
 
-import { stampOf } from "./cheatsheet";
 import { download } from "./download";
-import type { Cheatsheet } from "./cheatsheet";
 
 const SHEET_WIDTH = 900;
 const PIXEL_RATIO = 2;
@@ -11,51 +9,21 @@ const DOT_RADIUS = 1.4;
 const DOT_OFFSET = 13;
 const TALLEST_CANVAS_CHROME_WILL_DRAW = 16000;
 
-function escaped(text: string) {
-  const node = document.createElement("div");
-  node.textContent = text;
-  return node.innerHTML;
-}
+export type SheetSource = {
+  html: string;
+  className: string;
+  seamSelector?: string;
+};
 
-function markup(sheet: Cheatsheet) {
-  const sections = sheet.sections
-    .map(
-      (section) => `
-      <section class="cheatsheet-export-section">
-        <div class="cheatsheet-export-head">
-          <span class="cheatsheet-export-num">${section.number}</span>
-          <h2 class="cheatsheet-export-title">${escaped(section.title)}</h2>
-          <span class="cheatsheet-export-stamp">${escaped(stampOf(section.startSeconds))}</span>
-        </div>
-        <ul class="cheatsheet-export-points">
-          ${section.points.map((point) => `<li>${escaped(point)}</li>`).join("")}
-        </ul>
-      </section>`,
-    )
-    .join("");
-
-  return `
-    <header class="cheatsheet-export-masthead">
-      <img class="cheatsheet-export-logo" src="/parcourse-wordmark.svg" alt="Parcourse" />
-      <span class="cheatsheet-export-eyebrow">Cheatsheet</span>
-    </header>
-    <h1 class="cheatsheet-export-course">${escaped(sheet.title)}</h1>
-    <div class="cheatsheet-export-body">${sections}</div>
-    <footer class="cheatsheet-export-footer">
-      <span>Made with Parcourse</span>
-      <span>${sheet.sections.length} section${sheet.sections.length === 1 ? "" : "s"}</span>
-    </footer>`;
-}
-
-async function mounted(sheet: Cheatsheet): Promise<HTMLDivElement> {
+async function mounted(source: SheetSource): Promise<HTMLDivElement> {
   const host = document.createElement("div");
-  host.className = "cheatsheet-export";
+  host.className = source.className;
   host.style.width = `${SHEET_WIDTH}px`;
   // Saying this on the node rather than the document keeps the page the reader
   // is looking at from flashing light while the capture runs.
   host.style.colorScheme = "light";
   host.style.setProperty("--dark", "0");
-  host.innerHTML = markup(sheet);
+  host.innerHTML = source.html;
   document.body.appendChild(host);
 
   const logo = host.querySelector("img");
@@ -69,8 +37,9 @@ async function mounted(sheet: Cheatsheet): Promise<HTMLDivElement> {
   return host;
 }
 
-function seamsOf(host: HTMLElement, scale: number) {
-  const cards = [...host.querySelectorAll(".cheatsheet-export-section")];
+function seamsOf(host: HTMLElement, scale: number, selector?: string) {
+  if (!selector) return [];
+  const cards = [...host.querySelectorAll(selector)];
   const top = host.getBoundingClientRect().top;
   const seams: number[] = [];
   for (let card = 1; card < cards.length; card += 1) {
@@ -134,12 +103,11 @@ export type SheetShot = {
   scale: number;
   paper: string;
   dot: string;
-  /** Where a page may be cut without splitting a section, in canvas pixels. */
-  seams: number[];
+  seamsInCanvasPixels: number[];
 };
 
-export async function sheetCanvas(sheet: Cheatsheet): Promise<SheetShot> {
-  const host = await mounted(sheet);
+export async function sheetCanvas(source: SheetSource): Promise<SheetShot> {
+  const host = await mounted(source);
   try {
     const paper = getComputedStyle(host).backgroundColor;
     const dot = colorOf(host, "--color-dot");
@@ -155,15 +123,15 @@ export async function sheetCanvas(sheet: Cheatsheet): Promise<SheetShot> {
       dpr: 1,
       embedFonts: true,
     });
-    const shot: SheetShot = { canvas: captured, scale, paper, dot, seams: seamsOf(host, scale) };
+    const shot: SheetShot = { canvas: captured, scale, paper, dot, seamsInCanvasPixels: seamsOf(host, scale, source.seamSelector) };
     return { ...shot, canvas: onPaper(shot) };
   } finally {
     host.remove();
   }
 }
 
-export async function sheetPng(sheet: Cheatsheet, name: string) {
-  const { canvas } = await sheetCanvas(sheet);
+export async function sheetPng(source: SheetSource, name: string) {
+  const { canvas } = await sheetCanvas(source);
   const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
   if (!blob) throw new Error("The image could not be written.");
   download(blob, name);

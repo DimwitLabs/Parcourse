@@ -47,12 +47,14 @@ export default function CheatsheetScreen() {
     if (!sheet || sheet.status !== "ready" || saving) return;
     setSaving(kind);
     try {
+      const { cheatsheetSource } = await import("../lib/cheatsheetMarkup");
+      const source = cheatsheetSource(sheet);
       if (kind === "pdf") {
-        const { cheatsheetPdf } = await import("../lib/cheatsheetPdf");
-        await cheatsheetPdf(sheet);
+        const { sheetPdf } = await import("../lib/sheetPdf");
+        await sheetPdf(source, fileNameOf(sheet, "pdf"));
       } else {
         const { sheetPng } = await import("../lib/sheetImage");
-        await sheetPng(sheet, fileNameOf(sheet, "png"));
+        await sheetPng(source, fileNameOf(sheet, "png"));
       }
     } catch {
       toast(`Couldn't build the ${kind.toUpperCase()}. Try again.`, "error");
