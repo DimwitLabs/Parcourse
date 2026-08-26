@@ -12,6 +12,7 @@ from dependencies import get_current_user
 from models.cheatsheet_cache import CachedCheatsheet, SheetStatus
 from models.course_cache import CachedCourse
 from models.knowledge_graph import CourseKnowledgeNode, EdgeType, KnowledgeEdge, UserKnowledgeProgress
+from models.note import CourseNote
 from models.quiz_attempt import QuizAttempt
 from models.quiz_draft import QuizDraft
 from models.section_progress import SectionProgress
@@ -248,6 +249,14 @@ def delete_course(
     ).first()
     if draft:
         session.delete(draft)
+    # SQLite does not enforce the foreign keys these two declare, so what the
+    # course carried has to be swept by hand rather than left to a cascade.
+    note = session.get(CourseNote, course_id)
+    if note:
+        session.delete(note)
+    sheet = session.get(CachedCheatsheet, course_id)
+    if sheet:
+        session.delete(sheet)
     session.flush()
     session.delete(cached)
     session.commit()
