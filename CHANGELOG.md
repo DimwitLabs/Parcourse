@@ -4,6 +4,16 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Notes:** Every course has a sheet of its own, on a tab at the right edge of the course screen. It is the one place in a course that holds what the reader wrote rather than what the model did. It saves itself as typing stops, and says so on a chip that can be pressed to save at once; leaving the screen mid-edit spends the pending save rather than dropping it. Light markdown is understood, bold through dividers, with the marks listed under the sheet. And a sheet saves as an image or a PDF on the same Parcourse paper the cheatsheet uses.
+
+### Fixed
+
+- Deleting a course now takes its notes and its cheatsheet with it. On SQLite the two were left behind, since the database does not enforce the foreign key they were relying on.
+
 ## [1.4.0] - 2026-08-24
 
 ### Added
