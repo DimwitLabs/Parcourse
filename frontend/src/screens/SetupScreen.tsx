@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import CanvasBackground from "../components/CanvasBackground";
 import PasswordField from "../components/PasswordField";
 import PasswordInput from "../components/PasswordInput";
 import ProviderForm from "../components/ProviderForm";
@@ -87,7 +86,6 @@ export default function SetupScreen() {
 
   return (
     <div className="login-page">
-      <CanvasBackground />
       <ThemeSwitch className="login-theme-switch" />
 
       <div className="login-brand">
