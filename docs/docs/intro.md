@@ -7,6 +7,10 @@ slug: /
 
 # Overview
 
+:::info
+This project is backed by the [Dimwit Pledge](https://dimwit.me/pledge).
+:::
+
 Parcourse turns a YouTube video into a course you can actually study. Paste a link and it comes back with sections, a summary and the takeaways worth keeping for each one, a quiz that tests whether you followed the argument rather than whether you remember a word, a one-page cheatsheet, and a knowledge graph that grows across everything you have taken.
 
 It is not a place to find something to watch. There is no catalogue, no feed and nothing recommended, and Parcourse will never suggest what to learn next. You bring the link, or nothing happens.

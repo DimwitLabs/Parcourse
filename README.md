@@ -1,10 +1,14 @@
 # Parcourse
 
 [![AI-DECLARATION: copilot](https://img.shields.io/badge/䷼%20AI--DECLARATION-copilot-fee2e2?labelColor=fee2e2)](AI-DECLARATION.md)
+[![Dimwit Pledge](https://dimwit.me/pledge.svg)](https://dimwit.me/pledge)
 
 <p align="center"><img src="landing/og.png" alt="Parcourse. Turn curiosity into knowledge." width="100%" /></p>
 
 <p align="center"><a href="https://parcourse.dimwit.me">parcourse.dimwit.me</a></p>
+
+> [!NOTE]
+> This project is backed by the [Dimwit Pledge](https://dimwit.me/pledge).
 
 Parcourse is an open-source app that transforms YouTube videos into structured learning experiences. Paste any URL and get AI-generated sections, summaries, and quiz questions with instant feedback. The app builds a personal knowledge graph mapping your growth across topics, supports multi-user administration, and works with any provider LiteLLM reaches (OpenRouter, OpenAI, Anthropic, Gemini, Groq, a local Ollama, and more), configured from the Settings page and stored encrypted.
 
