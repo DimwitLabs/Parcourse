@@ -13,13 +13,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 
+- **License:** Parcourse is now licensed under AGPL-3.0 rather than Apache 2.0. Running it unmodified changes nothing for self-hosters, but a modified copy offered to others over a network must publish its source.
 - Notes and Cheatsheet use the toast system now instead of written messages.
 - Add formatters for `K`, `M` etc. as Skills cascade into big numbers quite quickly.
 - To save space and for better UX, the mastery legend is now a pill in the corner of the canvas that opens to say what each colour means.
+- The course page drops its Notes link now that the tab beside it opens the same page.
 
 ### Fixed
 
-- Line up cheatsheet bullets and section numbers on mobile displays.
+- Line up cheatsheet bullets and section numbers on mobile displays, with the number sitting above the bullets and the section head centred on the title's first line.
+- Drag and pan the knowledge graph with a finger. Only pinch-to-zoom worked on touch before.
 
 ## [1.5.1] - 2026-08-28
 
