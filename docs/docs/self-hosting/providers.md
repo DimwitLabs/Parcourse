@@ -32,6 +32,8 @@ The model field stays editable. The lists above are starting points, not limits,
 
 Nothing validates the name up front. **Test connection** on the settings page checks it by asking the provider. Use it after changing the model.
 
+A successful test also says how strictly the model can be held to returning JSON, which is what course generation depends on. **Schema** means it can be handed the exact shape to fill in, **JSON mode** that it promises valid JSON but not its shape, and **Prompt only** that nothing is enforced and the shape is asked for in the prompt. All three work; the first needs the least repair afterwards.
+
 ## Running a Local Model
 
 Point the server URL at your Ollama instance and give it a model you have pulled. If Parcourse is in Docker and Ollama is on the host, `localhost` inside the container is not your machine, so use an address the container can reach.

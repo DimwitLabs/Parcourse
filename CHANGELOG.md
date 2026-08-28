@@ -4,6 +4,24 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] - 2026-08-28
+
+### Fixed
+
+- A concept shared with another account names only your own courses in its tooltip.
+- An admin opening someone else's knowledge graph sees the concepts they hold, not the courses behind them.
+- Mastery rolls up on every view, so a field or a topic reads as the weakest thing beneath it.
+- Pages keep to the width of the screen on a phone.
+- The background canvas is drawn once on the login and setup screens.
+
+### Changed
+
+- The connection test names the JSON mode in words and explains it on hover.
+
+### Removed
+
+- The domain tier, which nothing ever created.
+
 ## [1.5.0] - 2026-08-27
 
 ### Added
