@@ -43,6 +43,12 @@ Running it on a VPS, using your own Postgres, connecting a provider, managing ac
 
 Contributors should read [CONTRIBUTING.md](CONTRIBUTING.md), which covers the development setup and how to run the tests.
 
+## Attribution
+
+A video belongs to whoever made it. Parcourse does not host, mirror or re-upload anything, and it claims none of it. The video plays from YouTube in YouTube's own player, so watching it inside a course is watching it on YouTube, and the course around it is written from the transcript that already came with it.
+
+So if a video taught you something, go and subscribe to the person who made it, and support them with likes, comments and, if possible, direct donations, or however else they have asked to be supported. All Parcourse does is help you retain and understand what they taught you.
+
 ## Credits
 
 The Parcourse logo is inspired by one of the many potential `interrobang`s from the Inter font by @rsms, from [this GitHub thread](https://github.com/rsms/inter/issues/69#issuecomment-423794926).

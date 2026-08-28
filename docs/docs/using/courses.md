@@ -7,6 +7,12 @@ title: Courses
 
 A course is a video reorganised into something you can work through.
 
+:::note[Attribution]
+A video belongs to whoever made it. Parcourse does not host, mirror or re-upload anything, and it claims none of it. The video plays from YouTube in YouTube's own player, so watching it inside a course is watching it on YouTube, and the course around it is written from the transcript that already came with it.
+
+So if a video taught you something, go and subscribe to the person who made it, and support them with likes, comments and, if possible, direct donations, or however else they have asked to be supported. All Parcourse does is help you retain and understand what they taught you.
+:::
+
 ## Making One
 
 Paste a YouTube link into the bar on the home screen. Parcourse fetches the transcript, hands it to your model, and gets back a set of sections. Each section has a title, a summary, the takeaways worth keeping, and the point in the video it starts at.

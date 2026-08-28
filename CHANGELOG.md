@@ -13,7 +13,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 
-- **License:** Parcourse is now licensed under AGPL-3.0 rather than Apache 2.0. Running it unmodified changes nothing for self-hosters, but a modified copy offered to others over a network must publish its source.
+- **License and Attribution:** Parcourse is now licensed under AGPL-3.0 rather than Apache 2.0. Running it unmodified changes nothing for self-hosters, but a modified copy offered to others over a network must publish its source. Also added a clear mention of who owns the video and that Parcourse does not store any content and simply stores markers to the content that is and continues to be hosted on YouTube.
 - Notes and Cheatsheet use the toast system now instead of written messages.
 - Add formatters for `K`, `M` etc. as Skills cascade into big numbers quite quickly.
 - To save space and for better UX, the mastery legend is now a pill in the corner of the canvas that opens to say what each colour means.
