@@ -4,7 +4,7 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.2] - 2026-08-28
+## [1.5.2] - 2026-08-29
 
 ### Added
 
@@ -18,11 +18,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Add formatters for `K`, `M` etc. as Skills cascade into big numbers quite quickly.
 - To save space and for better UX, the mastery legend is now a pill in the corner of the canvas that opens to say what each colour means.
 - The course page drops its Notes link now that the tab beside it opens the same page.
+- **Landing Page:** Newly designed landing page which brings the whole app's tutorial and flow into an introduction for the platform all at once.
 
 ### Fixed
 
 - Line up cheatsheet bullets and section numbers on mobile displays, with the number sitting above the bullets and the section head centred on the title's first line.
 - Drag and pan the knowledge graph with a finger. Only pinch-to-zoom worked on touch before.
+- The end of section card sits below the video with a gap rather than merging into it, and its buttons take clicks again. The scrim it dims the video with used to paint over the card, which is what made them dead.
+- **Not now** hands the video back and plays it, in fullscreen as well as on the page, rather than dismissing the card and leaving it paused.
 
 ## [1.5.1] - 2026-08-28
 
