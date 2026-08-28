@@ -47,4 +47,4 @@ Contributors should read [CONTRIBUTING.md](CONTRIBUTING.md), which covers the de
 
 The Parcourse logo is inspired by one of the many potential `interrobang`s from the Inter font by @rsms, from [this GitHub thread](https://github.com/rsms/inter/issues/69#issuecomment-423794926).
 
-Licensed under Apache 2.0. See [LICENSE](LICENSE).
+Licensed under the GNU Affero General Public License v3.0. See [LICENSE](LICENSE).

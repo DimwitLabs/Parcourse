@@ -66,6 +66,8 @@ jobs:
         id: meta
         with:
           images: ghcr.io/dimwitlabs/parcourse-${{ matrix.service }}
+          labels: |
+            org.opencontainers.image.licenses=AGPL-3.0-only
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=raw,value=development,enable=${{ github.ref == 'refs/heads/development' }}

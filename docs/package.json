@@ -1,6 +1,7 @@
 {
   "name": "parcourse-docs",
   "private": true,
+  "license": "AGPL-3.0-only",
   "version": "1.5.2",
   "scripts": {
     "start": "docusaurus start",
