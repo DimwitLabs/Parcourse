@@ -41,7 +41,6 @@ function tierIncluded(tier: Tier, granularity: Granularity): boolean {
   return TIER_ORDER.indexOf(tier) <= cutoff;
 }
 
-// Mirrors _EXPOSURE_MASTERY in backend/services/knowledge_graph.py.
 const EXPOSURE_MASTERY = 0.2;
 const DRAG_SLOP_PX = 6;
 
@@ -316,8 +315,7 @@ export default function KnowledgeGraphScreen() {
   const stackRef = useRef<HTMLDivElement>(null);
   const [placed, setPlaced] = useState<{ left: number; top: number } | null>(null);
 
-  // Pinning grows the card by a row, which near an edge would push that row off
-  // the screen, so the card moves to where it fits instead.
+
   useLayoutEffect(() => {
     if (!tooltip) {
       setPlaced(null);
@@ -355,8 +353,7 @@ export default function KnowledgeGraphScreen() {
       .catch((err) => setError(String(err.message ?? err)));
   }, [token, viewingUserId, user]);
 
-  // What the server will take with it, so the warning can name it beforehand.
-  // Mirrors _falling in backend/routers/knowledge_graph.py.
+
   function falling(node: Node): Node[] {
     if (!graph) return [];
     const parents = new Map<string, Set<string>>();
@@ -518,8 +515,7 @@ export default function KnowledgeGraphScreen() {
     return { x: (nativeX / W) * 1000 - 500, y: (nativeY / H) * 800 - 400 };
   }
 
-  // Grabbing the node on mousedown made every click on a small one shove it
-  // across the canvas, so it is only picked up once the pointer has travelled.
+
   function onNodeMouseDown(e: React.MouseEvent, n: SimNode) {
     if (n.tier === "you") return;
     e.stopPropagation();
