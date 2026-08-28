@@ -377,14 +377,6 @@ export default function CourseScreen() {
     <svg className="cheatsheet-cta-go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
   );
 
-  const notesSidebar = (
-    <Link className="button secondary cheatsheet-cta tip" data-tip="Everything you wrote here" to={`/course/${courseId}/notes`}>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.5 21.5l1-5L17 3a2.8 2.8 0 0 1 4 4L7.5 20.5l-5 1Z" /><line x1="15.5" y1="4.5" x2="19.5" y2="8.5" /></svg>
-      <span className="cheatsheet-cta-label">Notes</span>
-      {goIcon}
-    </Link>
-  );
-
   const sidebarInner = (
     <>
       {sheetLeading}
@@ -421,8 +413,6 @@ export default function CourseScreen() {
     <span className="button secondary cheatsheet-cta disabled" aria-disabled="true">{barInner}</span>
   );
 
-  // The sidebar is gone below 860px, so these travel with the quiz instead of
-  // disappearing along with it.
   const courseActions = (
     <>
       {lastAttempt && (
@@ -463,7 +453,6 @@ export default function CourseScreen() {
             ))}
           </div>
 
-          <div className="cheatsheet-sidebar">{notesSidebar}</div>
           <div className="cheatsheet-sidebar">{cheatsheetSidebar}</div>
 
           <div className={`quiz-sidebar-box${barVisible ? " fading" : ""}`} ref={quizBoxRef}>
