@@ -4,7 +4,7 @@ import {
   forceManyBody,
   forceSimulation,
 } from "d3-force";
-import { useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { toast, useLoadingToast } from "../components/Toast";
@@ -581,7 +581,10 @@ export default function KnowledgeGraphScreen() {
     };
   }
   const counts = nodeCounts();
-  const effectiveMastery = simData && graph ? computeEffectiveMastery(simData.nodes, graph.edges) : new Map<string, number>();
+  const effectiveMastery = useMemo(
+    () => (graph ? computeEffectiveMastery(graph.nodes, graph.edges) : new Map<string, number>()),
+    [graph],
+  );
 
   useLoadingToast(!graph || !simData, "Loading knowledge graph…");
 
