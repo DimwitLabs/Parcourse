@@ -26,6 +26,12 @@ type ConnectionState = { configured: boolean; provider: string | null; model: st
 
 type TestResult = { ok: boolean; detail: string; json_mode: string };
 
+const JSON_MODES: Record<string, { label: string; tip: string }> = {
+  schema: { label: "Schema", tip: "This model can be handed the exact shape to fill in, which is the surest of the three." },
+  json_object: { label: "JSON mode", tip: "This model promises valid JSON, though not the shape of it." },
+  prompt: { label: "Prompt only", tip: "Nothing is enforced here. The shape is asked for in the prompt and checked afterwards." },
+};
+
 const DEFAULT_PROVIDER = "openrouter";
 
 type Props = {
@@ -272,7 +278,9 @@ export default function ProviderForm({
                 <span>{result.detail}</span>
               </div>
               {result.ok && result.json_mode && (
-                <span className="test-result-tag">{result.json_mode}</span>
+                <span className="test-result-tag tip" data-tip={JSON_MODES[result.json_mode]?.tip ?? "How strictly this model can be held to returning JSON."}>
+                  {JSON_MODES[result.json_mode]?.label ?? result.json_mode}
+                </span>
               )}
             </div>
           )}

@@ -3572,6 +3572,7 @@ a.tip {
   font-weight: 500;
   line-height: 1.5;
   letter-spacing: normal;
+  text-transform: none;
   white-space: nowrap;
   box-shadow: var(--shadow-pop);
   border: var(--card-edge);
@@ -4310,6 +4311,12 @@ a.modal-field-hint {
   line-height: 1.45;
   color: var(--color-ink-soft);
   word-break: break-word;
+}
+
+.test-result-tag::after {
+  white-space: normal;
+  width: max-content;
+  max-width: 15rem;
 }
 
 .test-result-tag {
