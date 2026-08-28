@@ -1,12 +1,12 @@
 import { useState } from "react";
 
 import { errMsg } from "../lib/api";
-import { PLACEHOLDERS } from "../lib/notes";
+import { EDITOR_PLACEHOLDER, SHEET_LOADING } from "../lib/notes";
 import { exportNotes } from "../lib/notesExport";
 import { useNoteSheet } from "../lib/useNoteSheet";
 import NotesChip from "./NotesChip";
 import NotesGuide from "./NotesGuide";
-import { toast } from "./Toast";
+import { toast, useLoadingToast } from "./Toast";
 
 const closeIcon = (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -26,7 +26,9 @@ export default function NotesSheet({
   const [guideOpen, setGuideOpen] = useState(false);
   const [exporting, setExporting] = useState<"png" | "pdf" | null>(null);
 
-  const { body, sheetState, saveState, saveNow, editorHost } = useNoteSheet(courseId, PLACEHOLDERS.ready, live);
+  const { body, sheetState, saveState, saveNow, editorHost } = useNoteSheet(courseId, EDITOR_PLACEHOLDER, live);
+
+  useLoadingToast(live && sheetState === "loading", SHEET_LOADING);
 
   async function exportSheet(kind: "png" | "pdf") {
     setExporting(kind);
@@ -52,11 +54,7 @@ export default function NotesSheet({
         </button>
       </div>
 
-      {sheetState === "ready" ? (
-        <div className="notes-body" ref={editorHost} />
-      ) : (
-        <p className="notes-waiting">{PLACEHOLDERS[sheetState]}</p>
-      )}
+      <div className="notes-body" ref={editorHost} />
 
       <div className={`notes-tail${guideOpen ? " open" : ""}`}>
         <NotesGuide onToggle={setGuideOpen} />

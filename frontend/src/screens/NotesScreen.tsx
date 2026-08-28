@@ -6,7 +6,7 @@ import NotesGuide from "../components/NotesGuide";
 import { toast, useLoadingToast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import { PLACEHOLDERS } from "../lib/notes";
+import { EDITOR_PLACEHOLDER } from "../lib/notes";
 import { exportNotes } from "../lib/notesExport";
 import { useNoteSheet } from "../lib/useNoteSheet";
 
@@ -20,7 +20,7 @@ export default function NotesScreen() {
 
   const { body, sheetState, saveState, saveNow, editorHost } = useNoteSheet(
     courseId ?? "",
-    PLACEHOLDERS.ready,
+    EDITOR_PLACEHOLDER,
     !!courseId,
   );
 
@@ -43,7 +43,7 @@ export default function NotesScreen() {
     };
   }, [courseId, token, navigate]);
 
-  useLoadingToast(!title, "Loading your notes…");
+  useLoadingToast(!title || sheetState === "loading", "Loading your notes…");
 
   async function save(kind: "pdf" | "png") {
     if (!title || body.trim() === "" || saving) return;
@@ -82,24 +82,13 @@ export default function NotesScreen() {
         </div>
       </div>
 
-      {sheetState === "ready" ? (
-        <div className="card cheatsheet-sheet notes-page-card">
-          <div className="notes-editor-page" ref={editorHost} />
-          <div className={`notes-page-tail${guideOpen ? " open" : ""}`}>
-            <NotesGuide onToggle={setGuideOpen} />
-            <NotesChip state={saveState} onSave={saveNow} />
-          </div>
+      <div className="card cheatsheet-sheet notes-page-card">
+        <div className="notes-editor-page" ref={editorHost} />
+        <div className={`notes-page-tail${guideOpen ? " open" : ""}`}>
+          <NotesGuide onToggle={setGuideOpen} />
+          <NotesChip state={saveState} onSave={saveNow} />
         </div>
-      ) : (
-        <div className="card cheatsheet-waiting">
-          <div>
-            <h2 className="cheatsheet-waiting-title">
-              {sheetState === "failed" ? "That didn't work" : "Fetching your notes"}
-            </h2>
-            <p className="cheatsheet-waiting-body">{PLACEHOLDERS[sheetState]}</p>
-          </div>
-        </div>
-      )}
+      </div>
 
       <Link className="attempt-row attempt-back card" to={`/course/${courseId}`}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

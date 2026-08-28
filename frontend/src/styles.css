@@ -5256,15 +5256,6 @@ a.modal-field-hint {
   overflow: hidden;
 }
 
-.notes-waiting {
-  flex: 1;
-  margin: 0;
-  padding: 1.35rem;
-  font-size: 0.86rem;
-  line-height: 1.7;
-  color: var(--color-ink-faint);
-}
-
 .notes-tail {
   border-top: 1px solid var(--line);
   padding: 0.7rem 1.1rem 0.9rem 1.35rem;
