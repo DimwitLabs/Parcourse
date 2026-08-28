@@ -4260,7 +4260,7 @@ a.modal-field-hint {
 
 .test-result {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.65rem;
   padding: 0.85rem 1rem;
   border-radius: var(--radius-lg);
