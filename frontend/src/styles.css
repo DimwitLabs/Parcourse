@@ -4647,6 +4647,9 @@ a.modal-field-hint {
 }
 
 .cheatsheet-section {
+  --sheet-num-size: 1.4rem;
+  --sheet-num-gap: 0.75rem;
+  --sheet-text-column: calc(var(--sheet-num-size) + var(--sheet-num-gap));
   padding: 1.75rem 0;
   border-top: 1px solid var(--line);
 }
@@ -4663,12 +4666,12 @@ a.modal-field-hint {
 .cheatsheet-section-head {
   display: flex;
   align-items: baseline;
-  gap: 0.75rem;
+  gap: var(--sheet-num-gap);
 }
 
 .cheatsheet-num {
-  width: 1.4rem;
-  height: 1.4rem;
+  width: var(--sheet-num-size);
+  height: var(--sheet-num-size);
   border-radius: var(--radius-full);
   background: var(--color-secondary-container);
   color: var(--color-primary);
@@ -4709,7 +4712,7 @@ a.modal-field-hint {
 
 .cheatsheet-points {
   list-style: none;
-  margin: 1rem 0 0 2.15rem;
+  margin: 1rem 0 0 var(--sheet-text-column);
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -4751,15 +4754,12 @@ a.modal-field-hint {
   }
 
   .cheatsheet-section {
+    --sheet-num-gap: 0.6rem;
     padding: 1.25rem 0;
   }
 
   .cheatsheet-section-head {
     flex-wrap: wrap;
-  }
-
-  .cheatsheet-points {
-    margin-left: 0;
   }
 }
 
