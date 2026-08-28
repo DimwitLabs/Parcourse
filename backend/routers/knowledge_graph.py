@@ -15,7 +15,7 @@ from services.knowledge_graph import falling
 router = APIRouter(prefix="/knowledge-graph", tags=["knowledge-graph"])
 
 
-def _build_graph(session: Session, user_id: uuid.UUID) -> KnowledgeGraphResponse:
+def _build_graph(session: Session, user_id: uuid.UUID, with_courses: bool = True) -> KnowledgeGraphResponse:
     progress_rows = session.exec(
         select(UserKnowledgeProgress).where(UserKnowledgeProgress.user_id == user_id)
     ).all()
@@ -33,25 +33,29 @@ def _build_graph(session: Session, user_id: uuid.UUID) -> KnowledgeGraphResponse
     ).all()
 
     node_ids = [n.id for n in nodes]
-    links = session.exec(
-        select(CourseKnowledgeNode).where(CourseKnowledgeNode.node_id.in_(node_ids))
-    ).all()
-    course_ids = list({lnk.course_id for lnk in links})
-    courses = session.exec(select(CachedCourse).where(CachedCourse.id.in_(course_ids))).all()
-    course_title: dict[uuid.UUID, str] = {}
-    for c in courses:
-        try:
-            data = json.loads(c.course_json)
-            sections = data.get("sections") or []
-            course_title[c.id] = sections[0]["title"] if sections else "Untitled"
-        except Exception:
-            course_title[c.id] = "Untitled"
     node_courses: dict[uuid.UUID, list[CourseRef]] = {n.id: [] for n in nodes}
-    for lnk in links:
-        if lnk.node_id in node_courses and lnk.course_id in course_title:
-            node_courses[lnk.node_id].append(
-                CourseRef(id=str(lnk.course_id), title=course_title[lnk.course_id])
-            )
+
+    if with_courses:
+        links = session.exec(
+            select(CourseKnowledgeNode)
+            .join(CachedCourse, CachedCourse.id == CourseKnowledgeNode.course_id)
+            .where(CourseKnowledgeNode.node_id.in_(node_ids), CachedCourse.user_id == user_id)
+        ).all()
+        course_ids = list({lnk.course_id for lnk in links})
+        courses = session.exec(select(CachedCourse).where(CachedCourse.id.in_(course_ids))).all()
+        course_title: dict[uuid.UUID, str] = {}
+        for c in courses:
+            try:
+                data = json.loads(c.course_json)
+                sections = data.get("sections") or []
+                course_title[c.id] = sections[0]["title"] if sections else "Untitled"
+            except Exception:
+                course_title[c.id] = "Untitled"
+        for lnk in links:
+            if lnk.node_id in node_courses and lnk.course_id in course_title:
+                node_courses[lnk.node_id].append(
+                    CourseRef(id=str(lnk.course_id), title=course_title[lnk.course_id])
+                )
 
     return KnowledgeGraphResponse(
         nodes=[
@@ -89,7 +93,7 @@ def get_user_knowledge_graph(
     target = session.get(User, user_id)
     if target is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return _build_graph(session, target.id)
+    return _build_graph(session, target.id, with_courses=False)
 
 
 @router.delete("/nodes/{node_id}", response_model=ForgottenNodes)
