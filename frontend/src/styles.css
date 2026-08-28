@@ -4852,6 +4852,10 @@ a.modal-field-hint {
   --sheet-num-size: 1.4rem;
   --sheet-num-gap: 0.75rem;
   --sheet-text-column: calc(var(--sheet-num-size) + var(--sheet-num-gap));
+  --sheet-bullet-size: 0.6rem;
+  --sheet-title-size: 1.15rem;
+  --sheet-title-leading: 1.35;
+  --sheet-title-line: calc(var(--sheet-title-size) * var(--sheet-title-leading));
   padding: 1.75rem 0;
   border-top: 1px solid var(--line);
 }
@@ -4867,7 +4871,7 @@ a.modal-field-hint {
 
 .cheatsheet-section-head {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   gap: var(--sheet-num-gap);
 }
 
@@ -4884,24 +4888,28 @@ a.modal-field-hint {
   font-weight: 800;
   flex-shrink: 0;
   align-self: flex-start;
+  margin-top: calc((var(--sheet-title-line) - var(--sheet-num-size)) / 2);
 }
 
 .cheatsheet-section-title {
   margin: 0;
   flex: 1;
-  font-size: 1.15rem;
+  font-size: var(--sheet-title-size);
   font-weight: 800;
-  line-height: 1.35;
+  line-height: var(--sheet-title-leading);
 }
 
 .cheatsheet-stamp {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  height: var(--sheet-title-line);
   font-size: 0.8rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--color-ink-faint);
   text-decoration: none;
-  padding: 0.15rem 0.5rem;
+  padding: 0 0.5rem;
   border-radius: var(--radius-sm);
   background: var(--color-surface-high);
   transition: background 0.15s ease, color 0.15s ease;
@@ -4934,8 +4942,8 @@ a.modal-field-hint {
   position: absolute;
   left: 0;
   top: 0.5rem;
-  width: 0.6rem;
-  height: 0.6rem;
+  width: var(--sheet-bullet-size);
+  height: var(--sheet-bullet-size);
   border-radius: 50%;
   background: var(--color-tertiary);
 }
@@ -4962,6 +4970,18 @@ a.modal-field-hint {
 
   .cheatsheet-section-head {
     flex-wrap: wrap;
+  }
+
+  .cheatsheet-points {
+    margin-left: 0;
+  }
+
+  .cheatsheet-points li {
+    padding-left: var(--sheet-text-column);
+  }
+
+  .cheatsheet-points li::before {
+    left: calc((var(--sheet-num-size) - var(--sheet-bullet-size)) / 2);
   }
 }
 
