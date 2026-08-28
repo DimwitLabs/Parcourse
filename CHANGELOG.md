@@ -4,6 +4,23 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.2] - 2026-08-28
+
+### Added
+
+- **Full Screen Knowledge Graph:** The knowledge graph fills the window from a button in the corner of the canvas to view it properly as your nodes increase.
+- Better iconography, hierarchy and component for Fields, Topics and Skills selector.
+
+### Changed
+
+- Notes and Cheatsheet use the toast system now instead of written messages.
+- Add formatters for `K`, `M` etc. as Skills cascade into big numbers quite quickly.
+- To save space and for better UX, the mastery legend is now a pill in the corner of the canvas that opens to say what each colour means.
+
+### Fixed
+
+- Line up cheatsheet bullets and section numbers on mobile displays.
+
 ## [1.5.1] - 2026-08-28
 
 ### Fixed

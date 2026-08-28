@@ -1813,45 +1813,86 @@ body {
   gap: 1.5rem;
 }
 
-.graph-legend {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.legend-item {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.85rem;
-  color: var(--color-ink-soft);
-  cursor: default;
-}
-
-.legend-tip {
+.graph-legend-stack {
   position: absolute;
-  bottom: calc(100% + 0.625rem);
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--color-surface-lowest);
-  border: 1px solid var(--color-surface-high);
-  border-radius: var(--radius-md);
-  padding: 0.45rem 0.75rem;
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: var(--color-ink);
-  white-space: nowrap;
-  box-shadow: var(--shadow-tip);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease, transform 0.15s ease;
-  transform: translateX(-50%) translateY(0.25rem);
-  z-index: 30;
+  left: 1rem;
+  bottom: 1rem;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
 }
 
-.legend-item:hover .legend-tip {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
+.graph-legend-toggle {
+  appearance: none;
+  border: none;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-low);
+  color: var(--color-ink-soft);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-raised);
+  transition: color 0.15s ease;
+}
+
+.graph-legend-toggle:hover {
+  color: var(--color-ink);
+}
+
+.graph-legend-dots {
+  display: inline-flex;
+  align-items: center;
+}
+
+.graph-legend-dots .legend-dot {
+  box-shadow: 0 0 0 2px var(--color-surface-low);
+}
+
+.graph-legend-dots .legend-dot + .legend-dot {
+  margin-left: -0.28rem;
+}
+
+.graph-legend-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: 15rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-low);
+  box-shadow: var(--shadow-raised);
+}
+
+.graph-legend-level {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+
+.graph-legend-level .legend-dot {
+  margin-top: 0.3rem;
+  flex-shrink: 0;
+}
+
+.graph-legend-level-text {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.76rem;
+  line-height: 1.35;
+  color: var(--color-ink-soft);
+}
+
+.graph-legend-level-text strong {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-ink);
 }
 
 .legend-dot {
@@ -1980,12 +2021,6 @@ body {
   .graph-export-controls {
     justify-content: center;
   }
-
-  .graph-legend {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.5rem 1.25rem;
-  }
 }
 
 .graph-canvas-wrap {
@@ -2009,8 +2044,7 @@ body {
   transition: inset 0.32s ease, border-radius 0.32s ease;
 }
 
-.graph-expanded .graph-toolbar,
-.graph-expanded .graph-legend-row {
+.graph-expanded .graph-toolbar {
   position: fixed;
   z-index: 62;
   width: max-content;
@@ -2025,13 +2059,6 @@ body {
   padding: 0.5rem 0.75rem;
 }
 
-.graph-expanded .graph-legend-row {
-  left: 50%;
-  bottom: 1.35rem;
-  transform: translateX(-50%);
-  padding: 0.4rem 0.95rem;
-  border-radius: var(--radius-full);
-}
 
 .graph-expanded .graph-toolbar-right::before {
   content: "";
@@ -2125,10 +2152,6 @@ body {
     max-width: 100%;
   }
 
-  .graph-expanded .graph-legend-row {
-    bottom: 1.1rem;
-    padding: 0.35rem 0.8rem;
-  }
 }
 
 .graph-fs.tip {
@@ -2351,11 +2374,6 @@ body {
   color: var(--color-secondary);
 }
 
-.graph-legend-row {
-  display: flex;
-  justify-content: center;
-  margin-top: -0.5rem;
-}
 
 .graph-tooltip {
   position: relative;

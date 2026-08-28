@@ -53,6 +53,12 @@ function masteryClass(score: number): "mastered" | "learning" | "new" {
   return "new";
 }
 
+const MASTERY_LEVELS: { key: "mastered" | "learning" | "new"; label: string; hint: string }[] = [
+  { key: "mastered", label: "Mastered", hint: "Scored 90% or above" },
+  { key: "learning", label: "Learning", hint: "Scored below 90%" },
+  { key: "new", label: "New", hint: "Not yet quizzed" },
+];
+
 function computeEffectiveMastery(nodes: Node[], edges: Edge[]): Map<string, number> {
   const scoreMap = new Map(nodes.map((n) => [n.id, n.mastery_score]));
 
@@ -318,6 +324,7 @@ export default function KnowledgeGraphScreen() {
   const stackRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [legendOpen, setLegendOpen] = useState(false);
   const [fromRect, setFromRect] = useState<string | null>(null);
   const restingRect = useRef<string | null>(null);
   const growing = useRef(false);
@@ -541,7 +548,7 @@ export default function KnowledgeGraphScreen() {
   }
 
   function onCanvasMouseDown(e: React.MouseEvent) {
-    if ((e.target as Element).closest(".graph-node-group")) return;
+    if ((e.target as Element).closest(".graph-node-group, .graph-legend-stack")) return;
     setTooltip((t) => (t?.pinned ? null : t));
     isPanning.current = true;
     panStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
@@ -586,6 +593,7 @@ export default function KnowledgeGraphScreen() {
   }, [fromRect]);
 
   useEscapeKey(expanded, () => collapse());
+  useEscapeKey(legendOpen, () => setLegendOpen(false));
 
   function restingInset(): string | null {
     const el = wrapRef.current;
@@ -765,6 +773,38 @@ export default function KnowledgeGraphScreen() {
                 )}
               </svg>
             </button>
+            {graph.nodes.length > 0 && (
+            <div className={`graph-legend-stack${legendOpen ? " legend-open" : ""}`}>
+              {legendOpen && (
+                <div className="graph-legend-card">
+                  {MASTERY_LEVELS.map(({ key, label, hint }) => (
+                    <div key={key} className="graph-legend-level">
+                      <span className={`legend-dot ${key}`} />
+                      <span className="graph-legend-level-text">
+                        <strong>{label}</strong>
+                        {hint}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <button
+                className="graph-legend-toggle"
+                aria-expanded={legendOpen}
+                onClick={() => setLegendOpen((open) => !open)}
+              >
+                <span className="graph-legend-dots">
+                  {MASTERY_LEVELS.map(({ key }) => (
+                    <span key={key} className={`legend-dot ${key}`} />
+                  ))}
+                </span>
+                Mastery
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points={legendOpen ? "6 15 12 9 18 15" : "18 15 12 9 6 15"} />
+                </svg>
+              </button>
+            </div>
+            )}
             <svg
               ref={svgRef}
               className="graph-svg"
@@ -891,22 +931,6 @@ export default function KnowledgeGraphScreen() {
             )}
           </div>
 
-          <div className="graph-legend-row">
-            <div className="graph-legend">
-              <span className="legend-item">
-                <span className="legend-dot mastered" /> Mastered
-                <span className="legend-tip">Scored 90% or above on this course's quiz</span>
-              </span>
-              <span className="legend-item">
-                <span className="legend-dot learning" /> Learning
-                <span className="legend-tip">Quiz attempted but scored below 90%</span>
-              </span>
-              <span className="legend-item">
-                <span className="legend-dot new" /> New
-                <span className="legend-tip">Course not yet quizzed</span>
-              </span>
-            </div>
-          </div>
         </>
       )}
 
