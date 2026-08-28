@@ -31,11 +31,840 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="canvas-glow"></div>
-    <div class="container">
+    <div class="scroll-progress" id="progress"></div>
+    <div class="theme-switch" id="theme-switch" role="radiogroup" aria-label="Theme">
+        <button class="theme-switch-option" type="button" role="radio" aria-checked="true" data-theme-choice="system">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg>
+            <span>Auto</span>
+        </button>
+        <button class="theme-switch-option" type="button" role="radio" aria-checked="false" data-theme-choice="light">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4l1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+            <span>Light</span>
+        </button>
+        <button class="theme-switch-option" type="button" role="radio" aria-checked="false" data-theme-choice="dark">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <span>Dark</span>
+        </button>
+    </div>
+
+    <div class="canvas-glow" id="glow"></div>
+
+    <nav class="sectionrail" id="sectionrail" aria-label="Sections">
+        <button type="button" data-goto="top" data-label="Start"><i></i></button>
+        <button type="button" data-goto="course" data-label="How courses flow"><i></i></button>
+        <button type="button" data-goto="onway" data-label="On the way in"><i></i></button>
+        <button type="button" data-goto="never" data-label="What it will not do"><i></i></button>
+        <button type="button" data-goto="byok" data-label="Bring your own key"><i></i></button>
+        <button type="button" data-goto="selfhost" data-label="Run it yourself"><i></i></button>
+        <button type="button" data-goto="more" data-label="The rest of it"><i></i></button>
+        <button type="button" data-goto="hosted" data-label="Hosted, when it opens"><i></i><svg class="rail-cta-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><svg class="rail-cta-icon up" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></button>
+    </nav>
+
+    <header class="hero lift" id="top">
         <img class="wordmark" src="parcourse-wordmark.svg" alt="Parcourse" width="195" height="52">
         <h1>Turn curiosity into <span class="accent">knowledge.</span></h1>
-        <p class="description">Parcourse turns a YouTube video into a course you can actually study: structured sections, questions that test your thinking, and a knowledge graph that maps how your understanding grows. Self-hosted, and uses whichever model you bring.</p>
+        <p class="description">Parcourse turns a YouTube video into a course you can actually study: structured sections, questions that test your thinking, and a knowledge graph that maps how your understanding grows. It is self-hosted, and it runs on whichever model you bring.</p>
+        <div class="url-form hero-field">
+            <span class="fake-input"><span id="suggestion"></span><span class="caret"></span></span>
+        </div>
+        <p class="home-hint">Best with tutorials, lectures and explainers.</p>
+        <div class="scroll-cue">
+            <span>Keep scrolling</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+    </header>
+
+    <section class="appact" data-act id="course">
+        <div class="appsticky">
+            <div class="rail" data-rail>
+                <span class="rail-label">How courses flow</span>
+                <div class="gen-pill"><span class="gen-pill-left"><span class="gen-pill-dot"></span><span>Paste a link</span></span></div>
+                <div class="gen-pill"><span class="gen-pill-left"><span class="gen-pill-dot"></span><span>Study with modules</span></span></div>
+                <div class="gen-pill"><span class="gen-pill-left"><span class="gen-pill-dot"></span><span>Write as you watch</span></span></div>
+                <div class="gen-pill"><span class="gen-pill-left"><span class="gen-pill-dot"></span><span>Keep the cheatsheet</span></span></div>
+                <div class="gen-pill"><span class="gen-pill-left"><span class="gen-pill-dot"></span><span>Answer the questions</span></span></div>
+                <div class="gen-pill"><span class="gen-pill-left"><span class="gen-pill-dot"></span><span>See where you stand</span></span></div>
+                <div class="gen-pill"><span class="gen-pill-left"><span class="gen-pill-dot"></span><span>Share the card</span></span></div>
+                <div class="gen-pill"><span class="gen-pill-left"><span class="gen-pill-dot"></span><span>Watch the graph grow</span></span></div>
+            </div>
+
+            <div class="frame">
+                <div class="top-nav">
+                    <span class="top-nav-logo"><img src="parcourse-wordmark.svg" alt="Parcourse" width="103" height="28"></span>
+                    <div class="top-nav-links">
+                        <span data-nav="home">Home</span>
+                        <span data-nav="notebook">Notebook</span>
+                        <span data-nav="graph">Knowledge Graph</span>
+                    </div>
+                    <span class="hamburger"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span>
+                    <span class="avatar">DK</span>
+                </div>
+
+                <div class="stage" data-nav-map="home,notebook,notebook,notebook,notebook,notebook,notebook,graph">
+                    <div class="screen">
+                        <h2 class="home-title">What do you want to learn today?</h2>
+                        <div class="url-form url-form-inline">
+                            <span class="fake-input">youtube.com/watch?v=…</span>
+                            <span class="button primary">Create course</span>
+                        </div>
+                        <p class="home-hint" style="text-align:center">Best with tutorials, lectures and explainers.</p>
+
+                        <div class="section-row">
+                            <h3 class="section-row-title">Continue learning</h3>
+                            <span class="section-row-link">View all 14 →</span>
+                        </div>
+                        <div class="course-grid">
+                            <div class="course-card">
+                                <div class="course-card-thumb"><span>Arts</span></div>
+                                <h4 class="course-card-title">Caravaggio and the invention of the spotlight</h4>
+                                <p class="course-card-meta">6 sections</p>
+                            </div>
+                            <div class="course-card">
+                                <div class="course-card-thumb"><span>Finance</span></div>
+                                <h4 class="course-card-title">How the Fed actually sets interest rates</h4>
+                                <p class="course-card-meta">7 sections</p>
+                            </div>
+                            <div class="course-card">
+                                <div class="course-card-thumb"><span>History</span></div>
+                                <h4 class="course-card-title">The Deccan sultanates, 1490 to 1687</h4>
+                                <p class="course-card-meta">8 sections</p>
+                            </div>
+                        </div>
+
+                        <div class="pin" style="top:5.5rem;right:1rem">
+                            <b>One field</b>
+                            Any YouTube link goes in here. There is no catalogue to browse and nothing to pick from.
+                        </div>
+                        <div class="pin" style="bottom:1.5rem;left:1rem">
+                            <b>Your notebook</b>
+                            Finance, arts, history, whatever you were curious about. Every course here is one you made.
+                        </div>
+                    </div>
+
+                    <div class="screen">
+                        <div class="course-layout">
+                            <aside class="course-sidebar">
+                                <span class="sidebar-label">Sections</span>
+                                <div class="sidebar-item done"><span class="sidebar-item-num"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="sidebar-item-title">Money before central banks</span></div>
+                                <div class="sidebar-item active"><span class="sidebar-item-num">2</span><span class="sidebar-item-title">The federal funds rate</span></div>
+                                <div class="sidebar-item"><span class="sidebar-item-num">3</span><span class="sidebar-item-title">Open market operations</span></div>
+                                <div class="sidebar-item"><span class="sidebar-item-num">4</span><span class="sidebar-item-title">The corridor system</span></div>
+                                <div class="sidebar-item"><span class="sidebar-item-num">5</span><span class="sidebar-item-title">Reserves, abundant and scarce</span></div>
+                                <div class="sidebar-item"><span class="sidebar-item-num">6</span><span class="sidebar-item-title">Forward guidance</span></div>
+                                <div class="sidebar-item"><span class="sidebar-item-num">7</span><span class="sidebar-item-title">When it stops working</span></div>
+                            </aside>
+                            <div class="course-main">
+                                <div class="video-stage">
+                                    <div class="video-frame">
+                                        <svg width="46" height="46" viewBox="0 0 24 24" fill="currentColor" opacity="0.5"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                    <span class="video-fs">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                                    </span>
+                                </div>
+
+                                <div class="card boundary-card">
+                                    <span class="boundary-eyebrow">End of section 2</span>
+                                    <span class="boundary-title">The federal funds rate</span>
+                                    <div class="boundary-actions">
+                                        <span class="boundary-btn quiet">Not now</span>
+                                        <span class="boundary-btn loud">Take quiz</span>
+                                    </div>
+                                </div>
+
+                                <h3 class="section-heading">Curriculum</h3>
+                                <div class="card section-card">
+                                    <div class="section-card-toggle">
+                                        <span class="sidebar-item-num done"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                                        <span class="section-title">Money before central banks</span>
+                                        <span class="section-stamp">00:00</span>
+                                        <span class="chevron">▾</span>
+                                    </div>
+                                </div>
+                                <div class="card section-card">
+                                    <div class="section-card-toggle">
+                                        <span class="sidebar-item-num">2</span>
+                                        <span class="section-title">The federal funds rate</span>
+                                        <span class="section-stamp">09:15</span>
+                                        <span class="chevron">▾</span>
+                                    </div>
+                                </div>
+                                <div class="card section-card">
+                                    <div class="section-card-toggle">
+                                        <span class="sidebar-item-num">3</span>
+                                        <span class="section-title">Open market operations</span>
+                                        <span class="section-stamp">18:42</span>
+                                        <span class="chevron">▾</span>
+                                    </div>
+                                </div>
+                                <div class="card section-card">
+                                    <div class="section-card-toggle">
+                                        <span class="sidebar-item-num">4</span>
+                                        <span class="section-title">The corridor system</span>
+                                        <span class="section-stamp">27:03</span>
+                                        <span class="chevron">▾</span>
+                                    </div>
+                                </div>
+                                <div class="card section-card">
+                                    <div class="section-card-toggle">
+                                        <span class="sidebar-item-num">5</span>
+                                        <span class="section-title">Reserves, abundant and scarce</span>
+                                        <span class="section-stamp">34:20</span>
+                                        <span class="chevron">▾</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="notes-tab"><span class="notes-tab-grip"></span><span>Notes</span></span>
+
+                        <div class="pin" style="top:1rem;left:11rem">
+                            <b>Sections, not chapters</b>
+                            Split from the transcript, each with the timestamp it starts at and its own questions.
+                        </div>
+                        <div class="pin" style="top:13rem;right:1rem">
+                            <b>It stops at the boundary</b>
+                            When a section ends, the video pauses and a strip appears under it, offering the questions.
+                        </div>
+                    </div>
+
+                    <div class="screen">
+                        <div class="course-layout">
+                            <aside class="course-sidebar">
+                                <span class="sidebar-label">Sections</span>
+                                <div class="sidebar-item done"><span class="sidebar-item-num"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="sidebar-item-title">Money before central banks</span></div>
+                                <div class="sidebar-item active"><span class="sidebar-item-num">2</span><span class="sidebar-item-title">The federal funds rate</span></div>
+                                <div class="sidebar-item"><span class="sidebar-item-num">3</span><span class="sidebar-item-title">Open market operations</span></div>
+                                <div class="sidebar-item"><span class="sidebar-item-num">4</span><span class="sidebar-item-title">The corridor system</span></div>
+                            </aside>
+                            <div class="course-main">
+                                <div class="video-stage">
+                                    <div class="video-frame">
+                                        <svg width="46" height="46" viewBox="0 0 24 24" fill="currentColor" opacity="0.5"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                    <span class="video-fs">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                                    </span>
+                                </div>
+                                <h3 class="section-heading">Curriculum</h3>
+                            </div>
+                        </div>
+
+                        <div class="notes-overlay">
+                            <div class="notes-backdrop"></div>
+                            <aside class="notes-sheet">
+                                <div class="notes-head">
+                                    <span class="notes-title">Notes<span class="notes-sub">How the Fed actually sets interest rates</span></span>
+                                    <span class="notes-chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Saved</span>
+                                </div>
+                                <div class="notes-body">
+                                    <p class="md-line"><span class="md-h2"><span class="md-tok">## </span>The corridor</span></p>
+                                    <p class="md-line md-bullet"><span class="md-tok">- </span>IORB is the <span class="md-tok">**</span><b>ceiling</b><span class="md-tok">**</span>, ON RRP the floor.</p>
+                                    <p class="md-line md-bullet"><span class="md-tok">- </span>The target is a range, not a number.</p>
+                                    <p class="md-line md-bullet"><span class="md-tok">- </span><span class="typed" data-text="Ask later: why the floor moved"></span></p>
+                                </div>
+                                <div class="notes-tail">
+                                    <span class="notes-guide-toggle">Markdown<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
+                                    <span class="notes-export-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>PNG</span>
+                                    <span class="notes-export-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</span>
+                                </div>
+                            </aside>
+                        </div>
+
+                        <div class="pin" style="top:2rem;right:23.5rem">
+                            <b>A drawer, not a page</b>
+                            The sheet slides over the course from the edge. The video never stops for it.
+                        </div>
+                        <div class="pin" style="bottom:2rem;right:23.5rem">
+                            <b>Markdown, autosaved</b>
+                            Previewed live as you type. Valid tokens stay where you put them and fade, and the sheet saves itself.
+                        </div>
+                    </div>
+
+                    <div class="screen">
+                        <div class="page-header">
+                            <div>
+                                <h2 class="page-header-title">Cheatsheet</h2>
+                                <p class="page-header-sub">Caravaggio and the invention of the spotlight</p>
+                            </div>
+                            <div class="cheatsheet-actions">
+                                <span class="button secondary small"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>PNG</span>
+                                <span class="button secondary small"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</span>
+                            </div>
+                        </div>
+                        <div class="card cheatsheet-paper">
+                            <div class="cheatsheet-section">
+                                <div class="cheatsheet-section-head">
+                                    <span class="cheatsheet-num">1</span>
+                                    <span class="cheatsheet-section-title">Rome before the spotlight</span>
+                                    <span class="section-stamp">00:00</span>
+                                </div>
+                                <ul class="cheatsheet-points">
+                                    <li>Late Mannerist altarpieces lit everything evenly, so nothing in them was urgent.</li>
+                                    <li>Caravaggio arrived with no workshop, no frescoes and no patrons.</li>
+                                </ul>
+                            </div>
+                            <div class="cheatsheet-section">
+                                <div class="cheatsheet-section-head">
+                                    <span class="cheatsheet-num">2</span>
+                                    <span class="cheatsheet-section-title">Tenebrism, and what it is not</span>
+                                    <span class="section-stamp">07:40</span>
+                                </div>
+                                <ul class="cheatsheet-points">
+                                    <li>Chiaroscuro is modelling in light and shade; tenebrism is darkness as the ground itself.</li>
+                                    <li>One raking source, usually off the top left, with no reflected fill to soften it.</li>
+                                </ul>
+                            </div>
+                            <div class="cheatsheet-section">
+                                <div class="cheatsheet-section-head">
+                                    <span class="cheatsheet-num">3</span>
+                                    <span class="cheatsheet-section-title">The Contarelli Chapel</span>
+                                    <span class="section-stamp">15:12</span>
+                                </div>
+                                <ul class="cheatsheet-points">
+                                    <li>The Calling of Saint Matthew puts the miracle in a tax office, in ordinary clothes.</li>
+                                    <li>The light enters where the real chapel window is, so the painting and the room agree.</li>
+                                </ul>
+                            </div>
+                            <div class="cheatsheet-section">
+                                <div class="cheatsheet-section-head">
+                                    <span class="cheatsheet-num">4</span>
+                                    <span class="cheatsheet-section-title">Painting from the model</span>
+                                    <span class="section-stamp">23:55</span>
+                                </div>
+                                <ul class="cheatsheet-points">
+                                    <li>No surviving drawings, and incised guidelines in the ground instead of a cartoon.</li>
+                                    <li>Street models kept their dirty feet, which is what the commissions kept objecting to.</li>
+                                </ul>
+                            </div>
+                            <p class="sheet-note">Page 1 of 2</p>
+                        </div>
+
+                        <div class="pin" style="top:4.25rem;right:1rem">
+                            <b>Take it with you</b>
+                            Drawn in the browser and saved as a PNG or a PDF. Long courses run onto a second page.
+                        </div>
+                        <div class="pin pin-gutter" style="top:28rem;right:2rem">
+                            <b>The whole course</b>
+                            Written after the sections are set, from the same transcript, one point per thing worth keeping.
+                        </div>
+                    </div>
+
+                    <div class="screen">
+                        <div class="question-block">
+                            <p class="question-text">Why did Bijapur and Golconda outlast Ahmadnagar under Mughal pressure?</p>
+                            <div class="mcq-options">
+                                <div class="mcq-option"><span class="mcq-radio"></span><span>A. They were further from Delhi, so a Mughal army was harder to supply</span></div>
+                                <div class="mcq-option checked"><span class="mcq-radio"></span><span>B. They bought time with tribute while Ahmadnagar fought on open ground</span></div>
+                                <div class="mcq-option"><span class="mcq-radio"></span><span>C. They had no forts worth besieging</span></div>
+                            </div>
+                        </div>
+                        <div class="question-block">
+                            <p class="question-text">In your own words, what did the Deccan sultanates gain from the alliance at Talikota?</p>
+                            <div class="answer-box filled">Mostly they got rid of Vijayanagara, which none of them could manage alone. But they went back to fighting each other almost straight away, so I would not call it much of an alliance. It solved one problem and left the actual one alone.</div>
+                        </div>
+                        <div class="card submit-bar">
+                            <span class="status-message">11 / 12 answered</span>
+                            <span class="button primary">Submit quiz</span>
+                        </div>
+
+                        <div class="pin" style="top:1.5rem;right:1rem">
+                            <b>Nothing is graded yet</b>
+                            Choosing an option only records it. The quiz is marked when you submit the whole thing.
+                        </div>
+                        <div class="pin" style="bottom:2rem;left:1rem">
+                            <b>Writing counts too</b>
+                            Written answers are marked alongside the multiple choice ones, on accuracy, completeness and relevance.
+                        </div>
+                    </div>
+
+                    <div class="screen">
+                        <div class="results-hero">
+                            <div class="score-stage">
+                            <span class="score-deco-frame"></span>
+                            <span class="score-orbit"><span class="score-blob-tr"></span><span class="score-blob-bl"></span></span>
+                            <div class="score-circle">
+                                <svg class="score-ring-svg" viewBox="0 0 120 120">
+                                    <circle class="score-ring-bg" cx="60" cy="60" r="50"/>
+                                    <circle class="score-ring-fill" cx="60" cy="60" r="50"/>
+                                </svg>
+                                <div class="score-ring-label">
+                                    <span class="score-ring-big">47<span class="score-ring-denom">/60</span></span>
+                                    <span class="score-ring-sub">Score</span>
+                                </div>
+                            </div>
+                            </div>
+                            <h2 class="results-headline">Solid work.</h2>
+                            <p class="results-subtitle">You have the shape of it. Two of the written answers were thinner than the rest.</p>
+                        </div>
+                        <div class="results-grid">
+                            <div>
+                                <div class="card result-card">
+                                    <div class="result-card-header">
+                                        <span class="result-card-num">1</span>
+                                        <p class="question-text">Why did Bijapur and Golconda outlast Ahmadnagar?</p>
+                                        <span class="tag sage">Correct</span>
+                                    </div>
+                                    <p class="result-feedback">Right. Tribute bought them time while Ahmadnagar met the Mughals in the field and lost its capital for it.</p>
+                                </div>
+                                <div class="card result-card">
+                                    <div class="result-card-header">
+                                        <span class="result-card-num">2</span>
+                                        <p class="question-text">What did the sultanates gain at Talikota?</p>
+                                        <span class="tag sage">4.5 / 5</span>
+                                    </div>
+                                    <p class="result-feedback">You caught the part most answers miss, that the alliance ended with the campaign. A date and one of the five by name would have carried the last half mark.</p>
+                                </div>
+                                <div class="card result-card">
+                                    <div class="result-card-header">
+                                        <span class="result-card-num">3</span>
+                                        <p class="question-text">Which port carried Golconda's diamond trade?</p>
+                                        <span class="tag brick">Incorrect</span>
+                                    </div>
+                                    <p class="result-feedback">Masulipatnam, on the east coast. Surat is the one that comes to mind first, but that was Mughal territory and on the wrong sea for Golconda.</p>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="tutor-card">
+                                    <h3 class="tutor-card-heading">Performance Summary</h3>
+                                    <div class="tutor-row"><span class="tutor-row-icon">✓</span><span>You can hold a cause and its consequence apart, which most people cannot here.</span></div>
+                                    <div class="tutor-row"><span class="tutor-row-icon">→</span><span>Trade routes are the weak spot. Two of three went the wrong way.</span></div>
+                                </div>
+                                <span class="retake-btn share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>Share result</span>
+                                <span class="retake-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Retake Quiz</span>
+                            </div>
+                        </div>
+
+                        <div class="pin" style="top:1rem;left:1rem">
+                            <b>Marked, then explained</b>
+                            Every answer gets a verdict and a reason, and the written ones get a score out of five.
+                        </div>
+                        <div class="pin" style="bottom:2rem;right:1rem">
+                            <b>Share the card</b>
+                            Share result draws a card of the score and hands it to your phone's share sheet.
+                        </div>
+                    </div>
+
+                    <div class="screen">
+                        <div class="share-stage">
+                            <div class="share-card">
+                                <div class="share-card-head">
+                                    <img class="wordmark" src="parcourse-wordmark.svg" alt="Parcourse" width="103" height="28">
+                                </div>
+                                <h3 class="share-card-title">The Deccan sultanates, 1490 to 1687</h3>
+                                <div class="share-card-band">
+                                    <div class="score-circle small">
+                                        <svg class="score-ring-svg" viewBox="0 0 120 120">
+                                            <circle class="score-ring-bg" cx="60" cy="60" r="50"/>
+                                            <circle class="score-ring-fill" cx="60" cy="60" r="50"/>
+                                        </svg>
+                                        <div class="score-ring-label">
+                                            <span class="score-ring-big">47<span class="score-ring-denom">/60</span></span>
+                                            <span class="score-ring-sub">Score</span>
+                                        </div>
+                                    </div>
+                                    <div class="tutor-card">
+                                        <h4 class="tutor-card-heading">Performance Summary</h4>
+                                        <div class="tutor-row"><span class="tutor-row-icon">✓</span><span>Cause and consequence held apart cleanly.</span></div>
+                                        <div class="tutor-row"><span class="tutor-row-icon">→</span><span>Trade routes are the weak spot.</span></div>
+                                    </div>
+                                </div>
+                                <div class="share-card-analysis">
+                                    <span class="share-card-pill">AI Tutor Analysis</span>
+                                    You argue from causes rather than dates, which is the harder habit and the more useful one. Go back over the ports before the next attempt.
+                                </div>
+                            </div>
+
+                            <div class="share-sheet">
+                                <div class="share-sheet-grip"></div>
+                                <div class="share-sheet-file">
+                                    <span class="share-sheet-thumb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>
+                                    <span>
+                                        <span class="share-sheet-name">deccan-sultanates-47-60.png</span>
+                                        <span class="share-sheet-meta">PNG image · 1200 × 980</span>
+                                    </span>
+                                </div>
+                                <div class="share-sheet-targets">
+                                    <span class="share-target"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2.5 6 12 13 21.5 6"/></svg></span>Mail</span>
+                                    <span class="share-target"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.2 7.7L3 21l1.9-5.6A8.5 8.5 0 1 1 21 11.5z"/></svg></span>Messages</span>
+                                    <span class="share-target"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>Save</span>
+                                    <span class="share-target"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></span>Copy</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pin" style="top:1rem;left:1rem">
+                            <b>Drawn, not screenshotted</b>
+                            The card is painted in the browser at full size, on the same paper and the same green.
+                        </div>
+                        <div class="pin" style="top:9rem;left:1rem">
+                            <b>Then it is the phone's job</b>
+                            The file goes to whatever share sheet the phone has. On a desktop it simply saves.
+                        </div>
+                    </div>
+
+                    <div class="screen screen-graph">
+                        <div class="graph-toolbar">
+                            <div class="graph-granularity-pills">
+                                <span class="graph-pill">
+                                    <svg class="graph-pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="12" r="6.5"/></svg>
+                                    <span>Fields</span> <span class="graph-pill-count">4</span>
+                                </span>
+                                <span class="graph-pill active">
+                                    <svg class="graph-pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="12" r="3.4"/><circle cx="19" cy="6.5" r="2.1"/><circle cx="5" cy="6.5" r="2.1"/><circle cx="12" cy="20.5" r="2.1"/><line x1="12" y1="8.6" x2="12" y2="18.4"/><line x1="14.4" y1="9.9" x2="17.3" y2="8"/><line x1="9.6" y1="9.9" x2="6.7" y2="8"/></svg>
+                                    <span>Topics</span> <span class="graph-pill-count">31</span>
+                                </span>
+                                <span class="graph-pill">
+                                    <svg class="graph-pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="12" r="2.4"/><circle cx="4.5" cy="5" r="1.6"/><circle cx="12" cy="3.5" r="1.6"/><circle cx="19.5" cy="5" r="1.6"/><circle cx="3.5" cy="14" r="1.6"/><circle cx="20.5" cy="14" r="1.6"/><circle cx="7" cy="20.5" r="1.6"/><circle cx="17" cy="20.5" r="1.6"/><line x1="12" y1="9.6" x2="12" y2="5.1"/><line x1="10.1" y1="10.6" x2="5.7" y2="6"/><line x1="13.9" y1="10.6" x2="18.3" y2="6"/><line x1="9.7" y1="12.6" x2="5.1" y2="13.7"/><line x1="14.3" y1="12.6" x2="18.9" y2="13.7"/><line x1="10.8" y1="14.1" x2="7.6" y2="19"/><line x1="13.2" y1="14.1" x2="16.4" y2="19"/></svg>
+                                    <span>Skills</span> <span class="graph-pill-count">1.2K</span>
+                                </span>
+                            </div>
+                            <div class="graph-toolbar-right">
+                                <div class="graph-zoom-controls">
+                                    <span class="button secondary small"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+                                    <span class="button secondary small"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+                                    <span class="button secondary small">Reset</span>
+                                </div>
+                                <div class="graph-export-controls">
+                                    <span class="button secondary small">SVG</span>
+                                    <span class="button secondary small">PNG</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="graph-canvas-wrap">
+                            <svg class="graph-svg" viewBox="-270 -190 540 380">
+                                <g stroke-linecap="round">
+                                    <line class="graph-edge" x1="0" y1="0" x2="-150" y2="-92"/>
+                                    <line class="graph-edge" x1="0" y1="0" x2="152" y2="-88"/>
+                                    <line class="graph-edge" x1="0" y1="0" x2="-140" y2="100"/>
+                                    <line class="graph-edge" x1="0" y1="0" x2="148" y2="104"/>
+                                    <line class="graph-edge" x1="-150" y1="-92" x2="-218" y2="-30"/>
+                                    <line class="graph-edge" x1="-150" y1="-92" x2="-92" y2="-152"/>
+                                    <line class="graph-edge" x1="152" y1="-88" x2="218" y2="-32"/>
+                                    <line class="graph-edge" x1="152" y1="-88" x2="96" y2="-150"/>
+                                    <line class="graph-edge" x1="-140" y1="100" x2="-206" y2="52"/>
+                                    <line class="graph-edge" x1="-140" y1="100" x2="-96" y2="156"/>
+                                    <line class="graph-edge" x1="148" y1="104" x2="212" y2="56"/>
+                                    <line class="graph-edge" x1="148" y1="104" x2="100" y2="156"/>
+                                </g>
+                                <g class="graph-node-group" style="animation-delay:0s"><circle class="graph-node-circle mastered" cx="0" cy="0" r="30"/><text class="graph-node-label" x="0" y="0" font-size="13">DK</text></g>
+                                <g class="graph-node-group" style="animation-delay:0.08s"><circle class="graph-node-circle mastered" cx="-150" cy="-92" r="26"/><text class="graph-node-label" x="-150" y="-92" font-size="9">Finance</text></g>
+                                <g class="graph-node-group" style="animation-delay:0.14s"><circle class="graph-node-circle learning" cx="152" cy="-88" r="26"/><text class="graph-node-label" x="152" y="-88" font-size="9">Arts</text></g>
+                                <g class="graph-node-group" style="animation-delay:0.2s"><circle class="graph-node-circle field-new" cx="-140" cy="100" r="26"/><text class="graph-node-label dim" x="-140" y="100" font-size="9">History</text></g>
+                                <g class="graph-node-group" style="animation-delay:0.26s"><circle class="graph-node-circle learning" cx="148" cy="104" r="26"/><text class="graph-node-label" x="148" y="104" font-size="9">Computing</text></g>
+                                <g class="graph-node-group" style="animation-delay:0.34s"><circle class="graph-node-circle mastered" cx="-218" cy="-30" r="17"/><text class="graph-node-label" x="-218" y="-30" font-size="7">Rates</text></g>
+                                <g class="graph-node-group" style="animation-delay:0.38s"><circle class="graph-node-circle learning" cx="-92" cy="-152" r="17"/><text class="graph-node-label" x="-92" y="-152" font-size="7">Bonds</text></g>
+                                <g class="graph-node-group" style="animation-delay:0.42s"><circle class="graph-node-circle learning" cx="218" cy="-32" r="17"/><text class="graph-node-label" x="218" y="-32" font-size="7">Baroque</text></g>
+                                <g class="graph-node-group" style="animation-delay:0.46s"><circle class="graph-node-circle new" cx="96" cy="-150" r="17"/><text class="graph-node-label dim" x="96" y="-150" font-size="7">Colour</text></g>
+                                <g class="graph-node-group" style="animation-delay:0.5s"><circle class="graph-node-circle new" cx="-206" cy="52" r="17"/><text class="graph-node-label dim" x="-206" y="52" font-size="7">Deccan</text></g>
+                                <g class="graph-node-group" style="animation-delay:0.54s"><circle class="graph-node-circle new" cx="-96" cy="156" r="17"/><text class="graph-node-label dim" x="-96" y="156" font-size="7">Trade</text></g>
+                                <g class="graph-node-group" style="animation-delay:0.58s"><circle class="graph-node-circle mastered" cx="212" cy="56" r="17"/><text class="graph-node-label" x="212" y="56" font-size="7">Caching</text></g>
+                                <g class="graph-node-group" style="animation-delay:0.62s"><circle class="graph-node-circle learning" cx="100" cy="156" r="17"/><text class="graph-node-label" x="100" y="156" font-size="7">Indexes</text></g>
+                            </svg>
+
+                            <div class="graph-legend-stack">
+                                <div class="graph-legend-card">
+                                    <div class="graph-legend-level"><span class="legend-dot mastered"></span><span class="graph-legend-level-text"><strong>Mastered</strong>Scored 90% or above</span></div>
+                                    <div class="graph-legend-level"><span class="legend-dot learning"></span><span class="graph-legend-level-text"><strong>Learning</strong>Scored below 90%</span></div>
+                                    <div class="graph-legend-level"><span class="legend-dot new"></span><span class="graph-legend-level-text"><strong>New</strong>Not yet quizzed</span></div>
+                                </div>
+                                <span class="graph-legend-toggle">
+                                    <span class="graph-legend-dots"><span class="legend-dot mastered"></span><span class="legend-dot learning"></span><span class="legend-dot new"></span></span>
+                                    Mastery
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>
+                                </span>
+                            </div>
+
+                            <span class="graph-fs">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                            </span>
+                        </div>
+
+                        <div class="pin" style="top:5.5rem;right:2rem">
+                            <b>Three depths</b>
+                            Fields, topics or skills. The same graph, drawn at whichever grain you want to read it.
+                        </div>
+                        <div class="pin" style="top:12rem;left:2rem">
+                            <b>Mastery rolls up</b>
+                            A parent is only as mastered as its weakest child, so nothing looks finished before it is.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="act-cue">
+                <span>Scroll</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+        </div>
+
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+    </section>
+
+    <div class="shell">
+        <section class="band">
+            <div class="band-head lift">
+                <h2>Most links just work.</h2>
+                <p>A few things can happen on the way in, and each one is a screen you actually see rather than a footnote. Keep scrolling to walk through them.</p>
+            </div>
+        </section>
+    </div>
+
+    <section class="appact" data-act id="onway">
+        <div class="appsticky">
+            <div class="rail" data-rail>
+                <span class="rail-label">On the way in</span>
+                <div class="gen-pill"><span class="gen-pill-left"><span class="gen-pill-dot"></span><span>The creator wrote chapters</span></span></div>
+                <div class="gen-pill"><span class="gen-pill-left"><span class="gen-pill-dot"></span><span>It might not be a lesson</span></span></div>
+                <div class="gen-pill"><span class="gen-pill-left"><span class="gen-pill-dot"></span><span>There is no transcript</span></span></div>
+                <div class="gen-pill"><span class="gen-pill-left"><span class="gen-pill-dot"></span><span>You are not the only one</span></span></div>
+            </div>
+
+            <div class="frame">
+                <div class="top-nav">
+                    <span class="top-nav-logo"><img src="parcourse-wordmark.svg" alt="Parcourse" width="103" height="28"></span>
+                    <div class="top-nav-links">
+                        <span data-nav="home">Home</span>
+                        <span data-nav="notebook">Notebook</span>
+                        <span data-nav="graph">Knowledge Graph</span>
+                    </div>
+                    <span class="hamburger"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span>
+                    <span class="avatar">DK</span>
+                </div>
+
+                <div class="stage" data-nav-map="home,home,home,admin">
+                    <div class="screen">
+                        <h2 class="home-title">What do you want to learn today?</h2>
+                        <div class="url-form url-form-inline">
+                            <span class="fake-input">youtube.com/watch?v=aH4MwZ6mlrw</span>
+                            <span class="button primary">Create course</span>
+                        </div>
+                        <div class="gen-pills-panel">
+                            <div class="gen-pill blocked ask">
+                                <span class="gen-pill-left">
+                                    <svg class="gen-pill-icon gen-pill-ask" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="M5.4 5.3a1.6 1.6 0 1 1 1.9 1.8V8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/><circle cx="7" cy="10.2" r="0.75" fill="currentColor"/></svg>
+                                    <span>Extracting transcript</span>
+                                </span>
+                                <span class="gen-pill-reason">It seems the creator already split this video into 9 chapters. Use them or regenerate chapters?</span>
+                                <span class="gen-pill-actions"><span class="gen-pill-cancel">Regenerate</span><span class="gen-pill-override">Use theirs</span></span>
+                            </div>
+                            <div class="gen-pill"><span class="gen-pill-left"><span class="gen-pill-dot"></span><span>Checking content</span></span></div>
+                            <div class="gen-pill"><span class="gen-pill-left"><span class="gen-pill-dot"></span><span>Generating course</span></span></div>
+                        </div>
+
+                        <div class="pin" style="top:2rem;left:1rem">
+                            <b>It works with chapters</b>
+                            If the creator already divided the video, you can keep their divisions or have new ones written.
+                        </div>
+                    </div>
+
+                    <div class="screen">
+                        <h2 class="home-title">What do you want to learn today?</h2>
+                        <div class="url-form url-form-inline">
+                            <span class="fake-input">youtube.com/watch?v=Qp3b1Rl6ffw</span>
+                            <span class="button primary">Create course</span>
+                        </div>
+                        <div class="gen-pills-panel">
+                            <div class="gen-pill done"><span class="gen-pill-left"><svg class="gen-pill-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="currentColor" opacity="0.15"/><polyline points="4.5,8 7,10.5 11.5,5.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Extracting transcript</span></span></div>
+                            <div class="gen-pill blocked">
+                                <span class="gen-pill-left">
+                                    <svg class="gen-pill-icon gen-pill-warn" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2L12.5 12H1.5L7 2Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><line x1="7" y1="6" x2="7" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="10.5" r="0.75" fill="currentColor"/></svg>
+                                    <span>Checking content</span>
+                                </span>
+                                <span class="gen-pill-reason">This is a studio tour with very little explanation in it, so the questions would be thin. Generate it anyway?</span>
+                                <span class="gen-pill-actions"><span class="gen-pill-cancel">Cancel</span><span class="gen-pill-override">Proceed Anyway</span></span>
+                            </div>
+                            <div class="gen-pill"><span class="gen-pill-left"><span class="gen-pill-dot"></span><span>Generating course</span></span></div>
+                        </div>
+
+                        <div class="pin" style="top:2rem;left:1rem">
+                            <b>It checks first</b>
+                            The transcript is read before any course is written. If there is little in it to learn from, it says so and asks.
+                        </div>
+                        <div class="pin" style="bottom:2rem;right:1rem">
+                            <b>Your call, always</b>
+                            It is a warning, not a wall. Proceed Anyway carries on and builds the course regardless.
+                        </div>
+                    </div>
+
+                    <div class="screen">
+                        <h2 class="home-title">What do you want to learn today?</h2>
+                        <div class="url-form url-form-inline">
+                            <span class="fake-input">youtube.com/watch?v=dQw4w9WgXcQ</span>
+                            <span class="button primary">Create course</span>
+                        </div>
+                        <p class="home-hint" style="text-align:center">Best with tutorials, lectures and explainers.</p>
+                        <div class="toast-stage">
+                            <span class="toast toast-error">This video's transcript couldn't be fetched, so try another video.</span>
+                        </div>
+
+                        <div class="pin" style="top:2rem;left:1rem">
+                            <b>Only when it fails</b>
+                            Without captions there is nothing to read. This is the one case with nothing to decide, so it just stops.
+                        </div>
+                    </div>
+
+                    <div class="screen">
+                        <div class="page-header">
+                            <div>
+                                <h2 class="page-header-title">Users</h2>
+                                <p class="page-header-sub">Usage across everyone on this instance.</p>
+                            </div>
+                            <span class="button primary small">Add user</span>
+                        </div>
+                        <div class="admin-kpi-row">
+                            <div class="admin-kpi"><b>6</b><span>People</span></div>
+                            <div class="admin-kpi"><b>52</b><span>Courses</span></div>
+                            <div class="admin-kpi"><b>318</b><span>Sections studied</span></div>
+                        </div>
+                        <span class="user-group-label">Users</span>
+                        <div class="card user-table">
+                            <div class="user-row">
+                                <span class="user-avatar">AR</span>
+                                <span class="user-info"><span class="user-row-name">Aarav</span><span class="user-row-email">aarav@example.com</span></span>
+                                <span class="user-row-courses">14 courses</span>
+                                <span class="icon-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="21" r="2"/><line x1="12" y1="9" x2="12" y2="19"/><line x1="10" y1="10.5" x2="6.5" y2="7.5"/><line x1="14" y1="10.5" x2="17.5" y2="7.5"/></svg></span>
+                            </div>
+                            <div class="user-row">
+                                <span class="user-avatar">MI</span>
+                                <span class="user-info"><span class="user-row-name">Mira</span><span class="user-row-email">mira@example.com</span></span>
+                                <span class="user-row-courses">9 courses</span>
+                                <span class="icon-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="21" r="2"/><line x1="12" y1="9" x2="12" y2="19"/><line x1="10" y1="10.5" x2="6.5" y2="7.5"/><line x1="14" y1="10.5" x2="17.5" y2="7.5"/></svg></span>
+                            </div>
+                            <div class="user-row">
+                                <span class="user-avatar">TO</span>
+                                <span class="user-info"><span class="user-row-name">Tobias</span><span class="user-row-email">tobias@example.com</span></span>
+                                <span class="user-row-courses">6 courses</span>
+                                <span class="icon-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="21" r="2"/><line x1="12" y1="9" x2="12" y2="19"/><line x1="10" y1="10.5" x2="6.5" y2="7.5"/><line x1="14" y1="10.5" x2="17.5" y2="7.5"/></svg></span>
+                            </div>
+                        </div>
+
+                        <div class="pin" style="top:1rem;right:1rem">
+                            <b>Teacher, parent or manager?</b>
+                            Be the admin. Invite the people you are teaching and open any one of their graphs.
+                        </div>
+                        <div class="pin" style="bottom:2rem;left:1rem">
+                            <b>Still their notebook</b>
+                            You can see what they have learned. You still cannot pick it for them.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="act-cue">
+                <span>Scroll</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+        </div>
+
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+    </section>
+
+    <section class="stateact" data-state id="never">
+        <div class="statesticky">
+            <p class="state-eyebrow">It will never tell you what to learn next</p>
+            <div class="state-stack">
+                <div class="state-line">
+                    <h2>There is no feed.</h2>
+                    <p>No recommendations, no infinite scroll, no deluge of content. It is all about curation, and you are the curator.</p>
+                </div>
+                <div class="state-line">
+                    <h2>There is no catalogue.</h2>
+                    <p>Nobody has decided what a beginner ought to cover first, because nobody here has been told they are a beginner.</p>
+                </div>
+                <div class="state-line">
+                    <h2>There is nothing to keep up.</h2>
+                    <p>No streak to break, no daily goal, no badge quietly turning the thing you were curious about into a chore.</p>
+                </div>
+                <div class="state-line">
+                    <h2>There is no one to beat.</h2>
+                    <p>Your graph is not ranked against anybody. Even the admin who invited you only sees what you have learned, never a ranking with you in it.</p>
+                </div>
+                <div class="state-line payoff">
+                    <h2>There is only what you were curious about.</h2>
+                    <p>Every course in a notebook is there because someone went and found it. That is the whole mechanism.</p>
+                </div>
+            </div>
+            <div class="state-ticks">
+                <span class="state-tick"></span>
+                <span class="state-tick"></span>
+                <span class="state-tick"></span>
+                <span class="state-tick"></span>
+                <span class="state-tick"></span>
+            </div>
+        </div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+    </section>
+
+    <div class="shell">
+        <section class="band" id="byok">
+            <div class="band-head lift">
+                <h2>Bring your own key.</h2>
+                <p>Paste a key from whichever provider you already pay, and every course you generate is a call you made on your own account, at your own rate. Anything LiteLLM reaches works, and the form adapts to the fields it needs, from a single API key to a local Ollama URL or three AWS fields. Keys are stored encrypted, and any account can override the instance admin's default with its own.</p>
+            </div>
+            <div class="strip">
+                <div class="tile pick"><span class="tile-star tip" data-tip="Recommended, for ease" tabindex="0" role="note" aria-label="Recommended, for ease">*</span><span class="k">OpenRouter</span><span class="m">One key, most models</span></div>
+                <div class="tile"><span class="k">Anthropic</span><span class="m">Claude</span></div>
+                <div class="tile"><span class="k">OpenAI</span><span class="m">GPT</span></div>
+                <div class="tile"><span class="k">Gemini</span><span class="m">Google</span></div>
+                <div class="tile"><span class="k">Groq</span><span class="m">Fast inference</span></div>
+                <div class="tile"><span class="k">Bedrock</span><span class="m">Three AWS fields</span></div>
+                <div class="tile"><span class="k">Ollama</span><span class="m">Local, no key</span></div>
+                <div class="tile"><span class="k">Anything else</span><span class="m">If LiteLLM reaches it</span></div>
+            </div>
+        </section>
+    </div>
+
+    <section class="band flat" id="selfhost">
+        <div class="band-inner">
+            <div class="band-head">
+                <h2>Two commands, then it is yours.</h2>
+                <p>Both halves are published as container images, so nothing builds locally. The database is versioned with Alembic and migrates itself on start. Use the bundled Postgres or point it at one you already have, Supabase and Neon included.</p>
+            </div>
+            <div class="term">
+                <div class="term-top"><i></i><i></i><i></i><span class="lbl">Terminal</span></div>
+<pre><span class="c"># nothing builds locally</span>
+cp .env.example .env
+docker compose -f docker-compose.ghcr.yml up -d
+
+<span class="g">app on :5173 · api on :8000</span>
+<span class="c"># the first visit walks you through the admin account</span></pre>
+            </div>
+        </div>
+    </section>
+
+    <div class="shell">
+        <section class="band" id="more">
+            <div class="band-head lift"><h2>The rest of it.</h2></div>
+            <div class="strip">
+                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span><h4>Search that reads the course</h4><p>A half-remembered phrase from a takeaway or a question finds the course it came from.</p></div>
+                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><h4>Regenerate with feedback</h4><p>Ask again, and say what was wrong the first time.</p></div>
+                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 14"/></svg></span><h4>Quiz history</h4><p>Every attempt kept with the feedback that came with it.</p></div>
+                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="8" r="4"/></svg></span><h4>More than one of you</h4><p>The admin invites, sets a system model, and each account can override it.</p></div>
+                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><h4>Encrypted at rest</h4><p>Provider keys are encrypted with a key you generate yourself.</p></div>
+                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/></svg></span><h4>Light and dark</h4><p>Every colour is a token holding both values, so the whole app switches at once.</p></div>
+                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="16" y2="7"/></svg></span><h4>Documented properly</h4><p>Every setting it reads, and every deployment shape, on a docs site of its own.</p></div>
+                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V7z"/><polyline points="9 12 11.5 14.5 15.5 10"/></svg></span><h4>Open source</h4><p>AGPL-3.0. Run it, change it, and share your changes if you offer it to others.</p></div>
+            </div>
+        </section>
+    </div>
+
+    <section class="close lift" id="hosted">
+        <h2>Run it yourself, or wait for the hosted one.</h2>
+        <p>Self-hosting is the whole product. It is free, and it always will be. If you would rather not run it yourself, leave an address and hear about the hosted version once it launches. I assure you it will be just enough and not a penny more.</p>
         <form class="interest-form" id="interest-form" novalidate>
             <input
                 class="text-input"
@@ -48,39 +877,195 @@
             >
             <button class="button primary" type="submit" id="interest-submit">Keep me posted</button>
         </form>
-        <p class="interest-note" id="interest-note">Hosted Parcourse is coming. Leave an address and hear about it once it launches.</p>
+        <p class="interest-note" id="interest-note">One email, when it opens. Nothing else, ever.</p>
 
         <div class="actions">
             <a href="https://github.com/DimwitLabs/Parcourse" class="button secondary" target="_blank" rel="noopener noreferrer">Repository</a>
             <a href="https://docs.parcourse.dimwit.me/" class="button secondary">Documentation</a>
         </div>
-        <div class="footer">
-            <span>Made with love and labour, and backed by the <a href="https://dimwit.me/pledge" target="_blank" rel="noopener noreferrer">Dimwit Pledge</a></span>
-            <span><a href="https://dimwit.me" target="_blank" rel="noopener noreferrer">Dimwit Labs</a></span>
-        </div>
-    </div>
-    <script>
-        let frame = 0;
-        let lastX = -999;
-        let lastY = -999;
+    </section>
 
-        function update(x, y) {
-            cancelAnimationFrame(frame);
-            frame = requestAnimationFrame(() => {
-                const root = document.documentElement.style;
-                root.setProperty('--mouse-x', x + 'px');
-                root.setProperty('--mouse-y', y + 'px');
-                root.setProperty('--scroll-x', (13 - (window.scrollX % 26)) + 'px');
-                root.setProperty('--scroll-y', (13 - (window.scrollY % 26)) + 'px');
+    <div class="footer lift">
+        <span>Made with love and labour, and backed by the <a href="https://dimwit.me/pledge" target="_blank" rel="noopener noreferrer">Dimwit Pledge</a></span>
+        <span><a href="https://dimwit.me" target="_blank" rel="noopener noreferrer">Dimwit Labs</a></span>
+    </div>
+
+    <script>
+        const THEME_KEY = 'parcourse_theme';
+        const themeButtons = [...document.querySelectorAll('[data-theme-choice]')];
+
+        function paintTheme(theme) {
+            if (theme === 'system') document.documentElement.removeAttribute('data-theme');
+            else document.documentElement.setAttribute('data-theme', theme);
+            themeButtons.forEach((b) => {
+                const on = b.dataset.themeChoice === theme;
+                b.classList.toggle('active', on);
+                b.setAttribute('aria-checked', String(on));
             });
         }
 
+        function storedTheme() {
+            try {
+                const value = localStorage.getItem(THEME_KEY);
+                return value === 'light' || value === 'dark' ? value : 'system';
+            } catch (error) {
+                return 'system';
+            }
+        }
+
+        themeButtons.forEach((b) => b.addEventListener('click', () => {
+            const theme = b.dataset.themeChoice;
+            try {
+                if (theme === 'system') localStorage.removeItem(THEME_KEY);
+                else localStorage.setItem(THEME_KEY, theme);
+            } catch (error) {
+                paintTheme(theme);
+                return;
+            }
+            paintTheme(theme);
+        }));
+
+        paintTheme(storedTheme());
+    </script>
+    <script>
+        const SUGGESTIONS = [
+            'that lecture on the Bretton Woods system',
+            'the two hour one about Caravaggio',
+            'a talk on the fall of Constantinople',
+            'that conference talk from 2019'
+        ];
+
+        const suggestion = document.getElementById('suggestion');
+        let which = 0;
+        let letters = 0;
+        let erasing = false;
+
+        function tick() {
+            const word = SUGGESTIONS[which];
+            letters += erasing ? -1 : 1;
+            suggestion.textContent = word.slice(0, letters);
+
+            let wait = erasing ? 24 : 46;
+            if (!erasing && letters === word.length) {
+                erasing = true;
+                wait = 2200;
+            } else if (erasing && letters === 0) {
+                erasing = false;
+                which = (which + 1) % SUGGESTIONS.length;
+                wait = 400;
+            }
+            setTimeout(tick, wait);
+        }
+        tick();
+    </script>
+    <script>
+        const CHECK = '<svg class="gen-pill-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="currentColor" opacity="0.15"/><polyline points="4.5,8 7,10.5 11.5,5.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        const SPINNER = '<span class="gen-pill-spinner"></span>';
+        const DOT = '<span class="gen-pill-dot"></span>';
+
+        const acts = [...document.querySelectorAll('[data-act]')].map((section) => ({
+            section: section,
+            sticky: section.querySelector('.appsticky'),
+            screens: [...section.querySelectorAll('.screen')],
+            pills: [...section.querySelectorAll('[data-rail] .gen-pill')],
+            navs: [...section.querySelectorAll('[data-nav]')],
+            navMap: section.querySelector('.stage').dataset.navMap.split(','),
+            step: -1
+        }));
+
+        function setStep(act, index) {
+            if (index === act.step) return;
+            act.step = index;
+            act.screens.forEach((s, n) => s.classList.toggle('on', n === index));
+            act.pills.forEach((p, n) => {
+                p.classList.toggle('active', n === index);
+                p.classList.toggle('done', n < index);
+                p.firstElementChild.firstElementChild.outerHTML = n < index ? CHECK : n === index ? SPINNER : DOT;
+            });
+            const want = act.navMap[index];
+            act.navs.forEach((a) => a.classList.toggle('active', a.dataset.nav === want));
+            act.sticky.classList.toggle('at-end', index === act.screens.length - 1);
+        }
+
+        const states = [...document.querySelectorAll('[data-state]')].map((section) => ({
+            section: section,
+            lines: [...section.querySelectorAll('.state-line')],
+            ticks: [...section.querySelectorAll('.state-tick')],
+            step: -1
+        }));
+
+        function setLine(state, index) {
+            if (index === state.step) return;
+            state.step = index;
+            state.lines.forEach((l, n) => l.classList.toggle('on', n === index));
+            state.ticks.forEach((t, n) => t.classList.toggle('on', n <= index));
+        }
+
+        const railButtons = [...document.querySelectorAll('#sectionrail button')];
+        const railTargets = railButtons.map((b) => document.getElementById(b.dataset.goto));
+
+        const railJump = railButtons[railButtons.length - 1];
+
+        railButtons.forEach((b, i) => b.addEventListener('click', () => {
+            const target = b === railJump && b.classList.contains('up') ? railTargets[0] : railTargets[i];
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }));
+
+        function markRail() {
+            let current = 0;
+            railTargets.forEach((section, i) => {
+                if (section.getBoundingClientRect().top <= window.innerHeight * 0.35) current = i;
+            });
+            railButtons.forEach((b, i) => b.setAttribute('aria-current', i === current ? 'true' : 'false'));
+            const arrived = current === railButtons.length - 1;
+            railJump.classList.toggle('up', arrived);
+            railJump.dataset.label = arrived ? 'Back to the top' : 'Hosted, when it opens';
+        }
+
+        const progress = document.getElementById('progress');
+        const glow = document.getElementById('glow');
+        let mouseX = -999;
+        let mouseY = -999;
+        let queued = 0;
+
+        function paint() {
+            queued = 0;
+            const root = document.documentElement.style;
+            root.setProperty('--mouse-x', mouseX + 'px');
+            root.setProperty('--mouse-y', mouseY + 'px');
+            root.setProperty('--scroll-x', (13 - (window.scrollX % 26)) + 'px');
+            root.setProperty('--scroll-y', (13 - (window.scrollY % 26)) + 'px');
+
+            const readable = document.documentElement.scrollHeight - window.innerHeight;
+            progress.style.setProperty('--read', readable > 0 ? window.scrollY / readable : 0);
+
+            for (const act of acts) {
+                const travel = act.section.offsetHeight - window.innerHeight;
+                const past = Math.min(Math.max(-act.section.getBoundingClientRect().top, 0), travel);
+                setStep(act, Math.min(act.screens.length - 1, Math.floor((past / travel) * act.screens.length)));
+            }
+
+            markRail();
+
+            for (const state of states) {
+                const travel = state.section.offsetHeight - window.innerHeight;
+                const past = Math.min(Math.max(-state.section.getBoundingClientRect().top, 0), travel);
+                setLine(state, Math.min(state.lines.length - 1, Math.floor((past / travel) * state.lines.length)));
+            }
+        }
+
+        function queue() {
+            if (!queued) queued = requestAnimationFrame(paint);
+        }
+
         window.addEventListener('mousemove', (e) => {
-            lastX = e.clientX;
-            lastY = e.clientY;
-            update(lastX, lastY);
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            queue();
         });
-        window.addEventListener('scroll', () => update(lastX, lastY), { passive: true });
+        window.addEventListener('scroll', queue, { passive: true });
+        window.addEventListener('resize', queue);
+        paint();
     </script>
     <script>
         const SUPABASE_URL = 'https://cyocplxyyrxwaurivccs.supabase.co';
