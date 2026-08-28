@@ -31,7 +31,7 @@ def upgrade() -> None:
     )
     op.create_table('knowledge_node',
     sa.Column('id', sa.Uuid(), nullable=False),
-    sa.Column('tier', sa.Enum('domain', 'field', 'topic', 'skill', name='nodetier'), nullable=False),
+    sa.Column('tier', sa.Enum('field', 'topic', 'skill', name='nodetier'), nullable=False),
     sa.Column('label', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),

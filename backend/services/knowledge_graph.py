@@ -48,7 +48,7 @@ def _ensure_edge(session: Session, source_id: uuid.UUID, target_id: uuid.UUID, e
 
 
 def _existing_labels(session: Session) -> str:
-    nodes = session.exec(select(KnowledgeNode).where(KnowledgeNode.tier != NodeTier.domain)).all()
+    nodes = session.exec(select(KnowledgeNode)).all()
     if not nodes:
         return "(none yet)"
     return "\n".join(f"- [{n.tier.value}] {n.label}" for n in nodes)

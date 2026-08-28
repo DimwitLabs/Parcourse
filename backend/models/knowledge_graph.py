@@ -9,7 +9,6 @@ from models.base import SQLModelBase
 
 
 class NodeTier(str, Enum):
-    domain = "domain"
     field = "field"
     topic = "topic"
     skill = "skill"

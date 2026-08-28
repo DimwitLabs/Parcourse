@@ -16,7 +16,7 @@ import { useEscapeKey } from "../lib/useEscapeKey";
 import { gravatarUrl, userInitials } from "../lib/gravatar";
 import type { NamedUser } from "../lib/gravatar";
 
-type Tier = "you" | "domain" | "field" | "topic" | "skill";
+type Tier = "you" | "field" | "topic" | "skill";
 type CourseRef = { id: string; title: string };
 type Node = {
   id: string;
@@ -32,11 +32,11 @@ type Graph = { nodes: Node[]; edges: Edge[] };
 type Granularity = "field" | "topic" | "skill";
 
 const YOU_ID = "__you__";
-const TIER_ORDER: Tier[] = ["you", "domain", "field", "topic", "skill"];
-const NODE_RADIUS: Record<Tier, number> = { you: 68, domain: 72, field: 58, topic: 40, skill: 26 };
+const TIER_ORDER: Tier[] = ["you", "field", "topic", "skill"];
+const NODE_RADIUS: Record<Tier, number> = { you: 68, field: 58, topic: 40, skill: 26 };
 
 function tierIncluded(tier: Tier, granularity: Granularity): boolean {
-  if (tier === "you" || tier === "domain") return true;
+  if (tier === "you") return true;
   const cutoff = TIER_ORDER.indexOf(granularity as Tier);
   return TIER_ORDER.indexOf(tier) <= cutoff;
 }
@@ -138,7 +138,7 @@ function runSimulation(
     }
   }
 
-  const tierCharge: Record<Tier, number> = { you: -1200, domain: -800, field: -600, topic: -350, skill: -180 };
+  const tierCharge: Record<Tier, number> = { you: -1200, field: -600, topic: -350, skill: -180 };
 
   const sim = forceSimulation<SimNode>(simNodes)
     .force(
@@ -163,8 +163,8 @@ function runSimulation(
   return { sim, nodes: simNodes, edges: simEdges };
 }
 
-const FONT_SIZES: Record<Tier, number> = { you: 14, domain: 14, field: 13, topic: 11, skill: 9 };
-const FONT_WEIGHT: Record<Tier, number> = { you: 800, domain: 700, field: 800, topic: 700, skill: 600 };
+const FONT_SIZES: Record<Tier, number> = { you: 14, field: 13, topic: 11, skill: 9 };
+const FONT_WEIGHT: Record<Tier, number> = { you: 800, field: 800, topic: 700, skill: 600 };
 
 function wrapText(text: string, r: number, fontSize: number): string[] {
   const maxChars = Math.max(4, Math.floor((r * 1.55) / (fontSize * 0.58)));
@@ -577,7 +577,7 @@ export default function KnowledgeGraphScreen() {
     return {
       field: graph.nodes.filter((n) => n.tier === "field").length,
       topic: graph.nodes.filter((n) => n.tier === "field" || n.tier === "topic").length,
-      skill: graph.nodes.filter((n) => n.tier !== "domain" && n.tier !== "you").length,
+      skill: graph.nodes.filter((n) => n.tier !== "you").length,
     };
   }
   const counts = nodeCounts();

@@ -9,12 +9,11 @@ The knowledge graph is what every course you have taken adds up to. It is not a 
 
 ## Tiers
 
-Concepts sit at four levels, each belonging to the one above it:
+Concepts sit at three levels, each belonging to the one above it:
 
 | Tier | What it holds |
 | --- | --- |
-| Domain | The broadest grouping |
-| Field | A discipline within a domain |
+| Field | The broadest grouping, a discipline rather than a tool |
 | Topic | A subject within a field |
 | Skill | Something specific you can do |
 
