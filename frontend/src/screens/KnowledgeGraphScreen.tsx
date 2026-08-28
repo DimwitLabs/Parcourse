@@ -486,6 +486,7 @@ export default function KnowledgeGraphScreen() {
     let lastDist = 0;
     function onTouchStart(e: TouchEvent) {
       if (e.touches.length === 2) {
+        endGesture();
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         lastDist = Math.hypot(dx, dy);
@@ -531,8 +532,8 @@ export default function KnowledgeGraphScreen() {
   }
 
 
-  function onNodeMouseDown(e: React.MouseEvent, n: SimNode) {
-    if (n.tier === "you") return;
+  function onNodePointerDown(e: React.PointerEvent, n: SimNode) {
+    if (n.tier === "you" || !e.isPrimary) return;
     e.stopPropagation();
     dragStartClient.current = { x: e.clientX, y: e.clientY };
     pendingDrag.current = n;
@@ -547,13 +548,15 @@ export default function KnowledgeGraphScreen() {
     setTooltip(null);
   }
 
-  function onCanvasMouseDown(e: React.MouseEvent) {
+  function onCanvasPointerDown(e: React.PointerEvent) {
+    if (!e.isPrimary) return;
     if ((e.target as Element).closest(".graph-node-group, .graph-legend-stack")) return;
     setTooltip((t) => (t?.pinned ? null : t));
     isPanning.current = true;
     panStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
   }
-  function onMouseMove(e: React.MouseEvent) {
+  function onPointerMove(e: React.PointerEvent) {
+    if (!e.isPrimary) return;
     const waiting = pendingDrag.current;
     if (waiting) {
       const dx = e.clientX - dragStartClient.current.x;
@@ -570,7 +573,7 @@ export default function KnowledgeGraphScreen() {
     if (!isPanning.current) return;
     setPan({ x: e.clientX - panStart.current.x, y: e.clientY - panStart.current.y });
   }
-  function onMouseUp() {
+  function endGesture() {
     pendingDrag.current = null;
     if (draggingNode.current) {
       const node = draggingNode.current;
@@ -748,10 +751,11 @@ export default function KnowledgeGraphScreen() {
             className={`graph-canvas-wrap${expanded ? " expanded" : ""}`}
             ref={wrapRef}
             style={fromRect ? { inset: fromRect } : undefined}
-            onMouseDown={onCanvasMouseDown}
-            onMouseMove={onMouseMove}
-            onMouseUp={onMouseUp}
-            onMouseLeave={onMouseUp}
+            onPointerDown={onCanvasPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={endGesture}
+            onPointerCancel={endGesture}
+            onPointerLeave={endGesture}
           >
             <button
               className="graph-fs tip"
@@ -859,7 +863,7 @@ export default function KnowledgeGraphScreen() {
                     key={n.id}
                     transform={`translate(${n.x}, ${n.y})`}
                     className={`graph-node-group ${mc} tier-${n.tier}${isPinned ? " pinned" : ""}${hovered === n.id && !isYou ? " hovered" : ""}`}
-                    onMouseDown={(e) => onNodeMouseDown(e, n)}
+                    onPointerDown={(e) => onNodePointerDown(e, n)}
                     onMouseEnter={(e) => { setHovered(n.id); if (!tooltip?.pinned && !draggingNode.current) setTooltip({ node: n, x: e.clientX, y: e.clientY, pinned: false }); }}
                     onMouseMove={(e) => { if (!tooltip?.pinned && !draggingNode.current) setTooltip({ node: n, x: e.clientX, y: e.clientY, pinned: false }); }}
                     onMouseLeave={() => { setHovered((h) => (h === n.id ? null : h)); if (!tooltip?.pinned) setTooltip(null); }}
