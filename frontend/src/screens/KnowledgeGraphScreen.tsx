@@ -5,10 +5,12 @@ import {
   forceSimulation,
 } from "d3-force";
 import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { toast, useLoadingToast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
+import { compactCount } from "../lib/count";
 import { download } from "../lib/download";
 import { withLightPalette } from "../lib/palette";
 import { useAuth } from "../lib/auth";
@@ -43,6 +45,7 @@ function tierIncluded(tier: Tier, granularity: Granularity): boolean {
 
 const EXPOSURE_MASTERY = 0.2;
 const DRAG_SLOP_PX = 6;
+const GRAPH_EXPAND_MS = 320;
 
 function masteryClass(score: number): "mastered" | "learning" | "new" {
   if (score >= 0.9) return "mastered";
@@ -313,6 +316,11 @@ export default function KnowledgeGraphScreen() {
   useEscapeKey(!!confirming, () => { if (!forgetting) setConfirming(null); });
 
   const stackRef = useRef<HTMLDivElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [fromRect, setFromRect] = useState<string | null>(null);
+  const restingRect = useRef<string | null>(null);
+  const growing = useRef(false);
   const [placed, setPlaced] = useState<{ left: number; top: number } | null>(null);
 
 
@@ -568,6 +576,41 @@ export default function KnowledgeGraphScreen() {
     isPanning.current = false;
   }
 
+  useEffect(() => {
+    if (!growing.current || fromRect === null) return;
+    const frame = requestAnimationFrame(() => {
+      growing.current = false;
+      setFromRect(null);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [fromRect]);
+
+  useEscapeKey(expanded, () => collapse());
+
+  function restingInset(): string | null {
+    const el = wrapRef.current;
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return `${r.top}px ${window.innerWidth - r.right}px ${window.innerHeight - r.bottom}px ${r.left}px`;
+  }
+
+  function expand() {
+    const from = restingInset();
+    if (from === null) return;
+    restingRect.current = from;
+    growing.current = true;
+    setFromRect(from);
+    setExpanded(true);
+  }
+
+  function collapse() {
+    setFromRect(restingRect.current);
+    window.setTimeout(() => {
+      setExpanded(false);
+      setFromRect(null);
+    }, GRAPH_EXPAND_MS);
+  }
+
   function nodeCounts(): Record<Granularity, number> {
     if (!graph) return { field: 0, topic: 0, skill: 0 };
     return {
@@ -586,14 +629,54 @@ export default function KnowledgeGraphScreen() {
 
   if (error) return <p className="error-message" style={{ padding: "2rem" }}>{error}</p>;
 
-  const GRANULARITY_PILLS: { value: Granularity; label: string }[] = [
-    { value: "field", label: "Fields" },
-    { value: "topic", label: "Topics" },
-    { value: "skill", label: "Skills" },
+  const GRANULARITY_PILLS: { value: Granularity; label: string; icon: ReactNode }[] = [
+    {
+      value: "field",
+      label: "Fields",
+      icon: <circle cx="12" cy="12" r="6.5" />,
+    },
+    {
+      value: "topic",
+      label: "Topics",
+      icon: (
+        <>
+          <circle cx="12" cy="12" r="3.4" />
+          <circle cx="19" cy="6.5" r="2.1" />
+          <circle cx="5" cy="6.5" r="2.1" />
+          <circle cx="12" cy="20.5" r="2.1" />
+          <line x1="12" y1="8.6" x2="12" y2="18.4" />
+          <line x1="14.4" y1="9.9" x2="17.3" y2="8" />
+          <line x1="9.6" y1="9.9" x2="6.7" y2="8" />
+        </>
+      ),
+    },
+    {
+      value: "skill",
+      label: "Skills",
+      icon: (
+        <>
+          <circle cx="12" cy="12" r="2.4" />
+          <circle cx="4.5" cy="5" r="1.6" />
+          <circle cx="12" cy="3.5" r="1.6" />
+          <circle cx="19.5" cy="5" r="1.6" />
+          <circle cx="3.5" cy="14" r="1.6" />
+          <circle cx="20.5" cy="14" r="1.6" />
+          <circle cx="7" cy="20.5" r="1.6" />
+          <circle cx="17" cy="20.5" r="1.6" />
+          <line x1="12" y1="9.6" x2="12" y2="5.1" />
+          <line x1="10.1" y1="10.6" x2="5.7" y2="6" />
+          <line x1="13.9" y1="10.6" x2="18.3" y2="6" />
+          <line x1="9.7" y1="12.6" x2="5.1" y2="13.7" />
+          <line x1="14.3" y1="12.6" x2="18.9" y2="13.7" />
+          <line x1="10.8" y1="14.1" x2="7.6" y2="19" />
+          <line x1="13.2" y1="14.1" x2="16.4" y2="19" />
+        </>
+      ),
+    },
   ];
 
   return (
-    <div className="graph-view">
+    <div className={`graph-view${expanded ? " graph-expanded" : ""}`}>
       <div className="page-header">
         <h1 className="page-header-title">Knowledge Graph</h1>
         <p className="page-header-sub">Every concept you've learned, connected.</p>
@@ -601,26 +684,40 @@ export default function KnowledgeGraphScreen() {
 
       {!graph || !simData ? null : (
         <>
-          <div className="graph-toolbar">
+          <div className={`graph-toolbar${toolsOpen ? " tools-open" : ""}`}>
+            <div className="graph-toolbar-main">
             <div className="graph-granularity-pills">
-              {GRANULARITY_PILLS.map(({ value, label }, i) => (
-                <span key={value} className="graph-pill-wrap">
-                  {i > 0 && (
-                    <span className="graph-pill-arrow" aria-hidden="true">
-                      <svg width="6" height="9" viewBox="0 0 6 9" fill="none">
-                        <path d="M1 1.5l3.5 3L1 7.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </span>
-                  )}
-                  <button
-                    className={`graph-pill${granularity === value ? " active" : ""}`}
-                    onClick={() => setGranularity(value)}
+              {GRANULARITY_PILLS.map(({ value, label, icon }) => (
+                <button
+                  key={value}
+                  className={`graph-pill${granularity === value ? " active" : ""}`}
+                  onClick={() => setGranularity(value)}
+                >
+                  <svg
+                    className="graph-pill-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.9"
+                    aria-hidden="true"
                   >
-                    {label}
-                    <span className="graph-pill-count">{counts[value]}</span>
-                  </button>
-                </span>
+                    {icon}
+                  </svg>
+                  {label}
+                  <span className="graph-pill-count">{compactCount(counts[value])}</span>
+                </button>
               ))}
+            </div>
+            <button
+              className="graph-tools-toggle button secondary"
+              aria-expanded={toolsOpen}
+              aria-label={toolsOpen ? "Hide controls" : "More controls"}
+              onClick={() => setToolsOpen((open) => !open)}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
             </div>
             <div className="graph-toolbar-right">
               <div className="graph-zoom-controls">
@@ -640,13 +737,34 @@ export default function KnowledgeGraphScreen() {
           </div>
 
           <div
-            className="graph-canvas-wrap"
+            className={`graph-canvas-wrap${expanded ? " expanded" : ""}`}
             ref={wrapRef}
+            style={fromRect ? { inset: fromRect } : undefined}
             onMouseDown={onCanvasMouseDown}
             onMouseMove={onMouseMove}
             onMouseUp={onMouseUp}
             onMouseLeave={onMouseUp}
           >
+            <button
+              className="graph-fs tip"
+              data-tip={expanded ? "Exit fullscreen" : "Fullscreen"}
+              aria-label={expanded ? "Exit fullscreen" : "Fullscreen"}
+              onClick={() => (expanded ? collapse() : expand())}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {expanded ? (
+                  <>
+                    <polyline points="4 14 10 14 10 20" /><polyline points="20 10 14 10 14 4" />
+                    <line x1="14" y1="10" x2="21" y2="3" /><line x1="3" y1="21" x2="10" y2="14" />
+                  </>
+                ) : (
+                  <>
+                    <polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" />
+                    <line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" />
+                  </>
+                )}
+              </svg>
+            </button>
             <svg
               ref={svgRef}
               className="graph-svg"
