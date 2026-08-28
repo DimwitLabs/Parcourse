@@ -289,14 +289,16 @@ export default function CourseScreen() {
     };
   }, [course]);
 
+  function dismissBoundary() {
+    setEndedSection(null);
+    player.current?.playVideo();
+  }
+
   // An unanswered card shows itself out and hands the video back rather than
   // leaving the reader parked at a stop they did not ask for.
   useEffect(() => {
     if (endedSection === null) return;
-    const leave = window.setTimeout(() => {
-      setEndedSection(null);
-      player.current?.playVideo();
-    }, CARD_LINGERS_OVER_VIDEO_SECONDS * 1000);
+    const leave = window.setTimeout(dismissBoundary, CARD_LINGERS_OVER_VIDEO_SECONDS * 1000);
     return () => window.clearTimeout(leave);
   }, [endedSection]);
 
@@ -478,8 +480,8 @@ export default function CourseScreen() {
           <div className="video-stage" ref={videoStage}>
             <div className="video-frame" ref={videoRef}>
               <div ref={playerHost} />
+              {endedSection !== null && <div className="video-scrim" />}
             </div>
-            {endedSection !== null && <div className="video-scrim" />}
             <button className="video-fs" onClick={toggleFullscreen} aria-label="Toggle fullscreen">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" />
@@ -496,7 +498,7 @@ export default function CourseScreen() {
               <span className="boundary-eyebrow">End of section {endedSection + 1}</span>
               <span className="boundary-title">{course.sections[endedSection].title}</span>
               <div className="boundary-actions">
-                <button className="boundary-btn quiet" onClick={() => setEndedSection(null)}>
+                <button className="boundary-btn quiet" onClick={dismissBoundary}>
                   Not now
                 </button>
                 <button className="boundary-btn loud" onClick={() => { scrollToSection(endedSection); setEndedSection(null); }}>

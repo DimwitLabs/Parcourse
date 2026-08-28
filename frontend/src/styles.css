@@ -1104,11 +1104,6 @@ body {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
-  border-radius: var(--radius-xl);
-}
-
-.video-stage:fullscreen .video-scrim {
-  border-radius: 0;
 }
 
 .video-stage:fullscreen {
@@ -1139,6 +1134,7 @@ body {
 }
 
 .video-frame {
+  position: relative;
   aspect-ratio: 16 / 9;
   border-radius: var(--radius-xl);
   overflow: hidden;
@@ -1154,6 +1150,9 @@ body {
 }
 
 .boundary-card {
+  position: relative;
+  z-index: 1;
+  margin-top: 1rem;
   display: flex;
   align-items: center;
   gap: 1rem;
