@@ -62,4 +62,14 @@ To use anything AI-powered you need a key from a provider. The first run walks y
 - Colours live as tokens in the `:root` block of `styles.css`, each holding both its light and dark value through `light-dark()`; add a colour there rather than inline
 - Update CHANGELOG.md with your changes
 
+## Contribution Terms
+
+Parcourse is licensed under the GNU Affero General Public License v3.0, and contributions are accepted under the same licence.
+
+By submitting a pull request you confirm that the contribution is your own work and that you have the right to submit it. If your employer holds rights to work you create, you confirm you have their permission to contribute it.
+
+You also grant Deepansh Khurana and Dimwit Labs a perpetual, worldwide, non-exclusive, royalty-free, irrevocable licence to use, reproduce, modify, distribute and sublicense your contribution, under the AGPL-3.0 and under other licence terms, together with a licence to any patent claims of yours that the contribution necessarily infringes.
+
+You keep the copyright in what you wrote and stay free to use it anywhere else. This grant exists so the licence can change in future without tracking down every past contributor. If you would rather not agree to it, open an issue describing the change instead of a pull request.
+
 Thank you for contributing!
