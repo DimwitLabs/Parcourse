@@ -57,6 +57,8 @@
     --radius-xl: 3rem;
     --radius-fab: 1rem;
     --radius-full: 999px;
+
+    --toolbar-shift: calc((100dvh - 100svh) / 2);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -3250,4 +3252,18 @@ html {
     .navpill-cta svg {
         display: block;
     }
+}
+
+.hero,
+.appsticky,
+.statesticky,
+.band:not(.flat),
+.credit,
+.band.flat > .band-inner,
+.close > .close-body {
+    transform: translateY(var(--toolbar-shift));
+}
+
+.band.flat > .cue {
+    transform: translate(-50%, var(--toolbar-shift));
 }
