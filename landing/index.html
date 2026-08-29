@@ -77,6 +77,7 @@
             <li><button type="button" role="menuitem" data-goto="top">Start</button></li>
             <li><button type="button" role="menuitem" data-goto="course">How Courses Flow</button></li>
             <li><button type="button" role="menuitem" data-goto="onway">On the Way In</button></li>
+            <li><button type="button" role="menuitem" data-goto="extension">The Extension</button></li>
             <li><button type="button" role="menuitem" data-goto="never">What It Will Not Do</button></li>
             <li><button type="button" role="menuitem" data-goto="creators">Attribution</button></li>
             <li><button type="button" role="menuitem" data-goto="byok">Bring Your Own Key</button></li>
@@ -812,6 +813,57 @@
         <div class="spacer"></div>
     </section>
 
+    <div class="shell">
+        <section class="band extshot" id="extension">
+            <div class="band-head lift">
+                <h2>It is already where you are.</h2>
+                <p>The extension notices the video in the tab you are already on, and one click starts the course in your own Parcourse.</p>
+            </div>
+
+            <div class="frame browser" aria-hidden="true">
+                <div class="browser-tabs">
+                    <span class="browser-dots"><i></i><i></i><i></i></span>
+                    <span class="btab on">The video you are watching</span>
+                    <span class="btab">Two more things to read later</span>
+                </div>
+
+                <div class="browser-tools">
+                    <span class="browser-url">youtube.com/watch?v=<b>Cgh0aWvau1M</b></span>
+                    <span class="ext-icon">
+                        <img src="parcourse.svg" alt="" width="16" height="16">
+                        <span class="ext-badge"></span>
+                    </span>
+                </div>
+
+                <div class="browser-body">
+                    <div class="ext-watch">
+                        <div class="ext-video"><span class="ext-play"></span></div>
+                        <p class="ext-title">The video you are watching</p>
+                        <p class="ext-meta">18:42 · Somebody explaining something</p>
+                    </div>
+
+                    <div class="ext-popup">
+                        <p class="ext-popup-eyebrow">Learn in Parcourse</p>
+                        <p class="ext-popup-title">The video you are watching</p>
+                        <span class="button primary ext-popup-go">Create course</span>
+                        <span class="ext-popup-host">parcourse.yourdomain.com<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+                    </div>
+                </div>
+
+                <div class="ext-pins">
+                    <div class="pin">
+                        <b>Set then forget</b>
+                        Configure once and get a nudge whenever you watch a video.
+                    </div>
+                    <div class="pin">
+                        <b>Universal relay</b>
+                        Courses get created in anything Chromium: Chrome, Edge, Brave.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
     <section class="stateact" data-state id="never">
         <span class="snap"></span>
         <div class="statesticky">
@@ -1116,6 +1168,16 @@ docker compose -f docker-compose.ghcr.yml up -d
         const EDGE = 2;
         const DOT_SPACING = 26;
 
+        // A phone flick crosses several steps in a few frames, and drawing each
+        // one on the way is the flicker that reads as the stages rushing past.
+        // Above this speed the stage is held until the scroll settles.
+        const FLICK_SPEED = 1.6;
+        const SETTLE_MS = 140;
+        const onPhone = window.matchMedia('(max-width: 1080px)');
+        let lastY = window.scrollY;
+        let lastT = performance.now();
+        let settling = 0;
+
         function measureTrack(track) {
             return {
                 top: track.section.getBoundingClientRect().top,
@@ -1148,8 +1210,19 @@ docker compose -f docker-compose.ghcr.yml up -d
             glow.style.setProperty('--scroll-y', (DOT_SPACING / 2 - (window.scrollY % DOT_SPACING)) + 'px');
             progress.style.setProperty('--read', seen.readable > 0 ? window.scrollY / seen.readable : 0);
 
-            acts.forEach((act, i) => setStep(act, stepFrom(seen.acts[i], act.screens.length)));
-            states.forEach((state, i) => setLine(state, stepFrom(seen.states[i], state.lines.length)));
+            const now = performance.now();
+            const speed = Math.abs(window.scrollY - lastY) / Math.max(1, now - lastT);
+            lastY = window.scrollY;
+            lastT = now;
+
+            if (onPhone.matches && speed > FLICK_SPEED) {
+                clearTimeout(settling);
+                settling = setTimeout(onFrame, SETTLE_MS);
+            } else {
+                acts.forEach((act, i) => setStep(act, stepFrom(seen.acts[i], act.screens.length)));
+                states.forEach((state, i) => setLine(state, stepFrom(seen.states[i], state.lines.length)));
+            }
+
             markNav(seen.navTops, seen.heroBottom);
         }
 

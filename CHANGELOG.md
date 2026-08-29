@@ -4,6 +4,17 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.3] - 2026-08-30
+
+### Added
+
+- **Browser Extension:** A Chrome extension that notices when you are watching a YouTube video and turns it into a course in one click, without copying the link across. Nothing is added to YouTube and nothing on the page is read.
+- The home screen accepts a video handed over in the address, as `/?v=<id>`. Arriving signed out, the sign-in screen keeps hold of the video and the course starts once you are through.
+
+### Fixed
+
+- Creating a course from a video you already have opens the course you made rather than running the whole generation again to arrive back at it. Then, it shows a relevant toast. The mechanism for this existed but this short-circuiting saves time.
+
 ## [1.5.2] - 2026-08-29
 
 ### Added
