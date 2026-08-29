@@ -32,33 +32,45 @@
 </head>
 <body>
     <div class="scroll-progress" id="progress"></div>
-    <div class="theme-switch" id="theme-switch" role="radiogroup" aria-label="Theme">
-        <button class="theme-switch-option" type="button" role="radio" aria-checked="true" data-theme-choice="system">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg>
-            <span>Auto</span>
-        </button>
-        <button class="theme-switch-option" type="button" role="radio" aria-checked="false" data-theme-choice="light">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4l1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-            <span>Light</span>
-        </button>
-        <button class="theme-switch-option" type="button" role="radio" aria-checked="false" data-theme-choice="dark">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-            <span>Dark</span>
-        </button>
-    </div>
-
     <div class="canvas-glow" id="glow"></div>
 
-    <nav class="sectionrail" id="sectionrail" aria-label="Sections">
-        <button type="button" data-goto="top" data-label="Start"><i></i></button>
-        <button type="button" data-goto="course" data-label="How courses flow"><i></i></button>
-        <button type="button" data-goto="onway" data-label="On the way in"><i></i></button>
-        <button type="button" data-goto="never" data-label="What it will not do"><i></i></button>
-        <button type="button" data-goto="byok" data-label="Bring your own key"><i></i></button>
-        <button type="button" data-goto="selfhost" data-label="Run it yourself"><i></i></button>
-        <button type="button" data-goto="more" data-label="The rest of it"><i></i></button>
-        <button type="button" data-goto="creators" data-label="Attribution"><i></i></button>
-        <button type="button" data-goto="hosted" data-label="Hosted, when it opens"><i></i><svg class="rail-cta-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><svg class="rail-cta-icon up" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg></button>
+    <nav class="navpill" id="navpill" aria-label="Page">
+        <a class="navpill-home" href="#top" aria-label="Back to the top">
+            <img src="parcourse.svg" alt="" width="18" height="18">
+        </a>
+
+        <div class="navpill-where">
+            <span class="navpill-sep"></span>
+            <button class="navpill-current" type="button" id="navpill-current" aria-expanded="false" aria-haspopup="menu" aria-controls="navpill-menu">
+                <span id="navpill-label">Start</span>
+                <svg class="navpill-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+        </div>
+
+        <ul class="navpill-menu" id="navpill-menu" role="menu" hidden>
+            <li><button type="button" role="menuitem" data-goto="top">Start</button></li>
+            <li><button type="button" role="menuitem" data-goto="course">How Courses Flow</button></li>
+            <li><button type="button" role="menuitem" data-goto="onway">On the Way In</button></li>
+            <li><button type="button" role="menuitem" data-goto="never">What It Will Not Do</button></li>
+            <li><button type="button" role="menuitem" data-goto="creators">Attribution</button></li>
+            <li><button type="button" role="menuitem" data-goto="byok">Bring Your Own Key</button></li>
+            <li><button type="button" role="menuitem" data-goto="selfhost">Host It Yourself</button></li>
+            <li><button type="button" role="menuitem" data-goto="more">That's Not All</button></li>
+            <li><button type="button" role="menuitem" data-goto="hosted">Coming Soon</button></li>
+        </ul>
+
+        <span class="navpill-sep"></span>
+
+        <div class="navpill-theme" role="radiogroup" aria-label="Theme">
+            <button type="button" role="radio" aria-checked="true" aria-label="Match the system" data-theme-choice="system"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg></button>
+            <button type="button" role="radio" aria-checked="false" aria-label="Light" data-theme-choice="light"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4l1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+            <button type="button" role="radio" aria-checked="false" aria-label="Dark" data-theme-choice="dark"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+        </div>
+
+        <a class="navpill-cta" href="#hosted" aria-label="Keep me posted">
+            <span>Keep me posted</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22 6 12 13 2 6"/></svg>
+        </a>
     </nav>
 
     <header class="hero lift" id="top">
@@ -69,13 +81,14 @@
             <span class="fake-input"><span id="suggestion"></span><span class="caret"></span></span>
         </div>
         <p class="home-hint">Best with tutorials, lectures and explainers.</p>
-        <div class="scroll-cue">
-            <span>Keep scrolling</span>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        <div class="cue">
+            <span>Experience</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
     </header>
 
     <section class="appact" data-act id="course">
+        <span class="snap"></span>
         <div class="appsticky">
             <div class="rail" data-rail>
                 <span class="rail-label">How courses flow</span>
@@ -219,7 +232,7 @@
                         <span class="notes-tab"><span class="notes-tab-grip"></span><span>Notes</span></span>
 
                         <div class="pin" style="top:1rem;left:11rem">
-                            <b>Sections, not chapters</b>
+                            <b>Smart sections</b>
                             Split from the transcript, each with the timestamp it starts at and its own questions.
                         </div>
                         <div class="pin" style="top:13rem;right:1rem">
@@ -592,9 +605,8 @@
                 </div>
             </div>
 
-            <div class="act-cue">
-                <span>Scroll</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            <div class="cue">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
         </div>
 
@@ -614,10 +626,14 @@
                 <h2>Most links just work.</h2>
                 <p>A few things can happen on the way in, and each one is a screen you actually see rather than a footnote. Keep scrolling to walk through them.</p>
             </div>
+            <div class="cue">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
         </section>
     </div>
 
     <section class="appact" data-act id="onway">
+        <span class="snap"></span>
         <div class="appsticky">
             <div class="rail" data-rail>
                 <span class="rail-label">On the way in</span>
@@ -758,9 +774,8 @@
                 </div>
             </div>
 
-            <div class="act-cue">
-                <span>Scroll</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            <div class="cue">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
         </div>
 
@@ -771,6 +786,7 @@
     </section>
 
     <section class="stateact" data-state id="never">
+        <span class="snap"></span>
         <div class="statesticky">
             <p class="state-eyebrow">It will never tell you what to learn next</p>
             <div class="state-stack">
@@ -802,12 +818,27 @@
                 <span class="state-tick"></span>
                 <span class="state-tick"></span>
             </div>
+            <div class="cue">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
         </div>
         <div class="spacer"></div>
         <div class="spacer"></div>
         <div class="spacer"></div>
         <div class="spacer"></div>
         <div class="spacer"></div>
+    </section>
+
+    <section class="credit" id="creators">
+        <div class="credit-card">
+        <span class="credit-eyebrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Attribution</span>
+        <h2>A video belongs to whoever made it.</h2>
+        <p>Parcourse does not host, mirror or re-upload anything, and it claims none of it. The video plays from YouTube in YouTube's own player, so watching it inside a course is watching it on YouTube, and the course around it is written from the transcript that already came with it.</p>
+        <p>So if a video taught you something, go and subscribe to the person who made it, and support them with likes, comments and, if possible, direct donations, or however else they have asked to be supported. All Parcourse does is help you retain and understand what they taught you.</p>
+        </div>
+        <div class="cue">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
     </section>
 
     <div class="shell">
@@ -826,6 +857,9 @@
                 <div class="tile"><span class="k">Ollama</span><span class="m">Local, no key</span></div>
                 <div class="tile"><span class="k">Anything else</span><span class="m">If LiteLLM reaches it</span></div>
             </div>
+            <div class="cue">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
         </section>
     </div>
 
@@ -842,8 +876,11 @@ cp .env.example .env
 docker compose -f docker-compose.ghcr.yml up -d
 
 <span class="g">app on :5173 · api on :8000</span>
-<span class="c"># the first visit walks you through the admin account</span></pre>
+<span class="c"># first visit sets up the admin account</span></pre>
             </div>
+        </div>
+        <div class="cue">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
     </section>
 
@@ -860,43 +897,42 @@ docker compose -f docker-compose.ghcr.yml up -d
                 <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="16" y2="7"/></svg></span><h4>Documented properly</h4><p>Every setting it reads, and every deployment shape, on a docs site of its own.</p></div>
                 <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V7z"/><polyline points="9 12 11.5 14.5 15.5 10"/></svg></span><h4>Open source</h4><p>AGPL-3.0. Run it, change it, and share your changes if you offer it to others.</p></div>
             </div>
+            <div class="cue">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
         </section>
     </div>
 
-    <section class="credit lift" id="creators">
-        <span class="credit-eyebrow">Attribution</span>
-        <h2>The video belongs to whoever made it.</h2>
-        <p>Parcourse does not host, mirror or re-upload anything, and it claims none of it. The video plays from YouTube in YouTube's own player, so watching it inside a course is watching it on YouTube, and the course around it is written from the transcript that already came with it.</p>
-        <p>So if a video taught you something, go and subscribe to the person who made it, and support them with likes, comments and, if possible, direct donations, or however else they have asked to be supported. All Parcourse does is help you retain and understand what they taught you.</p>
-    </section>
 
     <section class="close lift" id="hosted">
-        <h2>Run it yourself, or wait for the hosted one.</h2>
-        <p>Self-hosting is the whole product. It is free, and it always will be. If you would rather not run it yourself, leave an address and hear about the hosted version once it launches. I assure you it will be just enough and not a penny more.</p>
-        <form class="interest-form" id="interest-form" novalidate>
-            <input
-                class="text-input"
-                id="interest-email"
-                type="email"
-                name="email"
-                placeholder="you@example.com"
-                autocomplete="email"
-                required
-            >
-            <button class="button primary" type="submit" id="interest-submit">Keep me posted</button>
-        </form>
-        <p class="interest-note" id="interest-note">One email, when it opens. Nothing else, ever.</p>
+        <div class="close-body">
+            <h2>Run it yourself, or wait for the hosted one.</h2>
+            <p>Self-hosting is the whole product. It is free, and it always will be. If you would rather not run it yourself, leave an address and hear about the hosted version once it launches. I assure you it will be just enough and not a penny more.</p>
+            <form class="interest-form" id="interest-form" novalidate>
+                <input
+                    class="text-input"
+                    id="interest-email"
+                    type="email"
+                    name="email"
+                    placeholder="you@example.com"
+                    autocomplete="email"
+                    required
+                >
+                <button class="button primary" type="submit" id="interest-submit">Keep me posted</button>
+            </form>
+            <p class="interest-note" id="interest-note">One email, when it opens. Nothing else, ever.</p>
 
-        <div class="actions">
-            <a href="https://github.com/DimwitLabs/Parcourse" class="button secondary" target="_blank" rel="noopener noreferrer">Repository</a>
-            <a href="https://docs.parcourse.dimwit.me/" class="button secondary">Documentation</a>
+            <div class="actions">
+                <a href="https://github.com/DimwitLabs/Parcourse" class="button secondary" target="_blank" rel="noopener noreferrer">Repository</a>
+                <a href="https://docs.parcourse.dimwit.me/" class="button secondary">Documentation</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <span>Made with love and labour, and backed by the <a href="https://dimwit.me/pledge" target="_blank" rel="noopener noreferrer">Dimwit Pledge</a></span>
+            <span><a href="https://dimwit.me" target="_blank" rel="noopener noreferrer">Dimwit Labs</a></span>
         </div>
     </section>
-
-    <div class="footer lift">
-        <span>Made with love and labour, and backed by the <a href="https://dimwit.me/pledge" target="_blank" rel="noopener noreferrer">Dimwit Pledge</a></span>
-        <span><a href="https://dimwit.me" target="_blank" rel="noopener noreferrer">Dimwit Labs</a></span>
-    </div>
 
     <script>
         const THEME_KEY = 'parcourse_theme';
@@ -1009,25 +1045,46 @@ docker compose -f docker-compose.ghcr.yml up -d
             state.ticks.forEach((t, n) => t.classList.toggle('on', n <= index));
         }
 
-        const railButtons = [...document.querySelectorAll('#sectionrail button')];
-        const railTargets = railButtons.map((b) => document.getElementById(b.dataset.goto));
+        const navpill = document.getElementById('navpill');
+        const navCurrent = document.getElementById('navpill-current');
+        const navLabel = document.getElementById('navpill-label');
+        const navMenu = document.getElementById('navpill-menu');
+        const navItems = [...navMenu.querySelectorAll('button')];
+        const navTargets = navItems.map((b) => document.getElementById(b.dataset.goto));
+        const hero = document.getElementById('top');
 
-        const railJump = railButtons[railButtons.length - 1];
+        function closeMenu() {
+            navMenu.hidden = true;
+            navCurrent.setAttribute('aria-expanded', 'false');
+        }
 
-        railButtons.forEach((b, i) => b.addEventListener('click', () => {
-            const target = b === railJump && b.classList.contains('up') ? railTargets[0] : railTargets[i];
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        navCurrent.addEventListener('click', () => {
+            const opening = navMenu.hidden;
+            navMenu.hidden = !opening;
+            navCurrent.setAttribute('aria-expanded', String(opening));
+        });
+
+        navItems.forEach((b, i) => b.addEventListener('click', () => {
+            closeMenu();
+            navTargets[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
         }));
 
-        function markRail() {
+        document.addEventListener('click', (event) => {
+            if (!navMenu.hidden && !navpill.contains(event.target)) closeMenu();
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeMenu();
+        });
+
+        function markNav() {
             let current = 0;
-            railTargets.forEach((section, i) => {
+            navTargets.forEach((section, i) => {
                 if (section.getBoundingClientRect().top <= window.innerHeight * 0.35) current = i;
             });
-            railButtons.forEach((b, i) => b.setAttribute('aria-current', i === current ? 'true' : 'false'));
-            const arrived = current === railButtons.length - 1;
-            railJump.classList.toggle('up', arrived);
-            railJump.dataset.label = arrived ? 'Back to the top' : 'Hosted, when it opens';
+            navItems.forEach((b, i) => b.setAttribute('aria-current', i === current ? 'true' : 'false'));
+            navLabel.textContent = navItems[current].textContent;
+            navpill.classList.toggle('deep', hero.getBoundingClientRect().bottom <= window.innerHeight * 0.5);
         }
 
         const progress = document.getElementById('progress');
@@ -1035,6 +1092,8 @@ docker compose -f docker-compose.ghcr.yml up -d
         let mouseX = -999;
         let mouseY = -999;
         let queued = 0;
+
+        const EDGE = 2;
 
         function paint() {
             queued = 0;
@@ -1049,15 +1108,15 @@ docker compose -f docker-compose.ghcr.yml up -d
 
             for (const act of acts) {
                 const travel = act.section.offsetHeight - window.innerHeight;
-                const past = Math.min(Math.max(-act.section.getBoundingClientRect().top, 0), travel);
+                const past = Math.min(Math.max(-act.section.getBoundingClientRect().top + EDGE, 0), travel);
                 setStep(act, Math.min(act.screens.length - 1, Math.floor((past / travel) * act.screens.length)));
             }
 
-            markRail();
+            markNav();
 
             for (const state of states) {
                 const travel = state.section.offsetHeight - window.innerHeight;
-                const past = Math.min(Math.max(-state.section.getBoundingClientRect().top, 0), travel);
+                const past = Math.min(Math.max(-state.section.getBoundingClientRect().top + EDGE, 0), travel);
                 setLine(state, Math.min(state.lines.length - 1, Math.floor((past / travel) * state.lines.length)));
             }
         }
@@ -1075,57 +1134,6 @@ docker compose -f docker-compose.ghcr.yml up -d
         window.addEventListener('resize', queue);
         paint();
 
-        const narrow = window.matchMedia('(max-width: 1080px)');
-        const SETTLE = 0.12;
-        let marks = [];
-        let fromScroll = 0;
-        let fromTouch = 0;
-        let paging = false;
-
-        function stops() {
-            const vh = window.innerHeight;
-            const list = [];
-            for (const section of document.querySelectorAll('[data-act], [data-state]')) {
-                const top = section.getBoundingClientRect().top + window.scrollY;
-                const count = section.querySelectorAll('.screen, .state-line').length;
-                for (let i = 0; i < count; i += 1) list.push(Math.round(top + (i + 0.5) * vh));
-            }
-            return list;
-        }
-
-        function nearest(y) {
-            return marks.reduce((best, m) => (Math.abs(m - y) < Math.abs(best - y) ? m : best), marks[0]);
-        }
-
-        window.addEventListener('touchstart', (event) => {
-            paging = false;
-            if (!narrow.matches || event.touches.length !== 1) return;
-            marks = stops();
-            if (!marks.length) return;
-            fromScroll = window.scrollY;
-            if (Math.abs(nearest(fromScroll) - fromScroll) > window.innerHeight * 0.75) return;
-            fromTouch = event.touches[0].clientY;
-            paging = true;
-        }, { passive: true });
-
-        window.addEventListener('touchmove', (event) => {
-            if (!paging) return;
-            event.preventDefault();
-            window.scrollTo(0, fromScroll - (event.touches[0].clientY - fromTouch));
-        }, { passive: false });
-
-        window.addEventListener('touchend', () => {
-            if (!paging) return;
-            paging = false;
-            const moved = window.scrollY - fromScroll;
-            const reach = window.innerHeight * SETTLE;
-            let target;
-            if (moved > reach) target = marks.find((m) => m > fromScroll + 1);
-            else if (moved < -reach) target = marks.filter((m) => m < fromScroll - 1).pop();
-            else target = nearest(window.scrollY);
-            if (target === undefined) return;
-            window.scrollTo({ top: target, behavior: 'smooth' });
-        }, { passive: true });
     </script>
     <script>
         const SUPABASE_URL = 'https://cyocplxyyrxwaurivccs.supabase.co';
