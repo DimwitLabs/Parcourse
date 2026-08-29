@@ -49,6 +49,9 @@ jobs:
         working-directory: frontend
         run: npm run build
 
+      - name: YouTube parsers agree
+        run: node scripts/check-youtube-parsers.mjs
+
       - name: Landing page parses
         run: |
           python -m pip install --quiet html5lib

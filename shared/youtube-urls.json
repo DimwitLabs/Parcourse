@@ -1,0 +1,32 @@
+{
+  "comment": "One list of truth for both YouTube URL parsers: frontend/src/lib/youtube.ts and extension/lib/youtube.js. scripts/check-youtube-parsers.mjs runs both against it and fails if they disagree with the list or with each other. Add a case here before fixing either parser.",
+  "cases": [
+    { "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "id": "dQw4w9WgXcQ" },
+    { "url": "http://www.youtube.com/watch?v=dQw4w9WgXcQ", "id": "dQw4w9WgXcQ" },
+    { "url": "www.youtube.com/watch?v=dQw4w9WgXcQ", "id": "dQw4w9WgXcQ" },
+    { "url": "https://m.youtube.com/watch?v=dQw4w9WgXcQ&t=90s", "id": "dQw4w9WgXcQ" },
+    { "url": "https://music.youtube.com/watch?v=dQw4w9WgXcQ", "id": "dQw4w9WgXcQ" },
+    { "url": "https://www.youtube.com/watch?list=PL123&v=dQw4w9WgXcQ", "id": "dQw4w9WgXcQ" },
+    { "url": "https://youtu.be/dQw4w9WgXcQ", "id": "dQw4w9WgXcQ" },
+    { "url": "https://youtu.be/dQw4w9WgXcQ?t=42", "id": "dQw4w9WgXcQ" },
+    { "url": "https://www.youtube.com/shorts/dQw4w9WgXcQ", "id": "dQw4w9WgXcQ" },
+    { "url": "https://www.youtube.com/live/dQw4w9WgXcQ", "id": "dQw4w9WgXcQ" },
+    { "url": "https://www.youtube.com/embed/dQw4w9WgXcQ", "id": "dQw4w9WgXcQ" },
+    { "url": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ", "id": "dQw4w9WgXcQ" },
+    { "url": "  https://youtu.be/dQw4w9WgXcQ  ", "id": "dQw4w9WgXcQ" },
+
+    { "url": "https://www.youtube.com/", "id": null },
+    { "url": "https://www.youtube.com/feed/subscriptions", "id": null },
+    { "url": "https://www.youtube.com/@someone", "id": null },
+    { "url": "https://www.youtube.com/watch?v=tooshort", "id": null },
+    { "url": "https://www.youtube.com/watch?v=waaaaaaaaaaytoolong", "id": null },
+    { "url": "https://vimeo.com/watch?v=dQw4w9WgXcQ", "id": null },
+    { "url": "https://evil.com/youtube.com/watch?v=dQw4w9WgXcQ", "id": null },
+    { "url": "https://notyoutube.com/watch?v=dQw4w9WgXcQ", "id": null },
+    { "url": "javascript:alert(1)", "id": null },
+    { "url": "data:text/html,<script>alert(1)</script>", "id": null },
+    { "url": "", "id": null },
+    { "url": "   ", "id": null },
+    { "url": "not a url at all", "id": null }
+  ]
+}
