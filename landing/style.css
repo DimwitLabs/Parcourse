@@ -1926,6 +1926,7 @@ h1 .accent {
         animation-duration: 0.001ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.001ms !important;
+        transition-delay: 0s !important;
     }
 }
 
@@ -2872,14 +2873,12 @@ h1 .accent {
     justify-content: center;
     gap: 1rem;
     opacity: 0;
-    transform: translateY(1.5rem);
-    transition: opacity 0.45s ease, transform 0.45s ease;
+    transition: opacity 0.22s ease;
     pointer-events: none;
 }
 
 .state-line.on {
     opacity: 1;
-    transform: none;
 }
 
 .state-line h2 {
