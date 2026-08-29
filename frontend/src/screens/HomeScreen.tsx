@@ -58,7 +58,7 @@ export default function HomeScreen() {
   useEffect(() => {
     apiFetch("/courses", token)
       .then(setCourses)
-      .catch(() => {});
+      .catch(() => setCourses([]));
   }, [token]);
 
   useEffect(() => {
@@ -114,6 +114,13 @@ export default function HomeScreen() {
   }
 
   async function createCourse(url = videoUrl) {
+    const already = courses?.find((c) => c.video_id === youTubeVideoId(url));
+    if (already) {
+      toast("You already have a course from this video.", "info");
+      navigate(`/course/${already.id}`);
+      return;
+    }
+
     setFunMessages([...FALLBACK_MESSAGES]);
     try {
       setStep("transcript");
@@ -171,11 +178,11 @@ export default function HomeScreen() {
   }
 
   useEffect(() => {
-    if (!handedOver || !aiReady || step !== "idle") return;
+    if (!handedOver || !aiReady || !courses || step !== "idle") return;
     setHandedOver(null);
     createCourse(handedOver);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [handedOver, aiReady, step]);
+  }, [handedOver, aiReady, courses, step]);
 
   const busy = step !== "idle";
 
