@@ -1080,14 +1080,26 @@ docker compose -f docker-compose.ghcr.yml up -d
             if (event.key === 'Escape') closeMenu();
         });
 
+        let navStep = -1;
+        let navDeep = null;
+
         function markNav() {
             let current = 0;
             navTargets.forEach((section, i) => {
                 if (section.getBoundingClientRect().top <= window.innerHeight * 0.35) current = i;
             });
-            navItems.forEach((b, i) => b.setAttribute('aria-current', i === current ? 'true' : 'false'));
-            navLabel.textContent = navItems[current].textContent;
-            navpill.classList.toggle('deep', hero.getBoundingClientRect().bottom <= window.innerHeight * 0.5);
+            const deep = hero.getBoundingClientRect().bottom <= window.innerHeight * 0.5;
+
+            if (current !== navStep) {
+                navStep = current;
+                navItems.forEach((b, i) => b.setAttribute('aria-current', i === current ? 'true' : 'false'));
+                navLabel.textContent = navItems[current].textContent;
+            }
+
+            if (deep !== navDeep) {
+                navDeep = deep;
+                navpill.classList.toggle('deep', deep);
+            }
         }
 
         const progress = document.getElementById('progress');
