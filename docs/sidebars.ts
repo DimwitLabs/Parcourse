@@ -8,7 +8,14 @@ const sidebars: SidebarsConfig = {
       type: "category",
       label: "Using Parcourse",
       collapsed: false,
-      items: ["using/courses", "using/quizzes", "using/notes", "using/cheatsheets", "using/knowledge-graph"],
+      items: [
+        "using/courses",
+        "using/quizzes",
+        "using/notes",
+        "using/cheatsheets",
+        "using/knowledge-graph",
+        "using/extension",
+      ],
     },
     {
       type: "category",
