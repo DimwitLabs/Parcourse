@@ -53,7 +53,11 @@ The app runs on http://localhost:5173, the API on http://localhost:8000, and int
 
 To use anything AI-powered you need a key from a provider. The first run walks you through it, or you can add one later from Settings.
 
+## Good To Know
+
 The landing page shares its palette with the app, so run `./scripts/sync-tokens.sh` before previewing `landing/index.html`.
+
+Colours live as tokens in `shared/tokens.css`, which the app, the docs and the landing page all read, each holding both its light and dark value through `light-dark()`; add a colour there rather than inline
 
 ## Guidelines
 
@@ -61,7 +65,6 @@ The landing page shares its palette with the app, so run `./scripts/sync-tokens.
 - Comment the why, not the what; delete a comment that restates the code beneath it
 - Delete code you make unreachable rather than leaving it behind a flag
 - Include tests for new backend behaviour and ensure all tests pass before submitting
-- Colours live as tokens in the `:root` block of `styles.css`, each holding both its light and dark value through `light-dark()`; add a colour there rather than inline
 - Update CHANGELOG.md with your changes
 
 ## Contribution Terms
