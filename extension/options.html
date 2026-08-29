@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Parcourse</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body class="page">
+    <main class="card">
+        <p class="eyebrow">Learn in Parcourse</p>
+        <h1>Where is your Parcourse?</h1>
+        <p class="body">
+            Paste the address you open Parcourse at. If you self-host, that is your own server.
+            Nothing is sent anywhere else, and the extension never sees your password.
+        </p>
+        <form class="pill" id="form">
+            <input class="input" id="instance" placeholder="parcourse.example.com" spellcheck="false" autocomplete="off">
+            <button class="button" type="submit">Save</button>
+        </form>
+        <p class="note" id="note"></p>
+    </main>
+    <script type="module" src="options.js"></script>
+</body>
+</html>
