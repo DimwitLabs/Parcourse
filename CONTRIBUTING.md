@@ -53,6 +53,8 @@ The app runs on http://localhost:5173, the API on http://localhost:8000, and int
 
 To use anything AI-powered you need a key from a provider. The first run walks you through it, or you can add one later from Settings.
 
+The landing page shares its palette with the app, so run `./scripts/sync-tokens.sh` before previewing `landing/index.html`.
+
 ## Guidelines
 
 - Keep things readable and follow existing conventions of code structure

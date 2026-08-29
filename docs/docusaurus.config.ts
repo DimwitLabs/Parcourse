@@ -83,7 +83,7 @@ const config: Config = {
         blog: false,
         pages: false,
         theme: {
-          customCss: ["./src/css/tokens.css", "./src/css/custom.css"],
+          customCss: ["./src/css/custom.css"],
         },
         sitemap: {
           lastmod: "date",
