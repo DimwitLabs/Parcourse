@@ -23,11 +23,15 @@ Everything in a notebook is therefore there because someone put it there. Each a
 
 It is self-hosted, so all of that stays on your own machine, along with your API key. It runs on whichever model you point it at.
 
-## Attribution
+## A Quick Note...
 
+...before we dive into it.
+
+:::note[Attribution]
 A video belongs to whoever made it. Parcourse does not host, mirror or re-upload anything, and it claims none of it. The video plays from YouTube in YouTube's own player, so watching it inside a course is watching it on YouTube, and the course around it is written from the transcript that already came with it.
 
 So if a video taught you something, go and subscribe to the person who made it, and support them with likes, comments and, if possible, direct donations, or however else they have asked to be supported. All Parcourse does is help you retain and understand what they taught you.
+:::
 
 ## What a Course Contains
 
