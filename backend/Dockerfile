@@ -6,10 +6,10 @@ COPY --from=denoland/deno:bin-2.9.5 /deno /usr/local/bin/deno
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY backend/ .
 
 EXPOSE 8000
 

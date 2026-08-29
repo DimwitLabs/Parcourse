@@ -1,11 +1,12 @@
 FROM node:26-slim
 
-WORKDIR /app
+WORKDIR /app/frontend
 
-COPY package.json package-lock.json ./
+COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 
-COPY . .
+COPY shared/ /app/shared/
+COPY frontend/ ./
 
 EXPOSE 5173
 

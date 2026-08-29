@@ -1,0 +1,6 @@
+.git
+docs
+landing
+**/node_modules
+**/__pycache__
+**/.venv
