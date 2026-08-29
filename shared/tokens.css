@@ -46,6 +46,7 @@
   --color-node-field-new: light-dark(#c6dab8, #2f3f28);
   --color-node-label: light-dark(#ffffff, #f0f3ec);
 
+  --shadow-offset: 0.25rem 0.25rem 0 var(--color-secondary-container);
   --shadow-lift: 0 1.125rem 2.5rem -1.375rem light-dark(rgba(27, 28, 26, 0.22), rgba(0, 0, 0, 0.7));
   --shadow-lift-sm: 0 0.625rem 1.5rem -1.125rem light-dark(rgba(27, 28, 26, 0.18), rgba(0, 0, 0, 0.6));
   --shadow-menu: 0 0.25rem 1rem -0.5rem light-dark(rgba(27, 28, 26, 0.12), transparent),
@@ -57,6 +58,8 @@
   --shadow-tail-lift: 0 -0.6rem 1.1rem -0.85rem light-dark(rgba(27, 28, 26, 0.3), rgba(0, 0, 0, 0.65));
   --shadow-raised: 0 1px 2px light-dark(rgba(27, 28, 26, 0.16), rgba(0, 0, 0, 0.5)),
     0 2px 6px 2px light-dark(rgba(27, 28, 26, 0.09), rgba(0, 0, 0, 0.35));
+  --shadow-halo: 0 0 6rem 0.5rem light-dark(rgba(27, 28, 26, 0.16), rgba(0, 0, 0, 0.6));
+  --shadow-tail-fade: 0 -1.25rem 3rem -1.5rem light-dark(rgba(27, 28, 26, 0.22), rgba(0, 0, 0, 0.7));
   --shadow-fab: 0 1px 3px light-dark(rgba(27, 28, 26, 0.16), rgba(0, 0, 0, 0.5)),
     0 4px 8px 3px light-dark(rgba(27, 28, 26, 0.11), rgba(0, 0, 0, 0.38));
 

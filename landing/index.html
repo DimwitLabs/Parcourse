@@ -27,9 +27,34 @@
     <meta name="twitter:image" content="https://parcourse.dimwit.me/og.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="tokens.css">
     <link rel="stylesheet" href="style.css">
+
+    <script>
+        const THEME_KEY = 'parcourse_theme';
+
+        function storedTheme() {
+            try {
+                const value = localStorage.getItem(THEME_KEY);
+                return value === 'light' || value === 'dark' ? value : 'system';
+            } catch (error) {
+                return 'system';
+            }
+        }
+
+        function paintTheme(theme) {
+            if (theme === 'system') document.documentElement.removeAttribute('data-theme');
+            else document.documentElement.setAttribute('data-theme', theme);
+            for (const button of document.querySelectorAll('[data-theme-choice]')) {
+                const on = button.dataset.themeChoice === theme;
+                button.classList.toggle('active', on);
+                button.setAttribute('aria-checked', String(on));
+            }
+        }
+
+        paintTheme(storedTheme());
+    </script>
 </head>
 <body>
     <div class="scroll-progress" id="progress" aria-hidden="true"></div>
@@ -359,7 +384,7 @@
                             <b>Take it with you</b>
                             Drawn in the browser and saved as a PNG or a PDF. Long courses run onto a second page.
                         </div>
-                        <div aria-hidden="true" class="pin pin-gutter" style="top:28rem;right:2rem">
+                        <div class="pin pin-gutter" style="top:28rem;right:2rem">
                             <b>The whole course</b>
                             Written after the sections are set, from the same transcript, one point per thing worth keeping.
                         </div>
@@ -890,14 +915,14 @@ docker compose -f docker-compose.ghcr.yml up -d
         <section class="band" id="more">
             <div class="band-head lift"><h2>The rest of it.</h2></div>
             <div class="strip">
-                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span><h4>Search that reads the course</h4><p>A half-remembered phrase from a takeaway or a question finds the course it came from.</p></div>
-                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><h4>Regenerate with feedback</h4><p>Ask again, and say what was wrong the first time.</p></div>
-                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 14"/></svg></span><h4>Quiz history</h4><p>Every attempt kept with the feedback that came with it.</p></div>
-                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="8" r="4"/></svg></span><h4>More than one of you</h4><p>The admin invites, sets a system model, and each account can override it.</p></div>
-                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><h4>Encrypted at rest</h4><p>Provider keys are encrypted with a key you generate yourself.</p></div>
-                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/></svg></span><h4>Light and dark</h4><p>Every colour is a token holding both values, so the whole app switches at once.</p></div>
-                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="16" y2="7"/></svg></span><h4>Documented properly</h4><p>Every setting it reads, and every deployment shape, on a docs site of its own.</p></div>
-                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V7z"/><polyline points="9 12 11.5 14.5 15.5 10"/></svg></span><h4>Open source</h4><p>AGPL-3.0. Run it, change it, and share your changes if you offer it to others.</p></div>
+                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span><h3>Search that reads the course</h3><p>A half-remembered phrase from a takeaway or a question finds the course it came from.</p></div>
+                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span><h3>Regenerate with feedback</h3><p>Ask again, and say what was wrong the first time.</p></div>
+                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 14"/></svg></span><h3>Quiz history</h3><p>Every attempt kept with the feedback that came with it.</p></div>
+                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="8" r="4"/></svg></span><h3>More than one of you</h3><p>The admin invites, sets a system model, and each account can override it.</p></div>
+                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><h3>Encrypted at rest</h3><p>Provider keys are encrypted with a key you generate yourself.</p></div>
+                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/></svg></span><h3>Light and dark</h3><p>Every colour is a token holding both values, so the whole app switches at once.</p></div>
+                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="16" y2="7"/></svg></span><h3>Documented properly</h3><p>Every setting it reads, and every deployment shape, on a docs site of its own.</p></div>
+                <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V7z"/><polyline points="9 12 11.5 14.5 15.5 10"/></svg></span><h3>Open source</h3><p>AGPL-3.0. Run it, change it, and share your changes if you offer it to others.</p></div>
             </div>
             <div class="cue" aria-hidden="true">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -922,7 +947,7 @@ docker compose -f docker-compose.ghcr.yml up -d
                 >
                 <button class="button primary" type="submit" id="interest-submit">Keep me posted</button>
             </form>
-            <p class="interest-note" id="interest-note">One email, when it opens. Nothing else, ever.</p>
+            <p class="interest-note" id="interest-note" role="status" tabindex="-1">One email, when it opens. Nothing else, ever.</p>
 
             <div class="actions">
                 <a href="https://github.com/DimwitLabs/Parcourse" class="button secondary" target="_blank" rel="noopener noreferrer">Repository</a>
@@ -938,39 +963,18 @@ docker compose -f docker-compose.ghcr.yml up -d
     </main>
 
     <script>
-        const THEME_KEY = 'parcourse_theme';
-        const themeButtons = [...document.querySelectorAll('[data-theme-choice]')];
-
-        function paintTheme(theme) {
-            if (theme === 'system') document.documentElement.removeAttribute('data-theme');
-            else document.documentElement.setAttribute('data-theme', theme);
-            themeButtons.forEach((b) => {
-                const on = b.dataset.themeChoice === theme;
-                b.classList.toggle('active', on);
-                b.setAttribute('aria-checked', String(on));
+        for (const button of document.querySelectorAll('[data-theme-choice]')) {
+            button.addEventListener('click', () => {
+                const theme = button.dataset.themeChoice;
+                try {
+                    if (theme === 'system') localStorage.removeItem(THEME_KEY);
+                    else localStorage.setItem(THEME_KEY, theme);
+                } catch (error) {
+                    /* A blocked store still repaints; the choice just will not survive a reload. */
+                }
+                paintTheme(theme);
             });
         }
-
-        function storedTheme() {
-            try {
-                const value = localStorage.getItem(THEME_KEY);
-                return value === 'light' || value === 'dark' ? value : 'system';
-            } catch (error) {
-                return 'system';
-            }
-        }
-
-        themeButtons.forEach((b) => b.addEventListener('click', () => {
-            const theme = b.dataset.themeChoice;
-            try {
-                if (theme === 'system') localStorage.removeItem(THEME_KEY);
-                else localStorage.setItem(THEME_KEY, theme);
-            } catch (error) {
-                paintTheme(theme);
-                return;
-            }
-            paintTheme(theme);
-        }));
 
         paintTheme(storedTheme());
     </script>
@@ -983,6 +987,7 @@ docker compose -f docker-compose.ghcr.yml up -d
         ];
 
         const suggestion = document.getElementById('suggestion');
+        const stillType = window.matchMedia('(prefers-reduced-motion: reduce)');
         let which = 0;
         let letters = 0;
         let erasing = false;
@@ -1003,13 +1008,10 @@ docker compose -f docker-compose.ghcr.yml up -d
             }
             setTimeout(tick, wait);
         }
-        tick();
+        if (stillType.matches) suggestion.textContent = SUGGESTIONS[0];
+        else tick();
     </script>
     <script>
-        const CHECK = '<svg class="gen-pill-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="currentColor" opacity="0.15"/><polyline points="4.5,8 7,10.5 11.5,5.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-        const SPINNER = '<span class="gen-pill-spinner"></span>';
-        const DOT = '<span class="gen-pill-dot"></span>';
-
         const acts = [...document.querySelectorAll('[data-act]')].map((section) => ({
             section: section,
             sticky: section.querySelector('.appsticky'),
@@ -1027,7 +1029,6 @@ docker compose -f docker-compose.ghcr.yml up -d
             act.pills.forEach((p, n) => {
                 p.classList.toggle('active', n === index);
                 p.classList.toggle('done', n < index);
-                p.firstElementChild.firstElementChild.outerHTML = n < index ? CHECK : n === index ? SPINNER : DOT;
             });
             const want = act.navMap[index];
             act.navs.forEach((a) => a.classList.toggle('active', a.dataset.nav === want));
@@ -1055,6 +1056,7 @@ docker compose -f docker-compose.ghcr.yml up -d
         const navItems = [...navMenu.querySelectorAll('button')];
         const navTargets = navItems.map((b) => document.getElementById(b.dataset.goto));
         const hero = document.getElementById('top');
+        const stillMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
         function closeMenu() {
             navMenu.hidden = true;
@@ -1069,7 +1071,10 @@ docker compose -f docker-compose.ghcr.yml up -d
 
         navItems.forEach((b, i) => b.addEventListener('click', () => {
             closeMenu();
-            navTargets[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+            navTargets[i].scrollIntoView({
+                behavior: stillMotion.matches ? 'auto' : 'smooth',
+                block: 'start'
+            });
         }));
 
         document.addEventListener('click', (event) => {
@@ -1083,12 +1088,12 @@ docker compose -f docker-compose.ghcr.yml up -d
         let navStep = -1;
         let navDeep = null;
 
-        function markNav() {
+        function markNav(tops, heroBottom) {
             let current = 0;
-            navTargets.forEach((section, i) => {
-                if (section.getBoundingClientRect().top <= window.innerHeight * 0.35) current = i;
+            tops.forEach((top, i) => {
+                if (top <= window.innerHeight * 0.35) current = i;
             });
-            const deep = hero.getBoundingClientRect().bottom <= window.innerHeight * 0.5;
+            const deep = heroBottom <= window.innerHeight * 0.5;
 
             if (current !== navStep) {
                 navStep = current;
@@ -1109,35 +1114,47 @@ docker compose -f docker-compose.ghcr.yml up -d
         let queued = 0;
 
         const EDGE = 2;
+        const DOT_SPACING = 26;
 
-        function paint() {
+        function measureTrack(track) {
+            return {
+                top: track.section.getBoundingClientRect().top,
+                travel: track.section.offsetHeight - window.innerHeight
+            };
+        }
+
+        function stepFrom(measured, count) {
+            if (measured.travel <= 0) return 0;
+            const past = Math.min(Math.max(-measured.top + EDGE, 0), measured.travel);
+            return Math.min(count - 1, Math.floor((past / measured.travel) * count));
+        }
+
+        function measure() {
+            return {
+                heroBottom: hero.getBoundingClientRect().bottom,
+                navTops: navTargets.map((section) => section.getBoundingClientRect().top),
+                readable: document.documentElement.scrollHeight - window.innerHeight,
+                acts: acts.map(measureTrack),
+                states: states.map(measureTrack)
+            };
+        }
+
+        function onFrame() {
             queued = 0;
-            const root = document.documentElement.style;
-            root.setProperty('--mouse-x', mouseX + 'px');
-            root.setProperty('--mouse-y', mouseY + 'px');
-            root.setProperty('--scroll-x', (13 - (window.scrollX % 26)) + 'px');
-            root.setProperty('--scroll-y', (13 - (window.scrollY % 26)) + 'px');
+            const seen = measure();
 
-            const readable = document.documentElement.scrollHeight - window.innerHeight;
-            progress.style.setProperty('--read', readable > 0 ? window.scrollY / readable : 0);
+            glow.style.setProperty('--mouse-x', mouseX + 'px');
+            glow.style.setProperty('--mouse-y', mouseY + 'px');
+            glow.style.setProperty('--scroll-y', (DOT_SPACING / 2 - (window.scrollY % DOT_SPACING)) + 'px');
+            progress.style.setProperty('--read', seen.readable > 0 ? window.scrollY / seen.readable : 0);
 
-            for (const act of acts) {
-                const travel = act.section.offsetHeight - window.innerHeight;
-                const past = Math.min(Math.max(-act.section.getBoundingClientRect().top + EDGE, 0), travel);
-                setStep(act, Math.min(act.screens.length - 1, Math.floor((past / travel) * act.screens.length)));
-            }
-
-            markNav();
-
-            for (const state of states) {
-                const travel = state.section.offsetHeight - window.innerHeight;
-                const past = Math.min(Math.max(-state.section.getBoundingClientRect().top + EDGE, 0), travel);
-                setLine(state, Math.min(state.lines.length - 1, Math.floor((past / travel) * state.lines.length)));
-            }
+            acts.forEach((act, i) => setStep(act, stepFrom(seen.acts[i], act.screens.length)));
+            states.forEach((state, i) => setLine(state, stepFrom(seen.states[i], state.lines.length)));
+            markNav(seen.navTops, seen.heroBottom);
         }
 
         function queue() {
-            if (!queued) queued = requestAnimationFrame(paint);
+            if (!queued) queued = requestAnimationFrame(onFrame);
         }
 
         window.addEventListener('mousemove', (e) => {
@@ -1147,7 +1164,7 @@ docker compose -f docker-compose.ghcr.yml up -d
         });
         window.addEventListener('scroll', queue, { passive: true });
         window.addEventListener('resize', queue);
-        paint();
+        onFrame();
 
     </script>
     <script>
@@ -1194,6 +1211,7 @@ docker compose -f docker-compose.ghcr.yml up -d
 
                 form.hidden = true;
                 say('You are on the list. You will hear from us once, when it opens.', 'done');
+                note.focus();
             } catch (error) {
                 submit.disabled = false;
                 field.disabled = false;
