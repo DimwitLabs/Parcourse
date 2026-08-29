@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - **Full Screen Knowledge Graph:** The knowledge graph fills the window from a button in the corner of the canvas to view it properly as your nodes increase.
 - Better iconography, hierarchy and component for Fields, Topics and Skills selector.
+- The landing page deploys itself on every push to `main` rather than waiting for someone to go and pull it.
 
 ### Changed
 
@@ -19,6 +20,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - To save space and for better UX, the mastery legend is now a pill in the corner of the canvas that opens to say what each colour means.
 - The course page drops its Notes link now that the tab beside it opens the same page.
 - **Landing Page:** Newly designed landing page which brings the whole app's tutorial and flow into an introduction for the platform all at once.
+- **Shared Palette:** The app, the docs and the landing page read their colours from a single `shared/tokens.css` to avoid design drift.
 
 ### Fixed
 
@@ -26,6 +28,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Drag and pan the knowledge graph with a finger. Only pinch-to-zoom worked on touch before.
 - The end of section card sits below the video with a gap rather than merging into it, and its buttons take clicks again. The scrim it dims the video with used to paint over the card, which is what made them dead.
 - **Not now** hands the video back and plays it, in fullscreen as well as on the page, rather than dismissing the card and leaving it paused.
+- The self-hosting terminal fits on a phone. It ran wider than the screen and was cut off, with no way to scroll to the rest of the command.
+- Screen readers and read-aloud get the landing page's explanations instead of the simulated app screens behind them. On a phone those explanations were hidden outright, so almost nothing was read at all.
 
 ## [1.5.1] - 2026-08-28
 
