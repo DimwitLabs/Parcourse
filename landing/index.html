@@ -28,11 +28,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="tokens.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="scroll-progress" id="progress"></div>
-    <div class="canvas-glow" id="glow"></div>
+    <div class="scroll-progress" id="progress" aria-hidden="true"></div>
+    <div class="canvas-glow" id="glow" aria-hidden="true"></div>
 
     <nav class="navpill" id="navpill" aria-label="Page">
         <a class="navpill-home" href="#top" aria-label="Back to the top">
@@ -73,6 +74,7 @@
         </a>
     </nav>
 
+    <main>
     <header class="hero lift" id="top">
         <img class="wordmark" src="parcourse-wordmark.svg" alt="Parcourse" width="195" height="52">
         <h1>Turn curiosity into <span class="accent">knowledge.</span></h1>
@@ -81,7 +83,7 @@
             <span class="fake-input"><span id="suggestion"></span><span class="caret"></span></span>
         </div>
         <p class="home-hint">Best with tutorials, lectures and explainers.</p>
-        <div class="cue">
+        <div class="cue" aria-hidden="true">
             <span>Experience</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
@@ -103,7 +105,7 @@
             </div>
 
             <div class="frame">
-                <div class="top-nav">
+                <div class="top-nav" aria-hidden="true">
                     <span class="top-nav-logo"><img src="parcourse-wordmark.svg" alt="Parcourse" width="103" height="28"></span>
                     <div class="top-nav-links">
                         <span data-nav="home">Home</span>
@@ -116,18 +118,18 @@
 
                 <div class="stage" data-nav-map="home,notebook,notebook,notebook,notebook,notebook,notebook,graph">
                     <div class="screen">
-                        <h2 class="home-title">What do you want to learn today?</h2>
-                        <div class="url-form url-form-inline">
+                        <h2 aria-hidden="true" class="home-title">What do you want to learn today?</h2>
+                        <div aria-hidden="true" class="url-form url-form-inline">
                             <span class="fake-input">youtube.com/watch?v=…</span>
                             <span class="button primary">Create course</span>
                         </div>
-                        <p class="home-hint" style="text-align:center">Best with tutorials, lectures and explainers.</p>
+                        <p aria-hidden="true" class="home-hint" style="text-align:center">Best with tutorials, lectures and explainers.</p>
 
-                        <div class="section-row">
+                        <div aria-hidden="true" class="section-row">
                             <h3 class="section-row-title">Continue learning</h3>
                             <span class="section-row-link">View all 14 →</span>
                         </div>
-                        <div class="course-grid">
+                        <div aria-hidden="true" class="course-grid">
                             <div class="course-card">
                                 <div class="course-card-thumb"><span>Arts</span></div>
                                 <h4 class="course-card-title">Caravaggio and the invention of the spotlight</h4>
@@ -156,7 +158,7 @@
                     </div>
 
                     <div class="screen">
-                        <div class="course-layout">
+                        <div aria-hidden="true" class="course-layout">
                             <aside class="course-sidebar">
                                 <span class="sidebar-label">Sections</span>
                                 <div class="sidebar-item done"><span class="sidebar-item-num"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="sidebar-item-title">Money before central banks</span></div>
@@ -229,7 +231,7 @@
                                 </div>
                             </div>
                         </div>
-                        <span class="notes-tab"><span class="notes-tab-grip"></span><span>Notes</span></span>
+                        <span aria-hidden="true" class="notes-tab"><span class="notes-tab-grip"></span><span>Notes</span></span>
 
                         <div class="pin" style="top:1rem;left:11rem">
                             <b>Smart sections</b>
@@ -242,7 +244,7 @@
                     </div>
 
                     <div class="screen">
-                        <div class="course-layout">
+                        <div aria-hidden="true" class="course-layout">
                             <aside class="course-sidebar">
                                 <span class="sidebar-label">Sections</span>
                                 <div class="sidebar-item done"><span class="sidebar-item-num"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="sidebar-item-title">Money before central banks</span></div>
@@ -263,7 +265,7 @@
                             </div>
                         </div>
 
-                        <div class="notes-overlay">
+                        <div aria-hidden="true" class="notes-overlay">
                             <div class="notes-backdrop"></div>
                             <aside class="notes-sheet">
                                 <div class="notes-head">
@@ -295,7 +297,7 @@
                     </div>
 
                     <div class="screen">
-                        <div class="page-header">
+                        <div aria-hidden="true" class="page-header">
                             <div>
                                 <h2 class="page-header-title">Cheatsheet</h2>
                                 <p class="page-header-sub">Caravaggio and the invention of the spotlight</p>
@@ -305,7 +307,7 @@
                                 <span class="button secondary small"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</span>
                             </div>
                         </div>
-                        <div class="card cheatsheet-paper">
+                        <div aria-hidden="true" class="card cheatsheet-paper">
                             <div class="cheatsheet-section">
                                 <div class="cheatsheet-section-head">
                                     <span class="cheatsheet-num">1</span>
@@ -357,14 +359,14 @@
                             <b>Take it with you</b>
                             Drawn in the browser and saved as a PNG or a PDF. Long courses run onto a second page.
                         </div>
-                        <div class="pin pin-gutter" style="top:28rem;right:2rem">
+                        <div aria-hidden="true" class="pin pin-gutter" style="top:28rem;right:2rem">
                             <b>The whole course</b>
                             Written after the sections are set, from the same transcript, one point per thing worth keeping.
                         </div>
                     </div>
 
                     <div class="screen">
-                        <div class="question-block">
+                        <div aria-hidden="true" class="question-block">
                             <p class="question-text">Why did Bijapur and Golconda outlast Ahmadnagar under Mughal pressure?</p>
                             <div class="mcq-options">
                                 <div class="mcq-option"><span class="mcq-radio"></span><span>A. They were further from Delhi, so a Mughal army was harder to supply</span></div>
@@ -372,11 +374,11 @@
                                 <div class="mcq-option"><span class="mcq-radio"></span><span>C. They had no forts worth besieging</span></div>
                             </div>
                         </div>
-                        <div class="question-block">
+                        <div aria-hidden="true" class="question-block">
                             <p class="question-text">In your own words, what did the Deccan sultanates gain from the alliance at Talikota?</p>
                             <div class="answer-box filled">Mostly they got rid of Vijayanagara, which none of them could manage alone. But they went back to fighting each other almost straight away, so I would not call it much of an alliance. It solved one problem and left the actual one alone.</div>
                         </div>
-                        <div class="card submit-bar">
+                        <div aria-hidden="true" class="card submit-bar">
                             <span class="status-message">11 / 12 answered</span>
                             <span class="button primary">Submit quiz</span>
                         </div>
@@ -392,7 +394,7 @@
                     </div>
 
                     <div class="screen">
-                        <div class="results-hero">
+                        <div aria-hidden="true" class="results-hero">
                             <div class="score-stage">
                             <span class="score-deco-frame"></span>
                             <span class="score-orbit"><span class="score-blob-tr"></span><span class="score-blob-bl"></span></span>
@@ -410,7 +412,7 @@
                             <h2 class="results-headline">Solid work.</h2>
                             <p class="results-subtitle">You have the shape of it. Two of the written answers were thinner than the rest.</p>
                         </div>
-                        <div class="results-grid">
+                        <div aria-hidden="true" class="results-grid">
                             <div>
                                 <div class="card result-card">
                                     <div class="result-card-header">
@@ -459,7 +461,7 @@
                     </div>
 
                     <div class="screen">
-                        <div class="share-stage">
+                        <div aria-hidden="true" class="share-stage">
                             <div class="share-card">
                                 <div class="share-card-head">
                                     <img class="wordmark" src="parcourse-wordmark.svg" alt="Parcourse" width="103" height="28">
@@ -517,7 +519,7 @@
                     </div>
 
                     <div class="screen screen-graph">
-                        <div class="graph-toolbar">
+                        <div aria-hidden="true" class="graph-toolbar">
                             <div class="graph-granularity-pills">
                                 <span class="graph-pill">
                                     <svg class="graph-pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="12" r="6.5"/></svg>
@@ -544,7 +546,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="graph-canvas-wrap">
+                        <div aria-hidden="true" class="graph-canvas-wrap">
                             <svg class="graph-svg" viewBox="-270 -190 540 380">
                                 <g stroke-linecap="round">
                                     <line class="graph-edge" x1="0" y1="0" x2="-150" y2="-92"/>
@@ -605,7 +607,7 @@
                 </div>
             </div>
 
-            <div class="cue">
+            <div class="cue" aria-hidden="true">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
         </div>
@@ -626,7 +628,7 @@
                 <h2>Most links just work.</h2>
                 <p>A few things can happen on the way in, and each one is a screen you actually see rather than a footnote. Keep scrolling to walk through them.</p>
             </div>
-            <div class="cue">
+            <div class="cue" aria-hidden="true">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
         </section>
@@ -644,7 +646,7 @@
             </div>
 
             <div class="frame">
-                <div class="top-nav">
+                <div class="top-nav" aria-hidden="true">
                     <span class="top-nav-logo"><img src="parcourse-wordmark.svg" alt="Parcourse" width="103" height="28"></span>
                     <div class="top-nav-links">
                         <span data-nav="home">Home</span>
@@ -657,12 +659,12 @@
 
                 <div class="stage" data-nav-map="home,home,home,admin">
                     <div class="screen">
-                        <h2 class="home-title">What do you want to learn today?</h2>
-                        <div class="url-form url-form-inline">
+                        <h2 aria-hidden="true" class="home-title">What do you want to learn today?</h2>
+                        <div aria-hidden="true" class="url-form url-form-inline">
                             <span class="fake-input">youtube.com/watch?v=aH4MwZ6mlrw</span>
                             <span class="button primary">Create course</span>
                         </div>
-                        <div class="gen-pills-panel">
+                        <div aria-hidden="true" class="gen-pills-panel">
                             <div class="gen-pill blocked ask">
                                 <span class="gen-pill-left">
                                     <svg class="gen-pill-icon gen-pill-ask" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="M5.4 5.3a1.6 1.6 0 1 1 1.9 1.8V8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/><circle cx="7" cy="10.2" r="0.75" fill="currentColor"/></svg>
@@ -682,12 +684,12 @@
                     </div>
 
                     <div class="screen">
-                        <h2 class="home-title">What do you want to learn today?</h2>
-                        <div class="url-form url-form-inline">
+                        <h2 aria-hidden="true" class="home-title">What do you want to learn today?</h2>
+                        <div aria-hidden="true" class="url-form url-form-inline">
                             <span class="fake-input">youtube.com/watch?v=Qp3b1Rl6ffw</span>
                             <span class="button primary">Create course</span>
                         </div>
-                        <div class="gen-pills-panel">
+                        <div aria-hidden="true" class="gen-pills-panel">
                             <div class="gen-pill done"><span class="gen-pill-left"><svg class="gen-pill-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="currentColor" opacity="0.15"/><polyline points="4.5,8 7,10.5 11.5,5.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Extracting transcript</span></span></div>
                             <div class="gen-pill blocked">
                                 <span class="gen-pill-left">
@@ -711,13 +713,13 @@
                     </div>
 
                     <div class="screen">
-                        <h2 class="home-title">What do you want to learn today?</h2>
-                        <div class="url-form url-form-inline">
+                        <h2 aria-hidden="true" class="home-title">What do you want to learn today?</h2>
+                        <div aria-hidden="true" class="url-form url-form-inline">
                             <span class="fake-input">youtube.com/watch?v=dQw4w9WgXcQ</span>
                             <span class="button primary">Create course</span>
                         </div>
-                        <p class="home-hint" style="text-align:center">Best with tutorials, lectures and explainers.</p>
-                        <div class="toast-stage">
+                        <p aria-hidden="true" class="home-hint" style="text-align:center">Best with tutorials, lectures and explainers.</p>
+                        <div aria-hidden="true" class="toast-stage">
                             <span class="toast toast-error">This video's transcript couldn't be fetched, so try another video.</span>
                         </div>
 
@@ -728,20 +730,20 @@
                     </div>
 
                     <div class="screen">
-                        <div class="page-header">
+                        <div aria-hidden="true" class="page-header">
                             <div>
                                 <h2 class="page-header-title">Users</h2>
                                 <p class="page-header-sub">Usage across everyone on this instance.</p>
                             </div>
                             <span class="button primary small">Add user</span>
                         </div>
-                        <div class="admin-kpi-row">
+                        <div aria-hidden="true" class="admin-kpi-row">
                             <div class="admin-kpi"><b>6</b><span>People</span></div>
                             <div class="admin-kpi"><b>52</b><span>Courses</span></div>
                             <div class="admin-kpi"><b>318</b><span>Sections studied</span></div>
                         </div>
-                        <span class="user-group-label">Users</span>
-                        <div class="card user-table">
+                        <span aria-hidden="true" class="user-group-label">Users</span>
+                        <div aria-hidden="true" class="card user-table">
                             <div class="user-row">
                                 <span class="user-avatar">AR</span>
                                 <span class="user-info"><span class="user-row-name">Aarav</span><span class="user-row-email">aarav@example.com</span></span>
@@ -774,7 +776,7 @@
                 </div>
             </div>
 
-            <div class="cue">
+            <div class="cue" aria-hidden="true">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
         </div>
@@ -811,14 +813,14 @@
                     <p>Every course in a notebook is there because someone went and found it. That is the whole mechanism.</p>
                 </div>
             </div>
-            <div class="state-ticks">
+            <div class="state-ticks" aria-hidden="true">
                 <span class="state-tick"></span>
                 <span class="state-tick"></span>
                 <span class="state-tick"></span>
                 <span class="state-tick"></span>
                 <span class="state-tick"></span>
             </div>
-            <div class="cue">
+            <div class="cue" aria-hidden="true">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
         </div>
@@ -836,7 +838,7 @@
         <p>Parcourse does not host, mirror or re-upload anything, and it claims none of it. The video plays from YouTube in YouTube's own player, so watching it inside a course is watching it on YouTube, and the course around it is written from the transcript that already came with it.</p>
         <p>So if a video taught you something, go and subscribe to the person who made it, and support them with likes, comments and, if possible, direct donations, or however else they have asked to be supported. All Parcourse does is help you retain and understand what they taught you.</p>
         </div>
-        <div class="cue">
+        <div class="cue" aria-hidden="true">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
     </section>
@@ -857,7 +859,7 @@
                 <div class="tile"><span class="k">Ollama</span><span class="m">Local, no key</span></div>
                 <div class="tile"><span class="k">Anything else</span><span class="m">If LiteLLM reaches it</span></div>
             </div>
-            <div class="cue">
+            <div class="cue" aria-hidden="true">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
         </section>
@@ -870,7 +872,7 @@
                 <p>Both halves are published as container images, so nothing builds locally. The database is versioned with Alembic and migrates itself on start. Use the bundled Postgres or point it at one you already have, Supabase and Neon included.</p>
             </div>
             <div class="term">
-                <div class="term-top"><i></i><i></i><i></i><span class="lbl">Terminal</span></div>
+                <div class="term-top" aria-hidden="true"><i></i><i></i><i></i><span class="lbl">Terminal</span></div>
 <pre><span class="c"># nothing builds locally</span>
 cp .env.example .env
 docker compose -f docker-compose.ghcr.yml up -d
@@ -879,7 +881,7 @@ docker compose -f docker-compose.ghcr.yml up -d
 <span class="c"># first visit sets up the admin account</span></pre>
             </div>
         </div>
-        <div class="cue">
+        <div class="cue" aria-hidden="true">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
     </section>
@@ -897,7 +899,7 @@ docker compose -f docker-compose.ghcr.yml up -d
                 <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="16" y2="7"/></svg></span><h4>Documented properly</h4><p>Every setting it reads, and every deployment shape, on a docs site of its own.</p></div>
                 <div class="tile"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V7z"/><polyline points="9 12 11.5 14.5 15.5 10"/></svg></span><h4>Open source</h4><p>AGPL-3.0. Run it, change it, and share your changes if you offer it to others.</p></div>
             </div>
-            <div class="cue">
+            <div class="cue" aria-hidden="true">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
         </section>
@@ -933,6 +935,7 @@ docker compose -f docker-compose.ghcr.yml up -d
             <span><a href="https://dimwit.me" target="_blank" rel="noopener noreferrer">Dimwit Labs</a></span>
         </div>
     </section>
+    </main>
 
     <script>
         const THEME_KEY = 'parcourse_theme';
