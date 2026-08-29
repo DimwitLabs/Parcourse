@@ -7,7 +7,7 @@ import type { GenStep } from "../components/GenerationSteps";
 import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import { youTubeVideoId } from "../lib/youtube";
+import { youTubeVideoId, youTubeWatchUrl } from "../lib/youtube";
 import type { Chapter, CourseEntry, Segment } from "../lib/types";
 
 type Step = "idle" | "transcript" | "chapters-asked" | "guardrail" | "guardrail-blocked" | "generating";
@@ -48,9 +48,9 @@ export default function HomeScreen() {
   const [pending, setPending] = useState<PendingTranscript | null>(null);
   const [following, setFollowing] = useState<Chapter[]>([]);
   const [courses, setCourses] = useState<CourseEntry[] | null>(null);
-  // Fails closed: an unanswered status call shows the gate, not a dead submit.
   const [aiReady, setAiReady] = useState(false);
   const [fillOrigin, setFillOrigin] = useState({ x: "50%", y: "50%" });
+  const [handedOver, setHandedOver] = useState<string | null>(null);
   const rejection = useRef(0);
   const typedHint = useRef(0);
   const [hint, setHint] = useState(TYPED_HINTS[0]);
@@ -66,6 +66,14 @@ export default function HomeScreen() {
       .then((d: { ready: boolean }) => setAiReady(d.ready))
       .catch(() => setAiReady(false));
   }, [token]);
+
+  useEffect(() => {
+    const url = youTubeWatchUrl(new URLSearchParams(window.location.search).get("v") ?? "");
+    if (!url) return;
+    setVideoUrl(url);
+    setHandedOver(url);
+    window.history.replaceState(null, "", window.location.pathname);
+  }, []);
 
   const funMsg = useRotatingMessage(step === "generating", funMessages);
 
@@ -105,13 +113,13 @@ export default function HomeScreen() {
     await generate(video, chapters);
   }
 
-  async function createCourse() {
+  async function createCourse(url = videoUrl) {
     setFunMessages([...FALLBACK_MESSAGES]);
     try {
       setStep("transcript");
       const transcriptData = await apiFetch("/transcript/extract", token, {
         method: "POST",
-        body: JSON.stringify({ url: videoUrl }),
+        body: JSON.stringify({ url }),
       });
 
       const video: PendingTranscript = {
@@ -142,8 +150,6 @@ export default function HomeScreen() {
     setVideoUrl("");
   }
 
-  // Answering only decides what generation is told; the guardrail still has to
-  // run, so both answers rejoin the road the course was already on.
   async function answerChapters(chapters: Chapter[]) {
     if (!pending) return;
     try {
@@ -163,6 +169,13 @@ export default function HomeScreen() {
       setStep("idle");
     }
   }
+
+  useEffect(() => {
+    if (!handedOver || !aiReady || step !== "idle") return;
+    setHandedOver(null);
+    createCourse(handedOver);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handedOver, aiReady, step]);
 
   const busy = step !== "idle";
 
