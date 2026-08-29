@@ -1,5 +1,5 @@
 fastapi==0.141.1
-uvicorn[standard]==0.52.3
+uvicorn[standard]==0.52.4
 pydantic-settings==2.15.0
 sqlmodel==0.0.39
 alembic==1.19.1
@@ -8,5 +8,5 @@ bcrypt==5.0.0
 python-jose[cryptography]==3.5.0
 cryptography==50.0.0
 email-validator==2.3.0
-yt-dlp==2026.7.4
-litellm==1.96.2
+yt-dlp==2026.8.19
+litellm==1.98.0
