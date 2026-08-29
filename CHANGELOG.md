@@ -11,6 +11,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - **Full Screen Knowledge Graph:** The knowledge graph fills the window from a button in the corner of the canvas to view it properly as your nodes increase.
 - Better iconography, hierarchy and component for Fields, Topics and Skills selector.
 - The landing page deploys itself on every push to `main` rather than waiting for someone to go and pull it.
+- **Theme on the Landing Page:** A system, light and dark picker in the page's nav, remembered between visits, where the page used to follow the system only.
 
 ### Changed
 
