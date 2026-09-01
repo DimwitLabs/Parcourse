@@ -2,4 +2,4 @@
 frontend's package.json and the extension's manifest.json carry the same
 number by hand."""
 
-__version__ = "1.5.3"
+__version__ = "1.6.0"
