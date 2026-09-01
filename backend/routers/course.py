@@ -246,17 +246,17 @@ def get_course(
 @router.delete("/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_course(
     course_id: uuid.UUID,
-    cleanup_graph: bool = False,
+    keep_graph: bool = True,
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ) -> None:
-    logger.info("[course]: delete course_id=%s by user %s, cleanup_graph=%s", course_id, user.id, cleanup_graph)
+    logger.info("[course]: delete course_id=%s by user %s, keep_graph=%s", course_id, user.id, keep_graph)
     cached = session.get(CachedCourse, course_id)
     if cached is None or cached.user_id != user.id:
         logger.warning("[course]: course not found for deletion course_id=%s", course_id)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
 
-    unlink_course(session, user.id, course_id, prune_mastery=cleanup_graph)
+    unlink_course(session, user.id, course_id, prune_mastery=not keep_graph)
     for attempt in session.exec(select(QuizAttempt).where(QuizAttempt.course_id == course_id)).all():
         session.delete(attempt)
     for sp in session.exec(select(SectionProgress).where(SectionProgress.course_id == course_id)).all():

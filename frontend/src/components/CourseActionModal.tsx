@@ -23,7 +23,6 @@ export default function CourseActionModal({ action, course, onClose, onDeleted, 
   const navigate = useNavigate();
 
   const [busy, setBusy] = useState(false);
-  const [cleanupGraph, setCleanupGraph] = useState(false);
   const [keepNotes, setKeepNotes] = useState(true);
   const [keepGraph, setKeepGraph] = useState(true);
   const [feedback, setFeedback] = useState("");
@@ -33,7 +32,6 @@ export default function CourseActionModal({ action, course, onClose, onDeleted, 
   useEscapeKey(!!action, () => { if (!busy) close(); });
 
   function close() {
-    setCleanupGraph(false);
     setKeepNotes(true);
     setKeepGraph(true);
     setFeedback("");
@@ -45,7 +43,7 @@ export default function CourseActionModal({ action, course, onClose, onDeleted, 
     if (!course) return;
     setBusy(true);
     try {
-      const query = cleanupGraph ? "?cleanup_graph=true" : "";
+      const query = `?keep_graph=${keepGraph}`;
       await apiFetch(`/courses/${course.id}${query}`, token, { method: "DELETE" });
       close();
       onDeleted();
@@ -97,10 +95,10 @@ export default function CourseActionModal({ action, course, onClose, onDeleted, 
           <label className="modal-checkbox-row">
             <input
               type="checkbox"
-              checked={cleanupGraph}
-              onChange={(e) => setCleanupGraph(e.target.checked)}
+              checked={keepGraph}
+              onChange={(e) => setKeepGraph(e.target.checked)}
             />
-            <span>Also remove knowledge graph entries from this course</span>
+            <span>Keep Knowledge Graph entries</span>
           </label>
         )}
 
