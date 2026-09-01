@@ -1,5 +1,7 @@
 # Parcourse
 
+[![main](https://img.shields.io/github/actions/workflow/status/DimwitLabs/Parcourse/publish.yml?branch=main&label=main)](https://github.com/DimwitLabs/Parcourse/actions/workflows/publish.yml?query=branch%3Amain)
+[![development](https://img.shields.io/github/actions/workflow/status/DimwitLabs/Parcourse/publish.yml?branch=development&label=development)](https://github.com/DimwitLabs/Parcourse/actions/workflows/publish.yml?query=branch%3Adevelopment)
 [![AI-DECLARATION: copilot](https://img.shields.io/badge/䷼%20AI--DECLARATION-copilot-fee2e2?labelColor=fee2e2)](AI-DECLARATION.md)
 [![Dimwit Pledge](https://dimwit.me/pledge.svg)](https://dimwit.me/pledge)
 
