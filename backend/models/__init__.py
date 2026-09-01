@@ -1,4 +1,3 @@
-from models.cached_transcript import CachedTranscript
 from models.cheatsheet_cache import CachedCheatsheet, SheetStatus
 from models.course_cache import CachedCourse
 from models.instance_config import InstanceConfig, InstanceMode
@@ -19,7 +18,6 @@ from models.user import User, UserRole
 __all__ = [
     "CachedCheatsheet",
     "CachedCourse",
-    "CachedTranscript",
     "CourseKnowledgeNode",
     "CourseNote",
     "EdgeType",

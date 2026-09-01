@@ -81,6 +81,7 @@ def generate_course(
             status_code=status.HTTP_502_BAD_GATEWAY, detail=f"AI provider request failed: {exc}"
         ) from exc
 
+    segments = [s.model_dump() for s in body.segments]
     cached = CachedCourse(user_id=user.id, video_id=body.video_id, course_json=course.model_dump_json())
     session.add(cached)
     session.commit()
@@ -94,7 +95,7 @@ def generate_course(
         session.rollback()
 
     if cheatsheet.claim(session, cached.id):
-        background.add_task(cheatsheet.write_in_background, cached.id)
+        background.add_task(cheatsheet.write_in_background, cached.id, segments)
 
     return CourseResponsePublic.from_full(course, id=str(cached.id))
 

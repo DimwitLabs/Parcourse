@@ -14,7 +14,7 @@ from services.connection import resolve
 from services.transcript_text import format_transcript, sanitize_title
 from services.llm import complete_json
 from services.prompts import load
-from services.transcript import load_video
+from services.youtube import fetch_video
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ def _points_by_title(data: dict, course: CourseResponse) -> list[dict]:
     return sections
 
 
-def write(session: Session, course_id: uuid.UUID) -> None:
+def write(session: Session, course_id: uuid.UUID, segments: list[dict] | None) -> None:
     """Runs after the response has gone out, so it owns its own session and
     reports failure into the row rather than to anyone waiting."""
     row = session.get(CachedCheatsheet, course_id)
@@ -57,13 +57,15 @@ def write(session: Session, course_id: uuid.UUID) -> None:
             raise ValueError("the course has no owner")
         connection = resolve(session, user)
         course = CourseResponse.model_validate_json(cached.course_json)
-        video = load_video(session, course.video_id)
+        # A retry after a restart has outlived the fetch that made the course,
+        # and asking YouTube again is cheaper than having kept a copy.
+        spoken = segments if segments is not None else fetch_video(course.video_id).segments
 
         title_block = f"\nVideo title: {sanitize_title(course.video_title)}\n" if course.video_title else ""
         listed = "\n".join(f"{i + 1}. {s.title}" for i, s in enumerate(course.sections))
         prompt = _PROMPT.format(
             title_block=title_block,
-            formatted=format_transcript([TranscriptSegment(**s) for s in video.segments]),
+            formatted=format_transcript([TranscriptSegment(**s) for s in spoken]),
             sections=listed,
         )
         logger.info("[cheatsheet]: writing for course %s with model=%s", course_id, connection.model)
@@ -118,10 +120,11 @@ def read(session: Session, course_id: uuid.UUID) -> CachedCheatsheet | None:
     return session.get(CachedCheatsheet, course_id)
 
 
-def write_in_background(course_id: uuid.UUID) -> None:
+def write_in_background(course_id: uuid.UUID, segments: list[dict] | None = None) -> None:
     """The request session closes with the response, so the work that outlives
-    it opens one of its own."""
+    it opens one of its own. The transcript rides along rather than being stored
+    and read back: the fetch that made the course is the only one there is."""
     from database import engine
 
     with Session(engine) as session:
-        write(session, course_id)
+        write(session, course_id, segments)
