@@ -20,5 +20,7 @@ class Chapter(BaseModel):
 class TranscriptResponse(BaseModel):
     video_id: str
     video_title: str = ""
+    channel: str = ""
+    channel_url: str = ""
     segments: list[TranscriptSegment]
     chapters: list[Chapter] = []

@@ -22,6 +22,8 @@ export type Cheatsheet = {
   status: SheetStatus;
   title: string;
   videoId: string;
+  channel: string;
+  channelUrl: string;
   sections: CheatsheetSection[];
 };
 
@@ -35,6 +37,8 @@ type SourceSheet = {
   status: SheetStatus;
   video_id: string;
   video_title?: string;
+  channel?: string;
+  channel_url?: string;
   sections: SourceSection[];
 };
 
@@ -56,6 +60,8 @@ export function buildCheatsheet(sheet: SourceSheet): Cheatsheet {
     status: sheet.status,
     title: sheet.video_title?.trim() || "Untitled course",
     videoId: sheet.video_id,
+    channel: sheet.channel ?? "",
+    channelUrl: sheet.channel_url ?? "",
     sections: (sheet.sections ?? []).map((s, i) => ({
       number: i + 1,
       title: s.title,

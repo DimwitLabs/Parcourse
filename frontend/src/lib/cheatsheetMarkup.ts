@@ -1,7 +1,24 @@
 import { stampOf } from "./cheatsheet";
 import type { Cheatsheet } from "./cheatsheet";
+import { creditOf } from "./credit";
 import { escaped } from "./sheetText";
 import type { SheetSource } from "./sheetImage";
+
+function imprint(sheet: Cheatsheet) {
+  const credit = creditOf({
+    video_id: sheet.videoId,
+    video_title: sheet.title,
+    channel: sheet.channel,
+    channel_url: sheet.channelUrl,
+  });
+  const row = credit.named
+    ? `<dt>Creator</dt><dd><b>${escaped(credit.name)}</b></dd>`
+    : `<dt>Source</dt><dd>${escaped(credit.url.replace(/^https?:\/\//, ""))}</dd>`;
+  return `
+    <div class="cheatsheet-export-credit">
+      <dl class="source-imprint">${row}</dl>
+    </div>`;
+}
 
 function markup(sheet: Cheatsheet) {
   const sections = sheet.sections
@@ -26,6 +43,7 @@ function markup(sheet: Cheatsheet) {
       <span class="cheatsheet-export-eyebrow">Cheatsheet</span>
     </header>
     <h1 class="cheatsheet-export-course">${escaped(sheet.title)}</h1>
+    ${imprint(sheet)}
     <div class="cheatsheet-export-body">${sections}</div>
     <footer class="cheatsheet-export-footer">
       <span>Made with Parcourse</span>

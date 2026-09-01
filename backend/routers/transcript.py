@@ -32,6 +32,8 @@ def extract(
     return TranscriptResponse(
         video_id=video_id,
         video_title=video.title,
+        channel=video.channel,
+        channel_url=video.channel_url,
         segments=[TranscriptSegment(**s) for s in video.segments],
         chapters=[Chapter(**c) for c in video.chapters],
     )

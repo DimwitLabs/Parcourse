@@ -11,10 +11,10 @@ import { youTubeVideoId, youTubeWatchUrl } from "../lib/youtube";
 import type { Chapter, CourseEntry, Segment } from "../lib/types";
 
 type Step = "idle" | "transcript" | "chapters-asked" | "guardrail" | "guardrail-blocked" | "generating";
-type PendingTranscript = { videoId: string; videoTitle: string; segments: Segment[]; chapters: Chapter[] };
+type PendingTranscript = { videoId: string; videoTitle: string; channel: string; channelUrl: string; segments: Segment[]; chapters: Chapter[] };
 
 const GEN_STEPS: readonly GenStep[] = [
-  { key: "transcript", label: "Extracting transcript" },
+  { key: "transcript", label: "Gathering context" },
   { key: "guardrail", label: "Checking content" },
   { key: "generating", label: "Generating course" },
 ];
@@ -84,6 +84,8 @@ export default function HomeScreen() {
       body: JSON.stringify({
         video_id: video.videoId,
         video_title: video.videoTitle,
+        channel: video.channel,
+        channel_url: video.channelUrl,
         segments: video.segments,
         chapters,
       }),
@@ -132,6 +134,8 @@ export default function HomeScreen() {
       const video: PendingTranscript = {
         videoId: transcriptData.video_id,
         videoTitle: transcriptData.video_title ?? "",
+        channel: transcriptData.channel ?? "",
+        channelUrl: transcriptData.channel_url ?? "",
         segments: transcriptData.segments,
         chapters: transcriptData.chapters ?? [],
       };

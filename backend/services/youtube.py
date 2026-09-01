@@ -111,6 +111,8 @@ class Video:
     title: str
     segments: list[dict]
     chapters: list[dict] = field(default_factory=list)
+    channel: str = ""
+    channel_url: str = ""
 
 
 class TranscriptBlocked(Exception):
@@ -256,7 +258,13 @@ def _fetch_once(video_id: str) -> Video:
         len(chapters),
         video_id,
     )
-    return Video(title=info.get("title") or "", segments=segments, chapters=chapters)
+    return Video(
+        title=info.get("title") or "",
+        segments=segments,
+        chapters=chapters,
+        channel=info.get("channel") or info.get("uploader") or "",
+        channel_url=info.get("channel_url") or info.get("uploader_url") or "",
+    )
 
 
 def fetch_video(video_id: str) -> Video:
@@ -282,3 +290,22 @@ def fetch_video(video_id: str) -> Video:
                 raise
 
     raise TranscriptBlocked(_REFUSED)
+
+
+def fetch_channel(video_id: str) -> tuple[str, str]:
+    """Who published a video, without its captions. Courses made before the
+    creator was recorded are filled in from this, and a video whose captions
+    have since gone should still be able to name its author."""
+    logger.info("[youtube]: fetching channel for video %s", video_id)
+    try:
+        with YoutubeDL(_options()) as ydl:
+            info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
+    except Exception as exc:
+        logger.warning("[youtube]: could not read the channel for video %s: %s", video_id, exc)
+        return "", ""
+    if not info:
+        return "", ""
+    return (
+        info.get("channel") or info.get("uploader") or "",
+        info.get("channel_url") or info.get("uploader_url") or "",
+    )

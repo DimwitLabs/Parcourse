@@ -8,6 +8,8 @@ from schemas.transcript import Chapter, TranscriptSegment
 class CourseGenerateRequest(BaseModel):
     video_id: str
     video_title: str = ""
+    channel: str = ""
+    channel_url: str = ""
     feedback: str = ""
     segments: list[TranscriptSegment]
     chapters: list[Chapter] = []
@@ -45,6 +47,8 @@ class CourseSection(BaseModel):
 class CourseResponse(BaseModel):
     video_id: str
     video_title: str = ""
+    channel: str = ""
+    channel_url: str = ""
     thumbnail_url: str
     sections: list[CourseSection]
 
@@ -79,6 +83,8 @@ class CourseResponsePublic(BaseModel):
     id: str
     video_id: str
     video_title: str = ""
+    channel: str = ""
+    channel_url: str = ""
     thumbnail_url: str
     sections: list[CourseSectionPublic]
 
@@ -88,6 +94,8 @@ class CourseResponsePublic(BaseModel):
             id=id,
             video_id=course.video_id,
             video_title=course.video_title,
+            channel=course.channel,
+            channel_url=course.channel_url,
             thumbnail_url=course.thumbnail_url,
             sections=[
                 CourseSectionPublic(
@@ -136,4 +144,6 @@ class CheatsheetResponse(BaseModel):
     status: str
     video_id: str = ""
     video_title: str = ""
+    channel: str = ""
+    channel_url: str = ""
     sections: list[CheatsheetSection] = []

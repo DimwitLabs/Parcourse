@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import SourceCredit from "../components/SourceCredit";
 import { toast, useLoadingToast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { POLL_MS, buildCheatsheet, fileNameOf, watchUrl } from "../lib/cheatsheet";
 import type { Cheatsheet } from "../lib/cheatsheet";
+import { useCopyCredit } from "../lib/copyCredit";
+import { creditOf } from "../lib/credit";
 
 export default function CheatsheetScreen() {
   const { courseId } = useParams();
@@ -14,6 +17,17 @@ export default function CheatsheetScreen() {
   const [sheet, setSheet] = useState<Cheatsheet | null>(null);
   const [saving, setSaving] = useState<"pdf" | "png" | null>(null);
   const timer = useRef<number | null>(null);
+
+  const credit = sheet
+    ? creditOf({
+        video_id: sheet.videoId,
+        video_title: sheet.title,
+        channel: sheet.channel,
+        channel_url: sheet.channelUrl,
+      })
+    : null;
+
+  useCopyCredit(credit);
 
   useEffect(() => {
     if (!courseId) return;
@@ -67,11 +81,12 @@ export default function CheatsheetScreen() {
   const failed = sheet?.status === "failed";
 
   return (
-    <div className="cheatsheet-view">
+    <div className="cheatsheet-view" data-credit-scope>
       <div className="page-header cheatsheet-head">
         <div className="cheatsheet-head-text">
           <h1 className="page-header-title">Cheatsheet</h1>
-          <p className="page-header-sub">{sheet ? sheet.title : "Everything worth remembering, on one page."}</p>
+          <p className="page-header-sub">Everything worth remembering, on one page.</p>
+          {credit && <SourceCredit credit={credit} />}
         </div>
         <div className="cheatsheet-actions">
           <button className="button secondary" onClick={() => save("png")} disabled={!ready || saving !== null}>

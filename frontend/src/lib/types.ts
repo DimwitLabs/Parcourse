@@ -15,6 +15,8 @@ export type CourseEntry = {
   id: string;
   video_id: string;
   video_title: string;
+  channel: string;
+  channel_url: string;
   thumbnail_url: string;
   sections: CourseEntrySection[];
   completed_sections: number[];

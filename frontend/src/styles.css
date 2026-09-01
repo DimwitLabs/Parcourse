@@ -4926,6 +4926,81 @@ a.modal-field-hint {
   justify-content: flex-start;
 }
 
+.cheatsheet-head-text .source-credit {
+  margin-top: 0.6rem;
+}
+
+.course-view > .source-credit {
+  margin-top: 0.25rem;
+}
+
+.source-credit {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-high);
+  color: var(--color-ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.source-chip:hover {
+  background: var(--color-secondary-hover);
+}
+
+.source-chip svg {
+  flex-shrink: 0;
+  color: var(--color-ink-soft);
+}
+
+.source-credit-note {
+  font-size: 0.8rem;
+  color: var(--color-ink-faint);
+}
+
+.source-imprint {
+  margin: 0;
+  padding-top: 0.75rem;
+  border-top: 2px solid var(--color-ink);
+  display: grid;
+  grid-template-columns: 6rem 1fr;
+  gap: 0.35rem 1rem;
+}
+
+.source-imprint dt {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-ink-faint);
+  padding-top: 0.15rem;
+}
+
+.source-imprint dd {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.source-imprint dd b {
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.cheatsheet-export-credit {
+  margin-top: 1.5rem;
+}
+
 .cheatsheet-cta.disabled,
 .retake-btn.disabled {
   cursor: default;

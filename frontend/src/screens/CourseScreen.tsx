@@ -4,11 +4,14 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import CourseActionModal from "../components/CourseActionModal";
 import NotesDrawer from "../components/NotesDrawer";
+import SourceCredit from "../components/SourceCredit";
 import type { CourseAction } from "../components/CourseActionModal";
 import { toast, useLoadingToast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { CHEATSHEET_HINT, POLL_MS, stampOf } from "../lib/cheatsheet";
+import { useCopyCredit } from "../lib/copyCredit";
+import { creditOf } from "../lib/credit";
 import type { SheetStatus } from "../lib/cheatsheet";
 import { crossing } from "../lib/sections";
 import { shownScore } from "../lib/score";
@@ -43,6 +46,8 @@ type Course = {
   id: string;
   video_id: string;
   video_title: string;
+  channel: string;
+  channel_url: string;
   thumbnail_url: string;
   sections: Section[];
 };
@@ -77,6 +82,8 @@ export default function CourseScreen() {
   const quizBoxRef = useRef<HTMLDivElement>(null);
   const playerHost = useRef<HTMLDivElement>(null);
   const submitBarRef = useRef<HTMLDivElement>(null);
+
+  useCopyCredit(course ? creditOf(course) : null);
 
   useEffect(() => {
     if (!courseId) return;
@@ -353,8 +360,6 @@ export default function CourseScreen() {
     });
   }
 
-  // The card has to be inside whatever went fullscreen to be seen and clicked,
-  // so the stage holding both is what is asked to fill the screen.
   function toggleFullscreen() {
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     else videoStage.current?.requestFullscreen().catch(() => {});
@@ -378,6 +383,8 @@ export default function CourseScreen() {
   const goIcon = (
     <svg className="cheatsheet-cta-go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
   );
+
+  const credit = creditOf(course);
 
   const sidebarInner = (
     <>
@@ -476,7 +483,7 @@ export default function CourseScreen() {
       </aside>
 
       <div className="course-main">
-        <div className="course-view">
+        <div className="course-view" data-credit-scope>
           <div className="video-stage" ref={videoStage}>
             <div className="video-frame" ref={videoRef}>
               <div ref={playerHost} />
@@ -508,6 +515,8 @@ export default function CourseScreen() {
             </div>
           )}
           </div>
+
+          <SourceCredit credit={credit} />
 
           <h2 className="section-heading">Curriculum</h2>
 

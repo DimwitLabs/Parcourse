@@ -28,6 +28,7 @@ from schemas.course import (
 from services import cheatsheet
 from services.connection import NoConnectionError, resolve
 from services.course import generate
+from services.youtube import fetch_channel
 from services.knowledge_graph import ancestors, extract_and_merge
 
 logger = logging.getLogger(__name__)
@@ -74,6 +75,8 @@ def generate_course(
             body.video_title,
             body.feedback,
             body.chapters,
+            body.channel,
+            body.channel_url,
         )
     except Exception as exc:
         logger.error("[course]: AI generation failed for video_id=%s: %s", body.video_id, exc)
@@ -122,6 +125,8 @@ def get_cheatsheet(
             status=row.status.value if row else SheetStatus.pending.value,
             video_id=course.video_id,
             video_title=course.video_title,
+            channel=course.channel,
+            channel_url=course.channel_url,
         )
 
     stored = json.loads(row.sheet_json or "{}")
@@ -129,6 +134,8 @@ def get_cheatsheet(
         status=SheetStatus.ready.value,
         video_id=course.video_id,
         video_title=course.video_title,
+        channel=course.channel,
+        channel_url=course.channel_url,
         sections=[CheatsheetSection(**s) for s in stored.get("sections", [])],
     )
 
@@ -187,9 +194,34 @@ def list_courses(
     return results
 
 
+def name_the_creator(course_id: uuid.UUID) -> None:
+    """Courses built before the creator was recorded carry no name, so the
+    first time one is opened it is looked up and kept. Reading the course does
+    not wait for it: the credit is there on the next visit."""
+    from database import engine
+
+    with Session(engine) as session:
+        cached = session.get(CachedCourse, course_id)
+        if cached is None:
+            return
+        course = CourseResponse.model_validate_json(cached.course_json)
+        if course.channel:
+            return
+        channel, channel_url = fetch_channel(course.video_id)
+        if not channel:
+            return
+        course.channel = channel
+        course.channel_url = channel_url
+        cached.course_json = course.model_dump_json()
+        session.add(cached)
+        session.commit()
+        logger.info("[course]: filled in the creator for course %s", course_id)
+
+
 @router.get("/{course_id}", response_model=CourseResponsePublic)
 def get_course(
     course_id: uuid.UUID,
+    background: BackgroundTasks,
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ) -> CourseResponsePublic:
@@ -200,6 +232,8 @@ def get_course(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
 
     course = CourseResponse.model_validate_json(cached.course_json)
+    if not course.channel:
+        background.add_task(name_the_creator, cached.id)
     return CourseResponsePublic.from_full(course, id=str(cached.id))
 
 

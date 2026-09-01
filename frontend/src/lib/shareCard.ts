@@ -1,3 +1,4 @@
+import type { Credit } from "./credit";
 import { lightColors } from "./palette";
 
 const W = 1200;
@@ -34,6 +35,7 @@ export type SummaryRow = { tone: "good" | "warn"; text: string };
 
 export type CardData = {
   courseTitle: string;
+  credit: Credit;
   score: number;
   outOf: number;
   percentage: number;
@@ -189,9 +191,6 @@ function wordmark(): Promise<HTMLImageElement | null> {
 }
 
 export async function drawResultCard(data: CardData): Promise<Blob> {
-  // Everything the drawing needs is fetched before a word is measured. A face
-  // that arrives later would widen text that was measured in the fallback, and
-  // it would arrive during the wordmark's await.
   await Promise.all(FACES.map((f) => document.fonts?.load(f).catch(() => [])));
   if (document.fonts?.ready) await document.fonts.ready;
   const mark = await wordmark();
@@ -214,6 +213,12 @@ export async function drawResultCard(data: CardData): Promise<Blob> {
   c.font = "600 23px 'Plus Jakarta Sans', sans-serif";
   const rows = data.summary.map((r) => ({ ...r, lines: wrap(c, r.text, rowTextWidth) }));
 
+  const CREDIT_LABEL_W = 132;
+  const creditRows: [string, string][] = [];
+  if (data.credit.named) creditRows.push(["CREATOR", data.credit.name]);
+  else if (data.credit.url) creditRows.push(["SOURCE", data.credit.url.replace(/^https?:\/\//, "")]);
+  const creditH = creditRows.length ? 2 + 18 + creditRows.length * 34 : 0;
+
   const ANALYSIS_TEXT_X = PAD + 88;
   c.font = "italic 400 25px 'Plus Jakarta Sans', sans-serif";
   const analysisLines = data.analysis ? wrap(c, data.analysis, bodyWidth - 128) : [];
@@ -224,7 +229,8 @@ export async function drawResultCard(data: CardData): Promise<Blob> {
   const summaryH = rows.length ? 30 + 34 + 22 + rowsH + 30 : 0;
   const bandH = Math.max(summaryH, 340);
   const analysisH = analysisLines.length ? 46 + analysisLines.length * 42 + 36 : 0;
-  const H = PAD + headerH + titleH + 44 + bandH + (analysisH ? 40 + analysisH : 0) + PAD;
+  const H =
+    PAD + headerH + titleH + (creditH ? 22 + creditH : 0) + 44 + bandH + (analysisH ? 40 + analysisH : 0) + PAD;
   // Sizing the canvas resets the context, so the baseline is set again here
   // rather than once at the top.
   canvas.height = H;
@@ -264,6 +270,24 @@ export async function drawResultCard(data: CardData): Promise<Blob> {
   for (const line of titleLines) {
     c.fillText(line, PAD, y);
     y += 56;
+  }
+
+  if (creditH) {
+    y += 22;
+    c.fillStyle = col().INK;
+    c.fillRect(PAD, y, bodyWidth, 2);
+    y += 18;
+    for (const [label, value] of creditRows) {
+      c.fillStyle = col().INK_FAINT;
+      c.font = "800 17px 'Plus Jakarta Sans', sans-serif";
+      c.letterSpacing = "2px";
+      c.fillText(label, PAD, y + 5);
+      c.letterSpacing = "0px";
+      c.fillStyle = label === "CREATOR" ? col().PRIMARY : col().INK;
+      c.font = `${label === "CREATOR" ? 800 : 500} 24px 'Plus Jakarta Sans', sans-serif`;
+      c.fillText(value, PAD + CREDIT_LABEL_W, y);
+      y += 34;
+    }
   }
 
   y += 44;

@@ -8,6 +8,7 @@ import { CHEATSHEET_HINT } from "../lib/cheatsheet";
 import { download } from "../lib/download";
 import type { SheetStatus } from "../lib/cheatsheet";
 import { MASTERY_PCT, shownScore } from "../lib/score";
+import { creditOf } from "../lib/credit";
 import { drawResultCard } from "../lib/shareCard";
 import type { SummaryRow } from "../lib/shareCard";
 
@@ -31,7 +32,10 @@ type QuizResult = {
 type MCQOption = { label: string; text: string };
 type Course = {
   id: string;
+  video_id: string;
   video_title?: string;
+  channel?: string;
+  channel_url?: string;
   sections: {
     mcqs: { id: string; question: string; options: MCQOption[] }[];
     theory_questions: { id: string; question: string }[];
@@ -62,8 +66,6 @@ type Counts = {
   skipped: number;
 };
 
-// One source for the summary, so the page and the card it is shared as cannot
-// drift apart.
 function countsOf(result: QuizResult, pct: number): Counts {
   const skipped = (r: QuestionResult) => r.feedback === "Question was skipped.";
   const mcqs = result.results.filter((r) => r.question_type === "mcq");
@@ -103,7 +105,6 @@ function trackLength(filled: number): number {
 }
 
 const SWEEP_MS = 1100;
-// The tick has finished drawing by now, which is the moment the news lands.
 const TICK_MS = 620;
 
 export default function QuizResultsScreen() {
@@ -115,8 +116,6 @@ export default function QuizResultsScreen() {
   const [params] = useSearchParams();
   const attemptId = params.get("attempt");
   const [data, setData] = useState<{ result: QuizResult; course: Course } | null>(
-    // An attempt asked for by name is never the one just submitted, so the
-    // state left behind by the submit is not what should be shown.
     attemptId ? null : ((location.state as { result: QuizResult; course: Course } | undefined) ?? null),
   );
   const [notFound, setNotFound] = useState(false);
@@ -235,6 +234,7 @@ export default function QuizResultsScreen() {
     const cardPct = Math.round(shownNow.percentage);
     return {
       courseTitle: data!.course.video_title || "A Parcourse course",
+      credit: creditOf(data!.course),
       score: shownNow.score,
       outOf: shownNow.outOf,
       percentage: cardPct,
