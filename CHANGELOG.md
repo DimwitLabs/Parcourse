@@ -4,6 +4,25 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Clearer Attribution:** Showcase the creator and have a link to their channel in every place. It's always important to keep the creator front and center for us.
+- **Cleaner Regeneration:** A course is rebuilt where it stands rather than deleted and made again. It keeps its id, so your notes and its place in the knowledge graph can be kept, each behind its own toggle.
+
+### Changed
+
+- Regenerating a course clears its quiz answers, drafts, scores and section progress.
+
+### Fixed
+
+- A course listed against a concept in the knowledge graph is named by its video rather than by its opening section.
+
+### Removed
+
+- A transcript is fetched once, used for the course and its cheatsheet, and then discarded from memory, never to be stored.
+
 ## [1.5.3] - 2026-08-30
 
 ### Added
