@@ -30,8 +30,17 @@ services:
       - JWT_SECRET=${JWT_SECRET:-change-this-in-production}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY:-uvSAXyWG429v7tYFyht42Jud0v--hr42pitofMf0pTY=}
       - CORS_ORIGINS=${CORS_ORIGINS:-["http://localhost:5173"]}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
   frontend:
+    depends_on:
+      backend:
+        condition: service_healthy
     image: ghcr.io/dimwitlabs/parcourse-frontend:${PARCOURSE_VERSION:-latest}
     pull_policy: always
     restart: unless-stopped
