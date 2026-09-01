@@ -1,4 +1,3 @@
-import json
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -9,6 +8,7 @@ from dependencies import get_current_user, require_admin
 from models.course_cache import CachedCourse
 from models.knowledge_graph import CourseKnowledgeNode, KnowledgeEdge, KnowledgeNode, UserKnowledgeProgress
 from models.user import User
+from schemas.course import CourseResponse
 from schemas.knowledge_graph import CourseRef, EdgeOut, ForgottenNodes, KnowledgeGraphResponse, NodeOut
 from services.knowledge_graph import falling
 
@@ -46,11 +46,17 @@ def _build_graph(session: Session, user_id: uuid.UUID, with_courses: bool = True
         course_title: dict[uuid.UUID, str] = {}
         for c in courses:
             try:
-                data = json.loads(c.course_json)
-                sections = data.get("sections") or []
-                course_title[c.id] = sections[0]["title"] if sections else "Untitled"
+                course = CourseResponse.model_validate_json(c.course_json)
             except Exception:
                 course_title[c.id] = "Untitled"
+                continue
+            # A course is known by its video, the same as everywhere else. Its
+            # opening section stands in only where the video went unnamed.
+            course_title[c.id] = (
+                course.video_title.strip()
+                or (course.sections[0].title if course.sections else "")
+                or "Untitled"
+            )
         for lnk in links:
             if lnk.node_id in node_courses and lnk.course_id in course_title:
                 node_courses[lnk.node_id].append(
