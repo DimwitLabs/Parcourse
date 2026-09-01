@@ -23,6 +23,26 @@ from routers.knowledge_graph import _build_graph
 BONDS = uuid.uuid4()
 
 
+def a_course_named(title: str, video_id: str) -> dict:
+    """What the app actually stores: a whole CourseResponse, not the two fields
+    the graph happens to read."""
+    return {
+        "video_id": video_id,
+        "video_title": title,
+        "thumbnail_url": f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg",
+        "sections": [
+            {
+                "title": f"{title} section",
+                "summary": "",
+                "start_seconds": 0.0,
+                "end_seconds": 60.0,
+                "mcqs": [],
+                "theory_questions": [],
+            }
+        ],
+    }
+
+
 def session_with_a_shared_concept():
     """Two people who have both met the same concept, each through their own
     course, which is the only arrangement where the leak is visible."""
@@ -52,8 +72,7 @@ def session_with_a_shared_concept():
         course = CachedCourse(
             user_id=owner.id,
             video_id=title[:8],
-            video_title=title,
-            course_json=json.dumps({"sections": [{"title": title}]}),
+            course_json=json.dumps(a_course_named(title, title[:8])),
         )
         session.add(course)
         session.flush()
