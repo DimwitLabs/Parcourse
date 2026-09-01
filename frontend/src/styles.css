@@ -3088,6 +3088,13 @@ body {
   flex-direction: column;
 }
 
+.modal-checkbox-pair {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
 .modal-checkbox-row {
   display: flex;
   align-items: center;

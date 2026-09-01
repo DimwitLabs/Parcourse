@@ -2,16 +2,12 @@ import { useEffect, useState } from "react";
 
 export type GenStep = { key: string; label: string };
 
-/** Regeneration clears the old course first, and skips the guardrail: the video
- *  already passed it once. */
 export const REGEN_STEPS: readonly GenStep[] = [
-  { key: "clearing", label: "Clearing the old course" },
-  { key: "transcript", label: "Extracting transcript" },
-  { key: "generating", label: "Generating course" },
+  { key: "generating", label: "Rebuilding your course" },
 ];
 
 /** "" while the modal is still asking for feedback. */
-export type RegenStep = "" | "clearing" | "transcript" | "generating";
+export type RegenStep = "" | "generating";
 
 export const FALLBACK_MESSAGES = [
   "Warming up the neurons…",

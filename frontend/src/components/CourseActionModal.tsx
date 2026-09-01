@@ -6,7 +6,6 @@ import type { RegenStep } from "./GenerationSteps";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { useEscapeKey } from "../lib/useEscapeKey";
-import type { Segment } from "../lib/types";
 
 export type CourseAction = "delete" | "regenerate";
 
@@ -25,6 +24,8 @@ export default function CourseActionModal({ action, course, onClose, onDeleted, 
 
   const [busy, setBusy] = useState(false);
   const [cleanupGraph, setCleanupGraph] = useState(false);
+  const [keepNotes, setKeepNotes] = useState(true);
+  const [keepGraph, setKeepGraph] = useState(true);
   const [feedback, setFeedback] = useState("");
   const [step, setStep] = useState<RegenStep>("");
   const message = useRotatingMessage(step === "generating", FALLBACK_MESSAGES);
@@ -33,6 +34,8 @@ export default function CourseActionModal({ action, course, onClose, onDeleted, 
 
   function close() {
     setCleanupGraph(false);
+    setKeepNotes(true);
+    setKeepGraph(true);
     setFeedback("");
     setStep("");
     onClose();
@@ -57,28 +60,13 @@ export default function CourseActionModal({ action, course, onClose, onDeleted, 
     if (!course) return;
     setBusy(true);
     try {
-      setStep("clearing");
-      await apiFetch(`/courses/${course.id}`, token, { method: "DELETE" });
-
-      setStep("transcript");
-      const transcript = await apiFetch("/transcript/extract", token, {
-        method: "POST",
-        body: JSON.stringify({ url: `https://www.youtube.com/watch?v=${course.video_id}` }),
-      });
-      const segments: Segment[] = transcript.segments;
-
       setStep("generating");
-      const created = await apiFetch("/courses/generate", token, {
+      const made = await apiFetch(`/courses/${course.id}/regenerate`, token, {
         method: "POST",
-        body: JSON.stringify({
-          video_id: course.video_id,
-          video_title: transcript.video_title ?? "",
-          feedback,
-          segments,
-        }),
+        body: JSON.stringify({ feedback, keep_notes: keepNotes, keep_graph: keepGraph }),
       });
       close();
-      navigate(`/course/${created.id}`);
+      navigate(`/course/${made.id}`);
     } catch (err) {
       onError(errMsg(err));
       setStep("");
@@ -101,7 +89,7 @@ export default function CourseActionModal({ action, course, onClose, onDeleted, 
           <p style={{ margin: "0 0 1rem", color: "var(--color-ink-soft)" }}>
             {deleting
               ? "This will permanently delete this course and all associated quiz data."
-              : "This will delete the current course and regenerate it from scratch using the same video."}
+              : "This will rebuild the course from the same video. Quiz answers, scores and progress are cleared."}
           </p>
         )}
 
@@ -131,6 +119,19 @@ export default function CourseActionModal({ action, course, onClose, onDeleted, 
               Required. Your feedback feeds straight into the new course generation.
             </span>
           </label>
+        )}
+
+        {!deleting && !step && (
+          <div className="modal-checkbox-pair">
+            <label className="modal-checkbox-row">
+              <input type="checkbox" checked={keepNotes} onChange={(e) => setKeepNotes(e.target.checked)} />
+              <span>Retain my notes</span>
+            </label>
+            <label className="modal-checkbox-row">
+              <input type="checkbox" checked={keepGraph} onChange={(e) => setKeepGraph(e.target.checked)} />
+              <span>Keep Knowledge Graph entries</span>
+            </label>
+          </div>
         )}
 
         {step && <GenerationSteps steps={REGEN_STEPS} current={step} note={message} />}

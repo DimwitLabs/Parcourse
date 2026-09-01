@@ -11,7 +11,6 @@ from database import get_session
 from dependencies import get_current_user
 from models.cheatsheet_cache import CachedCheatsheet, SheetStatus
 from models.course_cache import CachedCourse
-from models.knowledge_graph import CourseKnowledgeNode, EdgeType, KnowledgeEdge, UserKnowledgeProgress
 from models.note import CourseNote
 from models.quiz_attempt import QuizAttempt
 from models.quiz_draft import QuizDraft
@@ -25,11 +24,12 @@ from schemas.course import (
     CourseResponse,
     CourseResponsePublic,
 )
+from schemas.transcript import Chapter, TranscriptSegment
 from services import cheatsheet
 from services.connection import NoConnectionError, resolve
 from services.course import generate
-from services.youtube import fetch_channel
-from services.knowledge_graph import ancestors, extract_and_merge
+from services.knowledge_graph import extract_and_merge, unlink_course
+from services.youtube import TranscriptBlocked, fetch_channel, fetch_video
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +37,12 @@ logger = logging.getLogger(__name__)
 class DraftPayload(BaseModel):
     mcq_answers: dict[str, str] = {}
     theory_answers: dict[str, str] = {}
+
+
+class RegeneratePayload(BaseModel):
+    feedback: str = ""
+    keep_notes: bool = True
+    keep_graph: bool = True
 
 router = APIRouter(prefix="/courses", tags=["courses"])
 
@@ -250,39 +256,7 @@ def delete_course(
         logger.warning("[course]: course not found for deletion course_id=%s", course_id)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
 
-    links = session.exec(select(CourseKnowledgeNode).where(CourseKnowledgeNode.course_id == course_id)).all()
-
-    if cleanup_graph:
-        losing = set()
-        for link in links:
-            # A course the user still holds is the only thing keeping a
-            # concept alive, so ask that rather than keeping a tally.
-            still_reached = session.exec(
-                select(CourseKnowledgeNode.course_id)
-                .join(CachedCourse, CachedCourse.id == CourseKnowledgeNode.course_id)
-                .where(
-                    CourseKnowledgeNode.node_id == link.node_id,
-                    CourseKnowledgeNode.course_id != course_id,
-                    CachedCourse.user_id == user.id,
-                )
-            ).first()
-            if still_reached is None:
-                losing.add(link.node_id)
-
-        owned = {
-            p.node_id: p
-            for p in session.exec(
-                select(UserKnowledgeProgress).where(UserKnowledgeProgress.user_id == user.id)
-            ).all()
-        }
-        for node_id in losing - ancestors(session, set(owned) - losing):
-            progress = owned.get(node_id)
-            if progress is not None:
-                session.delete(progress)
-        session.flush()
-
-    for link in links:
-        session.delete(link)
+    unlink_course(session, user.id, course_id, prune_mastery=cleanup_graph)
     for attempt in session.exec(select(QuizAttempt).where(QuizAttempt.course_id == course_id)).all():
         session.delete(attempt)
     for sp in session.exec(select(SectionProgress).where(SectionProgress.course_id == course_id)).all():
@@ -304,6 +278,98 @@ def delete_course(
     session.delete(cached)
     session.commit()
     logger.info("[course]: deleted course_id=%s", course_id)
+
+
+@router.post("/{course_id}/regenerate", response_model=CourseResponsePublic)
+def regenerate_course(
+    course_id: uuid.UUID,
+    body: RegeneratePayload,
+    background: BackgroundTasks,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> CourseResponsePublic:
+    """Rebuilds a course in place. The id survives, so what the reader wrote and
+    what they learned can survive with it, while everything scored against the
+    old questions cannot and is cleared."""
+    logger.info("[course]: regenerate requested for course_id=%s by user %s", course_id, user.id)
+    cached = session.get(CachedCourse, course_id)
+    if cached is None or cached.user_id != user.id:
+        logger.warning("[course]: course not found for regeneration course_id=%s", course_id)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+
+    try:
+        connection = resolve(session, user)
+    except NoConnectionError as exc:
+        logger.warning("[course]: no API key for user %s", user.id)
+        raise HTTPException(status_code=status.HTTP_412_PRECONDITION_FAILED, detail=str(exc)) from exc
+    model = connection.model
+
+    try:
+        video = fetch_video(cached.video_id)
+    except TranscriptBlocked as exc:
+        logger.error("[course]: youtube blocked this server for video_id=%s", cached.video_id)
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
+    except ValueError as exc:
+        logger.warning("[course]: could not read video_id=%s: %s", cached.video_id, exc)
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from exc
+
+    segments = [TranscriptSegment(**s) for s in video.segments]
+    try:
+        course = generate(
+            cached.video_id,
+            segments,
+            connection.credentials,
+            model,
+            video.title,
+            body.feedback,
+            [Chapter(**c) for c in video.chapters],
+            video.channel,
+            video.channel_url,
+        )
+    except Exception as exc:
+        logger.error("[course]: AI regeneration failed for course_id=%s: %s", course_id, exc)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY, detail=f"AI provider request failed: {exc}"
+        ) from exc
+
+    # Answers, drafts and scores all point at questions this course no longer
+    # asks, so none of them can be carried across.
+    for attempt in session.exec(select(QuizAttempt).where(QuizAttempt.course_id == course_id)).all():
+        session.delete(attempt)
+    for progress in session.exec(select(SectionProgress).where(SectionProgress.course_id == course_id)).all():
+        session.delete(progress)
+    draft = session.exec(
+        select(QuizDraft).where(QuizDraft.course_id == course_id, QuizDraft.user_id == user.id)
+    ).first()
+    if draft:
+        session.delete(draft)
+    sheet = session.get(CachedCheatsheet, course_id)
+    if sheet:
+        session.delete(sheet)
+    if not body.keep_notes:
+        note = session.get(CourseNote, course_id)
+        if note:
+            session.delete(note)
+    if not body.keep_graph:
+        unlink_course(session, user.id, course_id, prune_mastery=True)
+
+    cached.course_json = course.model_dump_json()
+    cached.created_at = datetime.now(timezone.utc)
+    session.add(cached)
+    session.commit()
+    session.refresh(cached)
+    logger.info("[course]: regenerated course_id=%s", course_id)
+
+    try:
+        extract_and_merge(session, user.id, cached.id, course, course.video_id, connection.credentials, model)
+    except Exception:
+        logger.exception("Knowledge graph extraction failed for course %s", cached.id)
+        session.rollback()
+
+    if cheatsheet.claim(session, cached.id):
+        background.add_task(cheatsheet.write_in_background, cached.id, video.segments)
+
+    return CourseResponsePublic.from_full(course, id=str(cached.id))
 
 
 @router.get("/{course_id}/progress", response_model=list[int])

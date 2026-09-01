@@ -5,6 +5,7 @@ from sqlmodel import Session, select
 
 
 logger = logging.getLogger(__name__)
+from models.course_cache import CachedCourse
 from models.knowledge_graph import (
     CourseKnowledgeNode,
     EdgeType,
@@ -165,3 +166,43 @@ def falling(session: Session, node_id: uuid.UUID, owned: set[uuid.UUID]) -> set[
                 spared = True
                 break
     return going
+
+
+def unlink_course(session: Session, user_id: uuid.UUID, course_id: uuid.UUID, prune_mastery: bool) -> None:
+    """Takes a course's concepts out of the graph. With prune_mastery the user
+    also loses standing in concepts no other course of theirs still reaches,
+    which is what "forget this course entirely" means."""
+    links = session.exec(select(CourseKnowledgeNode).where(CourseKnowledgeNode.course_id == course_id)).all()
+
+    if prune_mastery:
+        losing = set()
+        for link in links:
+            # A course the user still holds is the only thing keeping a
+            # concept alive, so ask that rather than keeping a tally.
+            still_reached = session.exec(
+                select(CourseKnowledgeNode.course_id)
+                .join(CachedCourse, CachedCourse.id == CourseKnowledgeNode.course_id)
+                .where(
+                    CourseKnowledgeNode.node_id == link.node_id,
+                    CourseKnowledgeNode.course_id != course_id,
+                    CachedCourse.user_id == user_id,
+                )
+            ).first()
+            if still_reached is None:
+                losing.add(link.node_id)
+
+        owned = {
+            p.node_id: p
+            for p in session.exec(
+                select(UserKnowledgeProgress).where(UserKnowledgeProgress.user_id == user_id)
+            ).all()
+        }
+        for node_id in losing - ancestors(session, set(owned) - losing):
+            progress = owned.get(node_id)
+            if progress is not None:
+                session.delete(progress)
+        session.flush()
+
+    for link in links:
+        session.delete(link)
+    session.flush()
