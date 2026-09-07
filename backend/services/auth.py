@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 import bcrypt
 from jose import JWTError, jwt
 
-from config import settings
+from config import JWT_SECRET, settings
 
 logger = logging.getLogger(__name__)
 
@@ -34,12 +34,12 @@ def create_token(user_id: uuid.UUID, role: str) -> str:
     logger.info("[auth]: creating token for user %s with role %s", user_id, role)
     expire = datetime.now(timezone.utc) + timedelta(hours=settings.jwt_expiry_hours)
     payload = {"sub": str(user_id), "role": role, "exp": expire}
-    return jwt.encode(payload, settings.jwt_secret, algorithm="HS256")
+    return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
 
 
 def decode_token(token: str) -> dict | None:
     try:
-        payload = jwt.decode(token, settings.jwt_secret, algorithms=["HS256"])
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
         logger.info("[auth]: token decoded successfully for user %s", payload.get("sub"))
         return payload
     except JWTError:

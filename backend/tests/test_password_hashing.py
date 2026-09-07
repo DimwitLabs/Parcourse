@@ -6,7 +6,7 @@ import os
 import unittest
 
 os.environ.setdefault("JWT_SECRET", "test-secret")
-os.environ.setdefault("ENCRYPTION_KEY", "uvSAXyWG429v7tYFyht42Jud0v--hr42pitofMf0pTY=")
+os.environ.setdefault("ENCRYPTION_KEY", "Ml4v57Co5JT1bqiqQ5ybWBg5Iq1eRVCDhKTxF4ITsIE=")
 
 from services.auth import hash_password, verify_password  # noqa: E402
 

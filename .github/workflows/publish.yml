@@ -33,7 +33,7 @@ jobs:
         working-directory: backend
         env:
           JWT_SECRET: test-secret
-          ENCRYPTION_KEY: uvSAXyWG429v7tYFyht42Jud0v--hr42pitofMf0pTY=
+          ENCRYPTION_KEY: Ml4v57Co5JT1bqiqQ5ybWBg5Iq1eRVCDhKTxF4ITsIE=
         run: python -m unittest discover -s tests
 
       - uses: actions/setup-node@v7

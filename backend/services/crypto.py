@@ -2,11 +2,11 @@ import logging
 
 from cryptography.fernet import Fernet
 
-from config import settings
+from config import ENCRYPTION_KEY
 
 logger = logging.getLogger(__name__)
 
-_fernet = Fernet(settings.encryption_key.encode())
+_fernet = Fernet(ENCRYPTION_KEY.encode())
 
 
 def encrypt(value: str) -> str:

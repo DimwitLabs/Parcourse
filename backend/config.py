@@ -5,6 +5,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 _PLAIN_PREFIXES = ("postgresql://", "postgres://")
 _SCHEMA_RE = re.compile(r"^[a-z_][a-z0-9_]*$")
 _LOG_LEVELS = ("debug", "info", "warning", "error", "critical")
+_PUBLISHED_JWT_SECRET = "change-this-in-production"
+_PUBLISHED_ENCRYPTION_KEY = "uvSAXyWG429v7tYFyht42Jud0v--hr42pitofMf0pTY="
 
 
 class Settings(BaseSettings):
@@ -51,6 +53,18 @@ def _checked_log_level(name: str) -> str:
     return name.upper()
 
 
+def _checked_secret(name: str, value: str, published: str, generate: str) -> str:
+    """An instance that kept the published value has none of the protection it
+    thinks it has: its tokens can be forged and its stored keys read. Refusing
+    to start is how the operator finds out before someone else does."""
+    if value.strip() in ("", published):
+        raise ValueError(
+            f"{name} is empty or still the value Parcourse used to ship. "
+            f"Generate one with: {generate}"
+        )
+    return value
+
+
 YTDLP_PROXY = settings.ytdlp_proxy.strip()
 VPN_CONTROL_URL = settings.vpn_control_url.strip().rstrip("/")
 VPN_ROTATIONS = max(0, settings.vpn_rotations)
@@ -60,3 +74,12 @@ IS_POSTGRES = DATABASE_URL.startswith("postgresql")
 # extensions in public still resolve. Only Postgres has schemas.
 SCHEMA = _checked_schema(settings.db_schema) if IS_POSTGRES else None
 LOG_LEVEL = _checked_log_level(settings.log_level)
+JWT_SECRET = _checked_secret(
+    "JWT_SECRET", settings.jwt_secret, _PUBLISHED_JWT_SECRET, "openssl rand -hex 32"
+)
+ENCRYPTION_KEY = _checked_secret(
+    "ENCRYPTION_KEY",
+    settings.encryption_key,
+    _PUBLISHED_ENCRYPTION_KEY,
+    'python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"',
+)
