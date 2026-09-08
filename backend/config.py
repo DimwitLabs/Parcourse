@@ -57,12 +57,13 @@ def _checked_secret(name: str, value: str, published: str, generate: str) -> str
     """An instance that kept the published value has none of the protection it
     thinks it has: its tokens can be forged and its stored keys read. Refusing
     to start is how the operator finds out before someone else does."""
-    if value.strip() in ("", published):
+    cleaned = value.strip()
+    if cleaned in ("", published):
         raise ValueError(
             f"{name} is empty or still the value Parcourse used to ship. "
             f"Generate one with: {generate}"
         )
-    return value
+    return cleaned
 
 
 YTDLP_PROXY = settings.ytdlp_proxy.strip()
