@@ -6,6 +6,7 @@ from sqlmodel import Session, func, select
 
 logger = logging.getLogger(__name__)
 
+from config import OIDC_ENABLED
 from database import get_session
 from dependencies import require_admin
 from models.course_cache import CachedCourse
@@ -45,19 +46,28 @@ def create_user(
         logger.warning("[users]: email already in use: %s", body.email)
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already in use")
 
+    # Without single sign-on there would be no way left to reach the account.
+    if body.password is None and not OIDC_ENABLED:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="A password is required unless single sign-on is configured",
+        )
+
     user = User(
         email=body.email,
-        hashed_password=hash_password(body.password),
+        hashed_password=hash_password(body.password) if body.password else None,
         role=UserRole.student,
         first_name=body.first_name,
         last_name=body.last_name,
-        must_change_password=True,
+        # Only a password somebody else chose has to be changed. An account
+        # that reaches itself through the provider has nothing to change.
+        must_change_password=body.password is not None,
     )
     session.add(user)
     session.commit()
     session.refresh(user)
     logger.info("[users]: created user id=%s", user.id)
-    return UserResponse(**user.model_dump())
+    return UserResponse(**user.model_dump(), has_password=user.hashed_password is not None)
 
 
 @router.get("", response_model=list[UserWithUsage])

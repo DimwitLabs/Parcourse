@@ -32,6 +32,13 @@ def _linked(session: Session, issuer: str, subject: str) -> User | None:
 
 def _link(session: Session, user: User, issuer: str, subject: str) -> None:
     session.add(UserIdentity(user_id=user.id, issuer=issuer, subject=subject))
+
+    if user.must_change_password:
+        logger.info("[oidc]: dropping the placeholder password on %s", user.email)
+        user.hashed_password = None
+        user.must_change_password = False
+        session.add(user)
+
     logger.info("[oidc]: linked %s to subject %s at %s", user.email, subject, issuer)
 
 
@@ -50,9 +57,6 @@ def resolve(session: Session, claims: dict) -> User:
 
     existing = session.exec(select(User).where(User.email == email)).first()
     if existing is not None:
-        # Only a provider that says it checked the address may claim an account
-        # by it. Otherwise anyone able to type an email at a sloppy provider
-        # could sign in as its owner.
         if claims.get("email_verified") is not True:
             raise OidcError(f"An account already uses {email}, and the provider did not verify that address")
         _link(session, existing, issuer, subject)

@@ -53,7 +53,7 @@ def update_profile(
     session.commit()
     session.refresh(user)
     logger.info("[settings]: profile updated for user %s", user.id)
-    return UserResponse(**user.model_dump())
+    return UserResponse(**user.model_dump(), has_password=user.hashed_password is not None)
 
 
 @router.get("/providers", response_model=list[ProviderResponse])

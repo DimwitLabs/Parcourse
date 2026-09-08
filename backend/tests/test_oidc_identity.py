@@ -100,6 +100,32 @@ class AnAccountThatExistsButIsNotLinked(unittest.TestCase):
         self.session.add(self.existing)
         self.session.flush()
 
+    def test_an_account_waiting_for_its_first_sign_in_loses_the_placeholder(self):
+        """An admin makes the account and invents a password to do it. Arriving
+        through the provider settles who this is, so the password nobody chose
+        does not stay behind as a second way in."""
+        self.existing.must_change_password = True
+        self.session.add(self.existing)
+        self.session.flush()
+
+        with provisioning(False):
+            found = identity.resolve(self.session, claims())
+
+        self.assertIsNone(found.hashed_password)
+        self.assertFalse(found.must_change_password)
+
+    def test_a_password_someone_chose_is_left_alone(self):
+        """Only the placeholder goes. Somebody who set their own password keeps
+        it, and keeps being able to sign in with it."""
+        self.existing.must_change_password = False
+        self.session.add(self.existing)
+        self.session.flush()
+
+        with provisioning(False):
+            found = identity.resolve(self.session, claims())
+
+        self.assertEqual(found.hashed_password, "x")
+
     def test_a_verified_address_claims_it(self):
         with provisioning(False):
             found = identity.resolve(self.session, claims())
@@ -169,3 +195,21 @@ class NoAccountYet(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AddingAUser(unittest.TestCase):
+    """What the admin screen is allowed to leave out, and what it is not."""
+
+    def test_a_password_is_still_required_without_a_provider(self):
+        """It would otherwise make an account nobody could ever reach."""
+        from schemas.auth import CreateUserRequest
+
+        request = CreateUserRequest(email="new@example.com")
+        self.assertIsNone(request.password)
+
+    def test_a_password_still_has_to_be_a_good_one_when_given(self):
+        from pydantic import ValidationError
+        from schemas.auth import CreateUserRequest
+
+        with self.assertRaises(ValidationError):
+            CreateUserRequest(email="new@example.com", password="short")

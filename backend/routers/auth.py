@@ -75,7 +75,7 @@ def login(body: LoginRequest, session: Session = Depends(get_session)) -> TokenR
 
 @router.get("/me", response_model=UserResponse)
 def me(user: User = Depends(get_current_user)) -> UserResponse:
-    return UserResponse(**user.model_dump())
+    return UserResponse(**user.model_dump(), has_password=user.hashed_password is not None)
 
 
 @router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT)
@@ -85,6 +85,14 @@ def change_password(
     session: Session = Depends(get_session),
 ) -> None:
     logger.info("[auth]: password change requested for user_id=%s", user.id)
+    if user.hashed_password is not None:
+        if verify_password(body.current_password or "", user.hashed_password) is False:
+            logger.warning("[auth]: password change refused, wrong current password for %s", user.id)
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="That is not your current password",
+            )
+
     user.hashed_password = hash_password(body.password)
     user.must_change_password = False
     session.add(user)

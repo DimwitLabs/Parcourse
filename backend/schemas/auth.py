@@ -49,7 +49,7 @@ class LoginRequest(BaseModel):
 
 class CreateUserRequest(BaseModel):
     email: EmailStr
-    password: PasswordStr
+    password: PasswordStr | None = None
     first_name: str | None = None
     last_name: str | None = None
 
@@ -71,10 +71,16 @@ class UserResponse(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
     must_change_password: bool = False
+    # So the app knows whether to ask for a current password, and whether to
+    # offer setting one at all.
+    has_password: bool = True
 
 
 class ChangePasswordRequest(BaseModel):
     password: PasswordStr
+    # Left out only by an account that has no password to prove: one that signs
+    # in through a provider and is adding a password for the first time.
+    current_password: str | None = None
 
 
 class UserWithUsage(BaseModel):
