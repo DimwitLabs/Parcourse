@@ -4,6 +4,17 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2026-09-05
+
+### Added
+
+- **Chrome Extension:** You can now add the official [Parcourse Extension](https://chromewebstore.google.com/detail/parcourse/mfbdlecghmjmdafjfhnckjjhpjdonolg) to Chrome or Chromium-based browsers instead of loading the folder yourself.
+
+### Security
+
+- **Set Your Own Secrets:** The compose files no longer carry a working `ENCRYPTION_KEY`. Every instance that never set one was encrypting its stored provider keys with a value published in this repository, and any instance that kept `JWT_SECRET=change-this-in-production` could have its sign-in tokens forged. Both are now required, and the app refuses to start with either the old published value.
+- Your instance will not start after this upgrade until you have set both. `.env.example` has the command to generate each one sitting above it. A fresh `ENCRYPTION_KEY` leaves the provider API keys already stored unreadable, so enter those again afterwards; a fresh `JWT_SECRET` signs everyone out, and nothing worse.
+
 ## [1.6.0] - 2026-09-02
 
 ### Added
