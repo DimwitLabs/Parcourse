@@ -62,7 +62,7 @@ COMPOSE_FILE=docker-compose.yml:docker-compose.oidc.yml
 
 Swap the first name for whichever file you started with, such as `docker-compose.ghcr.yml`.
 
-A **Continue with SSO** button then appears on the login screen. Set `OIDC_NAME` to change what it says, for example `OIDC_NAME=Acme ID`.
+A **Continue with SSO** button then appears on the login screen. `OIDC_NAME` fills in the blank, so `OIDC_NAME=Acme ID` gives you **Continue with Acme ID**. If that shape is not the sentence you want, `OIDC_LABEL` sets the whole button instead, for example `OIDC_LABEL=Sign in with your Acme account`. Setting both is fine; the label is the more specific of the two, so it wins.
 
 If you set some of these four and not others, nothing starts and you are told which one is missing. This is deliberate: a half-configured provider would otherwise look fine until somebody pressed the button.
 

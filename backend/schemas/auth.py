@@ -96,6 +96,8 @@ class SetupStatusResponse(BaseModel):
 class OidcConfig(BaseModel):
     enabled: bool
     name: str
+    # The finished button text, so the page never has to assemble it.
+    button: str
     only: bool = False
 
 

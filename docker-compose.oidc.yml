@@ -18,6 +18,7 @@ services:
       - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET:?the secret that came with the client id}
       - OIDC_REDIRECT_URL=${OIDC_REDIRECT_URL:?register this with your provider, exactly as written}
       - OIDC_NAME=${OIDC_NAME:-SSO}
+      - OIDC_LABEL=${OIDC_LABEL:-}
       - OIDC_POST_LOGIN_URL=${OIDC_POST_LOGIN_URL:-}
       - OIDC_AUTO_PROVISION=${OIDC_AUTO_PROVISION:-false}
       - OIDC_ONLY=${OIDC_ONLY:-false}

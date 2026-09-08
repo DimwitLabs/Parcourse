@@ -654,6 +654,13 @@ body {
   justify-content: center;
 }
 
+.login-sso-note {
+  margin: 0.9rem 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+}
+
 .link-button {
   appearance: none;
   border: none;

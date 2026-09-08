@@ -5,7 +5,7 @@ import ThemeSwitch from "../components/ThemeSwitch";
 import { toast } from "../components/Toast";
 import { errMsg } from "../lib/api";
 import { API_BASE_URL, useAuth } from "../lib/auth";
-import { passwordsAllowed, providerEnabled, providerName, useSso } from "../lib/sso";
+import { passwordsAllowed, providerButton, providerEnabled, providerName, providerOnly, useSso } from "../lib/sso";
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -27,6 +27,7 @@ export default function LoginScreen() {
   }
 
   const showPasswordForm = passwordsAllowed(sso);
+  const ssoIsTheWayIn = providerOnly(sso);
 
   return (
     <div className="login-page">
@@ -71,9 +72,17 @@ export default function LoginScreen() {
         {providerEnabled(sso) && (
           <div className="login-sso">
             {showPasswordForm && <div className="login-divider"><span>or</span></div>}
-            <a className="button secondary login-submit" href={`${API_BASE_URL}/auth/oidc/start`}>
-              Continue with {providerName(sso)}
+            <a
+              className={`button ${ssoIsTheWayIn ? "primary" : "secondary"} login-submit`}
+              href={`${API_BASE_URL}/auth/oidc/start`}
+            >
+              {providerButton(sso)}
             </a>
+            {ssoIsTheWayIn && (
+              <p className="login-sso-note">
+                {providerName(sso)} handles the sign-in and brings you straight back here.
+              </p>
+            )}
           </div>
         )}
 

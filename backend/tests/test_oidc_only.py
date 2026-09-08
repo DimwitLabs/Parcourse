@@ -17,7 +17,12 @@ from fastapi import HTTPException  # noqa: E402
 from sqlalchemy import event  # noqa: E402
 from sqlmodel import Session, create_engine, select  # noqa: E402
 
-from config import _checked_oidc_only, _checked_post_login_url, _checked_secret  # noqa: E402
+from config import (  # noqa: E402
+    _checked_oidc_only,
+    _checked_post_login_url,
+    _checked_secret,
+    _oidc_button,
+)
 from models.base import SQLModelBase  # noqa: E402
 from models.instance_config import InstanceMode  # noqa: E402
 from models.user import User, UserRole  # noqa: E402
@@ -249,6 +254,21 @@ class SettingTheInstanceUp(unittest.TestCase):
                     SetupRequest(email="admin@example.com", mode=InstanceMode.multi), self.session
                 )
         self.assertEqual(caught.exception.status_code, 422)
+
+
+class WhatTheButtonSays(unittest.TestCase):
+    def test_the_name_fills_in_the_blank(self):
+        self.assertEqual(_oidc_button("", "Acme ID"), "Continue with Acme ID")
+
+    def test_a_label_replaces_the_whole_sentence(self):
+        self.assertEqual(
+            _oidc_button("Sign in with your Acme account", "Acme ID"),
+            "Sign in with your Acme account",
+        )
+
+    def test_setting_both_keeps_the_more_specific_one(self):
+        """Refusing to start over a button's wording would be a poor trade."""
+        self.assertEqual(_oidc_button("Staff sign-in", "Acme ID"), "Staff sign-in")
 
 
 if __name__ == "__main__":

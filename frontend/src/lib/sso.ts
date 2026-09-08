@@ -5,12 +5,18 @@ import { API_BASE_URL } from "./auth";
 export type Sso = {
   enabled: boolean;
   name: string;
+  button: string;
   only: boolean;
 };
 
 export type SsoState = Sso | "loading" | "unreachable";
 
-const FALLBACK: Sso = { enabled: false, name: "SSO", only: false };
+const FALLBACK: Sso = {
+  enabled: false,
+  name: "SSO",
+  button: "Continue with SSO",
+  only: false,
+};
 
 let pending: Promise<SsoState> | null = null;
 
@@ -49,6 +55,15 @@ export function passwordsAllowed(sso: SsoState): boolean {
 
 export function providerName(sso: SsoState): string {
   return sso === "loading" || sso === "unreachable" ? FALLBACK.name : sso.name;
+}
+
+export function providerButton(sso: SsoState): string {
+  return sso === "loading" || sso === "unreachable" ? FALLBACK.button : sso.button;
+}
+
+// The provider is the whole way in: no password form to fall back on.
+export function providerOnly(sso: SsoState): boolean {
+  return providerEnabled(sso) && passwordsAllowed(sso) === false;
 }
 
 export function ssoSettled(sso: SsoState): boolean {

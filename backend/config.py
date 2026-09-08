@@ -25,11 +25,13 @@ class Settings(BaseSettings):
     oidc_client_id: str = ""
     oidc_client_secret: str = ""
     oidc_name: str = "SSO"
+    oidc_label: str = ""
     oidc_redirect_url: str = ""
     oidc_post_login_url: str = ""
     oidc_auto_provision: bool = False
     oidc_only: bool = False
     oidc_scopes: str = "openid email profile"
+
 
 settings = Settings()
 
@@ -90,6 +92,13 @@ def _checked_oidc_only(only: bool, enabled: bool) -> bool:
     return only
 
 
+def _oidc_button(label: str, name: str) -> str:
+    """What the sign-in button says. OIDC_NAME covers the common case by
+    filling in the blank; OIDC_LABEL is there for when the whole sentence
+    matters, and it wins because it is the more specific of the two."""
+    return label or f"Continue with {name}"
+
+
 def _checked_post_login_url(url: str, origins: list[str], enabled: bool) -> str:
     """A blank one sends the browser to the API's own origin, where the app is
     not served, so the sign-in appears to hang on a page nobody wrote."""
@@ -139,6 +148,7 @@ OIDC_ENABLED = _checked_oidc(OIDC_ISSUER)
 OIDC_CLIENT_ID = settings.oidc_client_id.strip()
 OIDC_CLIENT_SECRET = settings.oidc_client_secret.strip()
 OIDC_NAME = settings.oidc_name.strip() or "SSO"
+OIDC_BUTTON = _oidc_button(settings.oidc_label.strip(), OIDC_NAME)
 OIDC_REDIRECT_URL = settings.oidc_redirect_url.strip()
 OIDC_SCOPES = settings.oidc_scopes.strip()
 OIDC_AUTO_PROVISION = settings.oidc_auto_provision

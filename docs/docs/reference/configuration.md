@@ -61,7 +61,8 @@ Leave `OIDC_ISSUER` empty and none of this applies. Set it and the next three ar
 | `OIDC_CLIENT_ID` | empty | The client your provider registered for Parcourse. |
 | `OIDC_CLIENT_SECRET` | empty | The secret that came with it. |
 | `OIDC_REDIRECT_URL` | empty | Where the provider sends the browser back. Must match what you registered, exactly. |
-| `OIDC_NAME` | `SSO` | What the button on the login screen says. |
+| `OIDC_NAME` | `SSO` | Fills the blank in "Continue with ___" on the login screen. |
+| `OIDC_LABEL` | _(empty)_ | The whole login button, when "Continue with ..." is not the wording you want. Wins over `OIDC_NAME`. |
 | `OIDC_POST_LOGIN_URL` | first `CORS_ORIGINS` entry | Where the browser lands once signed in. |
 | `OIDC_AUTO_PROVISION` | `false` | Whether an unknown address gets an account instead of being turned away. |
 | `OIDC_ONLY` | `false` | The provider is the only way in. No password form, and no password an admin can set. Needs `OIDC_ISSUER`. |
