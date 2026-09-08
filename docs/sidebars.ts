@@ -26,6 +26,7 @@ const sidebars: SidebarsConfig = {
         "self-hosting/providers",
         "self-hosting/users",
         "self-hosting/upgrading",
+        "self-hosting/backups",
         "self-hosting/troubleshooting",
       ],
     },
