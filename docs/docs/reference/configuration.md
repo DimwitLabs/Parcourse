@@ -51,6 +51,20 @@ Leave `DATABASE_URL` unset when using the bundled database. Setting it as well a
 Till v1.6.0, `VITE_API_BASE_URL` used to be compiled into the app. This was changed to avoid rebuilding the app again and again.
 :::
 
+## Single Sign-On
+
+Leave `OIDC_ISSUER` empty and none of this applies. Set it and the next three are required; the backend refuses to start otherwise. [Single Sign-On](/self-hosting/single-sign-on) covers the setup.
+
+| Variable | Default | What it does |
+| --- | --- | --- |
+| `OIDC_ISSUER` | empty | The provider's base address. Its discovery document supplies every endpoint. |
+| `OIDC_CLIENT_ID` | empty | The client your provider registered for Parcourse. |
+| `OIDC_CLIENT_SECRET` | empty | The secret that came with it. |
+| `OIDC_REDIRECT_URL` | empty | Where the provider sends the browser back. Must match what you registered, exactly. |
+| `OIDC_NAME` | `SSO` | What the button on the login screen says. |
+| `OIDC_POST_LOGIN_URL` | first `CORS_ORIGINS` entry | Where the browser lands once signed in. |
+| `OIDC_AUTO_PROVISION` | `false` | Whether an unknown address gets an account instead of being turned away. |
+
 ## Fetching Transcripts
 
 | Variable | Default | What it does |
