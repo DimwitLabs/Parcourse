@@ -90,7 +90,7 @@ def change_password(
             logger.warning("[auth]: password change refused, wrong current password for %s", user.id)
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="That is not your current password",
+                detail="Incorrect current password",
             )
 
     user.hashed_password = hash_password(body.password)

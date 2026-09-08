@@ -32,6 +32,28 @@ export default function SettingsScreen() {
       .catch(() => {});
   }, [token, user?.role]);
 
+  useEffect(() => {
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+  }, [tab]);
+
+  const showNew = hasPassword === false || currentPassword.length > 0;
+  const showConfirm = showNew && newPassword.length > 0;
+
+  function changeCurrent(v: string) {
+    setCurrentPassword(v);
+    if (v.length === 0) {
+      setNewPassword("");
+      setConfirmPassword("");
+    }
+  }
+
+  function changeNew(v: string) {
+    setNewPassword(v);
+    if (v.length === 0) setConfirmPassword("");
+  }
+
   const policyProblem = newPassword.length > 0 ? passwordError(newPassword) : null;
   const mismatch = confirmPassword.length > 0 && newPassword !== confirmPassword;
   const passwordProblem = policyProblem ?? (mismatch ? "Those passwords do not match." : null);
@@ -148,30 +170,36 @@ export default function SettingsScreen() {
                       placeholder="Current password"
                       autoComplete="current-password"
                       value={currentPassword}
-                      onChange={setCurrentPassword}
+                      onChange={changeCurrent}
                       disabled={passwordSaving}
                       boxed
                     />
                   )}
-                  <PasswordInput
-                    placeholder="New password"
-                    autoComplete="new-password"
-                    value={newPassword}
-                    onChange={setNewPassword}
-                    disabled={passwordSaving}
-                    boxed
-                  />
-                  <PasswordInput
-                    placeholder="Confirm new password"
-                    autoComplete="new-password"
-                    value={confirmPassword}
-                    onChange={setConfirmPassword}
-                    disabled={passwordSaving}
-                    boxed
-                  />
-                  <span className={`modal-field-hint${passwordProblem ? " is-error" : ""}`}>
-                    {passwordProblem ?? PASSWORD_RULE}
-                  </span>
+                  {showNew && (
+                    <PasswordInput
+                      placeholder="New password"
+                      autoComplete="new-password"
+                      value={newPassword}
+                      onChange={changeNew}
+                      disabled={passwordSaving}
+                      boxed
+                    />
+                  )}
+                  {showConfirm && (
+                    <PasswordInput
+                      placeholder="Confirm new password"
+                      autoComplete="new-password"
+                      value={confirmPassword}
+                      onChange={setConfirmPassword}
+                      disabled={passwordSaving}
+                      boxed
+                    />
+                  )}
+                  {showNew && (
+                    <span className={`modal-field-hint${passwordProblem ? " is-error" : ""}`}>
+                      {passwordProblem ?? PASSWORD_RULE}
+                    </span>
+                  )}
                   <button className="button primary" type="submit" disabled={canSavePassword === false}>
                     {passwordSaving ? "Saving…" : hasPassword ? "Change password" : "Set password"}
                   </button>

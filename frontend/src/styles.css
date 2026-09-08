@@ -3207,6 +3207,23 @@ body {
   gap: 0.65rem;
 }
 
+.password-form > * {
+  animation: password-reveal 0.18s ease-out;
+}
+
+@keyframes password-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-0.35rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .password-form > * {
+    animation: none;
+  }
+}
+
 .password-input-boxed {
   display: flex;
   align-items: center;
