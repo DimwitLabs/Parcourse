@@ -3,7 +3,9 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
-from jose import JWTError, jwt
+from joserfc import jwt
+from joserfc.errors import JoseError
+from joserfc.jwk import OctKey
 
 from config import JWT_SECRET, settings
 
@@ -31,18 +33,23 @@ def verify_password(password: str, hashed_password: str | None) -> bool:
     return result
 
 
+_KEY = OctKey.import_key(JWT_SECRET)
+_CLAIMS = jwt.JWTClaimsRegistry()
+
+
 def create_token(user_id: uuid.UUID, role: str) -> str:
     logger.info("[auth]: creating token for user %s with role %s", user_id, role)
     expire = datetime.now(timezone.utc) + timedelta(hours=settings.jwt_expiry_hours)
-    payload = {"sub": str(user_id), "role": role, "exp": expire}
-    return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+    payload = {"sub": str(user_id), "role": role, "exp": int(expire.timestamp())}
+    return jwt.encode({"alg": "HS256"}, payload, _KEY)
 
 
 def decode_token(token: str) -> dict | None:
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-        logger.info("[auth]: token decoded successfully for user %s", payload.get("sub"))
-        return payload
-    except JWTError:
-        logger.warning("[auth]: token decode failed — invalid or expired token")
+        decoded = jwt.decode(token, _KEY, algorithms=["HS256"])
+        _CLAIMS.validate(decoded.claims)
+    except (JoseError, ValueError) as exc:
+        logger.warning("[auth]: token decode failed — %s", exc)
         return None
+    logger.info("[auth]: token decoded successfully for user %s", decoded.claims.get("sub"))
+    return decoded.claims
