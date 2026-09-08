@@ -15,7 +15,7 @@ class UserRole(str, Enum):
 class User(SQLModelBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     email: str = Field(unique=True, index=True)
-    hashed_password: str
+    hashed_password: str | None = Field(default=None)
     role: UserRole = Field(default=UserRole.student)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     first_name: str | None = Field(default=None)

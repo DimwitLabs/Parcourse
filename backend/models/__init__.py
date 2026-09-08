@@ -14,6 +14,7 @@ from models.quiz_attempt import QuizAttempt
 from models.quiz_draft import QuizDraft
 from models.section_progress import SectionProgress
 from models.user import User, UserRole
+from models.user_identity import UserIdentity
 
 __all__ = [
     "CachedCheatsheet",
@@ -31,6 +32,7 @@ __all__ = [
     "SectionProgress",
     "SheetStatus",
     "User",
+    "UserIdentity",
     "UserKnowledgeProgress",
     "UserRole",
 ]
