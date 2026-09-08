@@ -22,6 +22,14 @@ Generate the encryption key with:
 python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 ```
 
+## Sessions
+
+| Variable | Default | What it does |
+| --- | --- | --- |
+| `JWT_EXPIRY_HOURS` | `24` | How long a sign-in lasts before the person signs in again. |
+
+A session already handed out keeps its original lifetime, so shortening this only applies from the next sign-in onwards.
+
 ## Database
 
 | Variable | Default | What it does |

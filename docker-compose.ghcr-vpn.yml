@@ -31,6 +31,7 @@ services:
       - VPN_CONTROL_URL=${VPN_CONTROL_URL:-http://vpn:8000}
       - VPN_ROTATIONS=${VPN_ROTATIONS:-2}
       - JWT_SECRET=${JWT_SECRET:?generate one, see .env.example}
+      - JWT_EXPIRY_HOURS=${JWT_EXPIRY_HOURS:-24}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY:?generate one, see .env.example}
       - CORS_ORIGINS=${CORS_ORIGINS:-["http://localhost:5173"]}
 
