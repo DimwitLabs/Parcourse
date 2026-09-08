@@ -3201,6 +3201,29 @@ body {
   gap: 0.65rem;
 }
 
+.password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.password-input-boxed {
+  display: flex;
+  align-items: center;
+  background: var(--color-surface-low);
+  border-radius: var(--radius-full);
+  padding: 0.85rem 1.5rem;
+}
+
+.password-input-boxed .icon-btn {
+  margin: -0.45rem -0.75rem -0.45rem 0.5rem;
+}
+
+.password-form .button {
+  align-self: flex-start;
+  margin-top: 0.35rem;
+}
+
 .profile-row {
   display: grid;
   grid-template-columns: 1fr 1fr auto;

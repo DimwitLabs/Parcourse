@@ -1,15 +1,23 @@
 import { useEffect, useState } from "react";
 
+import PasswordInput from "../components/PasswordInput";
 import ProviderForm from "../components/ProviderForm";
 import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { PASSWORD_RULE, passwordError } from "../lib/password";
 
 type Tab = "api-key" | "account";
 
 export default function SettingsScreen() {
-  const { token, user } = useAuth();
+  const { token, user, setUser } = useAuth();
   const [tab, setTab] = useState<Tab>("api-key");
+
+  const hasPassword = user?.has_password !== false;
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordSaving, setPasswordSaving] = useState(false);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -23,6 +31,38 @@ export default function SettingsScreen() {
       })
       .catch(() => {});
   }, [token, user?.role]);
+
+  const policyProblem = newPassword.length > 0 ? passwordError(newPassword) : null;
+  const mismatch = confirmPassword.length > 0 && newPassword !== confirmPassword;
+  const passwordProblem = policyProblem ?? (mismatch ? "Those passwords do not match." : null);
+  const canSavePassword =
+    passwordError(newPassword) === null &&
+    newPassword === confirmPassword &&
+    (hasPassword ? currentPassword.length > 0 : true) &&
+    passwordSaving === false;
+
+  async function savePassword() {
+    if (canSavePassword === false) return;
+    setPasswordSaving(true);
+    try {
+      await apiFetch("/auth/change-password", token, {
+        method: "POST",
+        body: JSON.stringify({
+          password: newPassword,
+          current_password: hasPassword ? currentPassword : null,
+        }),
+      });
+      if (user) setUser({ ...user, has_password: true, must_change_password: false });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      toast(hasPassword ? "Password changed" : "Password set", "success");
+    } catch (err) {
+      toast(errMsg(err), "error");
+    } finally {
+      setPasswordSaving(false);
+    }
+  }
 
   async function saveProfile() {
     setProfileSaving(true);
@@ -85,6 +125,57 @@ export default function SettingsScreen() {
                     {profileSaving ? "Saving…" : "Save"}
                   </button>
                 </div>
+              </div>
+
+              <div className="card settings-section">
+                <h2 className="settings-section-title">
+                  {hasPassword ? "Change Password" : "Set a Password"}
+                </h2>
+                <p className="settings-section-desc">
+                  {hasPassword
+                    ? "You will stay signed in on this device."
+                    : "You sign in through your provider. Setting a password gives you a second way in, for when the provider is unavailable."}
+                </p>
+                <form
+                  className="password-form"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    savePassword();
+                  }}
+                >
+                  {hasPassword && (
+                    <PasswordInput
+                      placeholder="Current password"
+                      autoComplete="current-password"
+                      value={currentPassword}
+                      onChange={setCurrentPassword}
+                      disabled={passwordSaving}
+                      boxed
+                    />
+                  )}
+                  <PasswordInput
+                    placeholder="New password"
+                    autoComplete="new-password"
+                    value={newPassword}
+                    onChange={setNewPassword}
+                    disabled={passwordSaving}
+                    boxed
+                  />
+                  <PasswordInput
+                    placeholder="Confirm new password"
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={setConfirmPassword}
+                    disabled={passwordSaving}
+                    boxed
+                  />
+                  <span className={`modal-field-hint${passwordProblem ? " is-error" : ""}`}>
+                    {passwordProblem ?? PASSWORD_RULE}
+                  </span>
+                  <button className="button primary" type="submit" disabled={canSavePassword === false}>
+                    {passwordSaving ? "Saving…" : hasPassword ? "Change password" : "Set password"}
+                  </button>
+                </form>
               </div>
 
               <div className="card settings-section">

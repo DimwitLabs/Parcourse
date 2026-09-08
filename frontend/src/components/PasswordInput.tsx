@@ -8,17 +8,21 @@ export default function PasswordInput({
   value,
   onChange,
   disabled,
+  /** The login screen wants its outlined pill. Everywhere else the field sits
+   * among ordinary boxed inputs and should look like one of them. */
+  boxed = false,
 }: {
   placeholder: string;
   autoComplete: string;
   value: string;
   onChange: (v: string) => void;
   disabled?: boolean;
+  boxed?: boolean;
 }) {
   const [shown, setShown] = useState(false);
 
   return (
-    <div className="login-input-pill">
+    <div className={boxed ? "password-input-boxed" : "login-input-pill"}>
       <input
         className="text-input"
         type={shown ? "text" : "password"}

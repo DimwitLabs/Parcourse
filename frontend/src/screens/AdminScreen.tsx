@@ -6,7 +6,7 @@ import PasswordField from "../components/PasswordField";
 import { toast, useLoadingToast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { generatePassword, passwordError } from "../lib/password";
-import { useAuth } from "../lib/auth";
+import { API_BASE_URL, useAuth } from "../lib/auth";
 import { useEscapeKey } from "../lib/useEscapeKey";
 
 type UserWithUsage = {
@@ -33,6 +33,17 @@ export default function AdminScreen() {
   const [newFirstName, setNewFirstName] = useState("");
   const [newLastName, setNewLastName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [sso, setSso] = useState<{ enabled: boolean; name: string } | null>(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/auth/config`)
+      .then((res) => res.json())
+      .then((data) => setSso(data.oidc ?? null))
+      .catch(() => setSso(null));
+  }, []);
+
+  const signsInWithProvider = sso?.enabled === true;
+  const readyToAdd = signsInWithProvider ? true : passwordError(newPassword) === null;
 
   useEscapeKey(showAdd, () => { if (!busy) setShowAdd(false); });
 
@@ -84,7 +95,7 @@ export default function AdminScreen() {
         method: "POST",
         body: JSON.stringify({
           email: newEmail,
-          password: newPassword,
+          password: signsInWithProvider ? null : newPassword,
           first_name: newFirstName || null,
           last_name: newLastName || null,
         }),
@@ -266,18 +277,30 @@ export default function AdminScreen() {
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
               />
-              <PasswordField
-                value={newPassword}
-                onChange={setNewPassword}
-                disabled={busy}
-                hint="Name is optional. Share this password with the user. They will be asked to change it on first sign in."
-              />
+              {signsInWithProvider ? (
+                <p className="modal-field-hint" style={{ textAlign: "left", padding: "0 0.35rem" }}>
+                  Name is optional. They sign in with {sso?.name}, so there is no password to set or
+                  to send them. Give them one later from this screen if they ever need to sign in
+                  without the provider.
+                </p>
+              ) : (
+                <PasswordField
+                  value={newPassword}
+                  onChange={setNewPassword}
+                  disabled={busy}
+                  hint="Name is optional. Share this password with the user. They will be asked to change it on first sign in."
+                />
+              )}
             </div>
             <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "1.25rem" }}>
               <button className="button secondary" onClick={() => setShowAdd(false)}>
                 Cancel
               </button>
-              <button className="button primary" onClick={addUser} disabled={busy || !newEmail || !!passwordError(newPassword)}>
+              <button
+                className="button primary"
+                onClick={addUser}
+                disabled={busy || newEmail.length === 0 || readyToAdd === false}
+              >
                 {busy ? "Adding…" : "Add"}
               </button>
             </div>

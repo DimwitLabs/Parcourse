@@ -11,7 +11,7 @@ export const API_BASE_URL =
 
 const TOKEN_KEY = "parcourse_token";
 
-export type UserInfo = { id: string; email: string; role: "admin" | "student"; first_name?: string; last_name?: string; must_change_password?: boolean };
+export type UserInfo = { id: string; email: string; role: "admin" | "student"; first_name?: string; last_name?: string; must_change_password?: boolean; has_password?: boolean };
 
 type AuthState = {
   status: "loading" | "signed-out" | "signed-in";

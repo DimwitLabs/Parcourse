@@ -9,6 +9,7 @@ import { useAuth } from "../lib/auth";
 
 export default function ChangePasswordScreen() {
   const { token, user, setUser, logout } = useAuth();
+  const [current, setCurrent] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
@@ -16,7 +17,8 @@ export default function ChangePasswordScreen() {
   const policyError = password.length > 0 ? passwordError(password) : null;
   const mismatch = confirm.length > 0 && password !== confirm;
   const problem = policyError ?? (mismatch ? "Those passwords do not match." : null);
-  const canSubmit = !passwordError(password) && password === confirm && !busy;
+  const canSubmit =
+    passwordError(password) === null && password === confirm && current.length > 0 && busy === false;
 
   async function submit() {
     if (!canSubmit) return;
@@ -24,9 +26,9 @@ export default function ChangePasswordScreen() {
     try {
       await apiFetch("/auth/change-password", token, {
         method: "POST",
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password, current_password: current }),
       });
-      if (user) setUser({ ...user, must_change_password: false });
+      if (user) setUser({ ...user, must_change_password: false, has_password: true });
       toast("Password updated", "success");
     } catch (err) {
       toast(errMsg(err), "error");
@@ -50,6 +52,13 @@ export default function ChangePasswordScreen() {
             submit();
           }}
         >
+          <PasswordInput
+            placeholder="Current password"
+            autoComplete="current-password"
+            value={current}
+            onChange={setCurrent}
+            disabled={busy}
+          />
           <PasswordInput
             placeholder="New password"
             autoComplete="new-password"
