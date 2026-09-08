@@ -11,7 +11,7 @@ The first account made on an instance is the admin. It is the only account that 
 
 From the admin screen:
 
-- Add an account: they get a password you set, and are asked to change it the first time they sign in.
+- Add an account: they get a password you set, and are asked to change it the first time they sign in. If you have set up [single sign-on](/self-hosting/single-sign-on), the form asks only for a name and email address, and they sign in through your provider.
 - Reset a password: same again, the new one has to be changed on next sign-in.
 - Reset someone's progress: clears their section progress and quiz attempts without touching their courses.
 - Delete an account: takes their courses, progress, attempts and graph with it.
