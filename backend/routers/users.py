@@ -6,7 +6,7 @@ from sqlmodel import Session, func, select
 
 logger = logging.getLogger(__name__)
 
-from config import OIDC_ENABLED
+from config import OIDC_ENABLED, OIDC_NAME, OIDC_ONLY
 from database import get_session
 from dependencies import require_admin
 from models.course_cache import CachedCourse
@@ -45,6 +45,12 @@ def create_user(
     if session.exec(select(User).where(User.email == body.email)).first() is not None:
         logger.warning("[users]: email already in use: %s", body.email)
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already in use")
+
+    if body.password is not None and OIDC_ONLY:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"This instance signs in through {OIDC_NAME}, so there is no password to set",
+        )
 
     # Without single sign-on there would be no way left to reach the account.
     if body.password is None and not OIDC_ENABLED:
@@ -116,6 +122,13 @@ def reset_user_password(
     session: Session = Depends(get_session),
 ) -> None:
     logger.info("[users]: reset password requested for user_id=%s", user_id)
+    if OIDC_ONLY:
+        logger.warning("[users]: password reset refused, this instance is provider-only")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"This instance signs in through {OIDC_NAME}, so there is no password to set",
+        )
+
     user = session.get(User, user_id)
     if user is None:
         logger.warning("[users]: user not found for password reset, user_id=%s", user_id)

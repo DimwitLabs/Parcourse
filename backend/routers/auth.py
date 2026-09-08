@@ -13,6 +13,7 @@ from config import (
     OIDC_ENABLED,
     OIDC_ISSUER,
     OIDC_NAME,
+    OIDC_ONLY,
     OIDC_POST_LOGIN_URL,
 )
 from database import get_session
@@ -23,8 +24,8 @@ from models.user import User, UserRole
 from schemas.auth import (
     ChangePasswordRequest,
     ConfigResponse,
-    OidcConfig,
     LoginRequest,
+    OidcConfig,
     SetupRequest,
     SetupStatusResponse,
     TokenResponse,
@@ -48,9 +49,21 @@ def setup(body: SetupRequest, session: Session = Depends(get_session)) -> TokenR
     if session.exec(select(User)).first() is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Setup already completed")
 
+    if body.password is None and OIDC_ONLY is False:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="A password is required",
+        )
+
+    if body.password is not None and OIDC_ONLY:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"This instance signs in through {OIDC_NAME}, so there is no password to set",
+        )
+
     admin = User(
         email=body.email,
-        hashed_password=hash_password(body.password),
+        hashed_password=hash_password(body.password) if body.password else None,
         role=UserRole.admin,
         first_name=body.first_name,
         last_name=body.last_name,
@@ -65,6 +78,12 @@ def setup(body: SetupRequest, session: Session = Depends(get_session)) -> TokenR
 
 @router.post("/login", response_model=TokenResponse)
 def login(body: LoginRequest, session: Session = Depends(get_session)) -> TokenResponse:
+    if OIDC_ONLY:
+        logger.warning("[auth]: password sign-in refused, this instance is provider-only")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"This instance signs in through {OIDC_NAME}, so there is no password to use",
+        )
     user = session.exec(select(User).where(User.email == body.email)).first()
     if user is None or not verify_password(body.password, user.hashed_password):
         logger.warning("[auth]: failed login attempt for email=%s", body.email)
@@ -85,6 +104,13 @@ def change_password(
     session: Session = Depends(get_session),
 ) -> None:
     logger.info("[auth]: password change requested for user_id=%s", user.id)
+    if OIDC_ONLY:
+        logger.warning("[auth]: password change refused, this instance is provider-only")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"This instance signs in through {OIDC_NAME}, so there is no password to change",
+        )
+
     if user.hashed_password is not None:
         if verify_password(body.current_password or "", user.hashed_password) is False:
             logger.warning("[auth]: password change refused, wrong current password for %s", user.id)
@@ -103,9 +129,10 @@ def change_password(
 @router.get("/config", response_model=ConfigResponse)
 def get_config(session: Session = Depends(get_session)) -> ConfigResponse:
     config = session.get(InstanceConfig, INSTANCE_ID)
-    if config is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not set up yet")
-    return ConfigResponse(mode=config.mode, oidc=OidcConfig(enabled=OIDC_ENABLED, name=OIDC_NAME))
+    return ConfigResponse(
+        mode=config.mode if config else None,
+        oidc=OidcConfig(enabled=OIDC_ENABLED, name=OIDC_NAME, only=OIDC_ONLY),
+    )
 
 
 _LOGIN_VALID_FOR = timedelta(minutes=10)
@@ -131,7 +158,10 @@ def oidc_start(session: Session = Depends(get_session)) -> RedirectResponse:
         destination, verifier = oidc.start(state, nonce)
     except oidc.OidcError as exc:
         logger.error("[oidc]: cannot start sign-in: %s", exc)
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Single sign-on is not reachable right now. Please try again.",
+        ) from exc
 
     session.add(OidcLogin(state=state, code_verifier=verifier, nonce=nonce))
     session.commit()
@@ -151,14 +181,13 @@ def oidc_callback(
 
     if error:
         logger.warning("[oidc]: the provider turned the sign-in down: %s", error)
-        return _back_to_app(error=error)
+        return _back_to_app(error="Your provider turned this sign-in down.")
 
     pending = session.get(OidcLogin, state) if state else None
     if pending is None:
         logger.warning("[oidc]: callback with a state nobody started")
         return _back_to_app(error="This sign-in has expired. Please try again.")
 
-    # Used once, whatever happens next, so a code cannot be replayed against it.
     session.delete(pending)
     session.commit()
 

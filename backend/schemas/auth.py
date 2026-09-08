@@ -8,8 +8,6 @@ from models.instance_config import InstanceMode
 from models.user import UserRole
 
 PASSWORD_MIN_LENGTH = 8
-# bcrypt reads no further than this and refuses anything longer, so a password
-# past it could be set and then never verify.
 PASSWORD_MAX_BYTES = 72
 
 
@@ -29,14 +27,12 @@ def _check_password(value: str) -> str:
     return value
 
 
-# Every place a password is *set*. LoginRequest deliberately stays unconstrained:
-# an existing weak password must still be able to sign in.
 PasswordStr = Annotated[str, AfterValidator(_check_password)]
 
 
 class SetupRequest(BaseModel):
     email: EmailStr
-    password: PasswordStr
+    password: PasswordStr | None = None
     mode: InstanceMode
     first_name: str | None = None
     last_name: str | None = None
@@ -100,8 +96,11 @@ class SetupStatusResponse(BaseModel):
 class OidcConfig(BaseModel):
     enabled: bool
     name: str
+    only: bool = False
 
 
 class ConfigResponse(BaseModel):
-    mode: InstanceMode
+    # Absent until setup has run. How sign-in works is known from the start,
+    # because it comes from the environment rather than the database.
+    mode: InstanceMode | None = None
     oidc: OidcConfig

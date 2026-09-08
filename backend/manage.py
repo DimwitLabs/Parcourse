@@ -9,6 +9,7 @@ import sys
 
 from sqlmodel import Session, select
 
+from config import OIDC_NAME, OIDC_ONLY
 from database import engine
 from models.user import User
 from services.auth import hash_password
@@ -18,6 +19,14 @@ def reset_password(email: str, password: str | None) -> int:
     """The only way back into an instance whose sole admin forgot the password.
     Nothing else can reach that account: an admin resets other people, and no
     one resets the admin."""
+    if OIDC_ONLY:
+        print(
+            f"This instance signs in through {OIDC_NAME}, so a password here would not work.\n"
+            "Set OIDC_ONLY=false and restart if you need the password form back.",
+            file=sys.stderr,
+        )
+        return 1
+
     with Session(engine) as session:
         user = session.exec(select(User).where(User.email == email)).first()
         if user is None:
