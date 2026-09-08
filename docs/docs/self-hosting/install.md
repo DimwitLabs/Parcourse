@@ -77,6 +77,8 @@ Parcourse ships four, and which one you want depends on where it is running and 
 | `docker-compose.ghcr-vpn.yml` | On a VPS, where YouTube refuses the address |
 | `docker-compose.yml` | Building the images yourself from a checkout |
 
+There is a fifth, `docker-compose.oidc.yml`, which is not a way to run Parcourse on its own. It layers over any of the four to turn on [single sign-on](/self-hosting/single-sign-on).
+
 The VPN one is covered in [Troubleshooting](/self-hosting/troubleshooting), since it exists to solve a specific problem rather than as a general way to run. The last is for working on Parcourse rather than running it, and it builds from the source next to it instead of pulling anything.
 
 ## Using Your Own Database

@@ -1,0 +1,24 @@
+# Single sign-on. Layer this over whichever compose file you already use:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.oidc.yml up -d
+#
+# Repeating both files on every command gets old, so put this in your .env
+# instead and plain `docker compose up -d` picks them both up:
+#
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.oidc.yml
+#
+# The settings themselves live in .env as usual. See .env.example, or
+# https://parcourse.study/self-hosting/single-sign-on for what each one does.
+
+services:
+  backend:
+    environment:
+      - OIDC_ISSUER=${OIDC_ISSUER:?set this to your provider's base address}
+      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID:?the client your provider registered for Parcourse}
+      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET:?the secret that came with the client id}
+      - OIDC_REDIRECT_URL=${OIDC_REDIRECT_URL:?register this with your provider, exactly as written}
+      - OIDC_NAME=${OIDC_NAME:-SSO}
+      - OIDC_POST_LOGIN_URL=${OIDC_POST_LOGIN_URL:-}
+      - OIDC_AUTO_PROVISION=${OIDC_AUTO_PROVISION:-false}
+      - OIDC_ONLY=${OIDC_ONLY:-false}
+      - OIDC_SCOPES=${OIDC_SCOPES:-openid email profile}

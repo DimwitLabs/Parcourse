@@ -64,6 +64,8 @@ Leave `OIDC_ISSUER` empty and none of this applies. Set it and the next three ar
 | `OIDC_NAME` | `SSO` | What the button on the login screen says. |
 | `OIDC_POST_LOGIN_URL` | first `CORS_ORIGINS` entry | Where the browser lands once signed in. |
 | `OIDC_AUTO_PROVISION` | `false` | Whether an unknown address gets an account instead of being turned away. |
+| `OIDC_ONLY` | `false` | The provider is the only way in. No password form, and no password an admin can set. Needs `OIDC_ISSUER`. |
+| `OIDC_SCOPES` | `openid email profile` | What Parcourse asks your provider for. `openid` and `email` are both needed to match an account. |
 
 ## Fetching Transcripts
 

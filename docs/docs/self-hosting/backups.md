@@ -53,6 +53,8 @@ docker compose exec backend python -m manage reset-password you@example.com
 
 It asks for the new password twice and does not echo it. The account is asked to change it at the next sign in.
 
+If you have set `OIDC_ONLY=true`, this command refuses, because the password it would set could not be used to sign in with. Set `OIDC_ONLY=false` and restart to bring the password form back, then run it.
+
 ## What Is Not in the Database
 
 Two things live in your `.env` rather than in Postgres, and a database backup does not include them:
