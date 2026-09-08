@@ -1,27 +1,16 @@
 import { useState } from "react";
 
-import PasswordInput from "../components/PasswordInput";
+import PasswordChangeForm from "../components/PasswordChangeForm";
 import ThemeSwitch from "../components/ThemeSwitch";
 import { toast } from "../components/Toast";
-import { PASSWORD_RULE, passwordError } from "../lib/password";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
 
 export default function ChangePasswordScreen() {
   const { token, user, setUser, logout } = useAuth();
-  const [current, setCurrent] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const policyError = password.length > 0 ? passwordError(password) : null;
-  const mismatch = confirm.length > 0 && password !== confirm;
-  const problem = policyError ?? (mismatch ? "Those passwords do not match." : null);
-  const canSubmit =
-    passwordError(password) === null && password === confirm && current.length > 0 && busy === false;
-
-  async function submit() {
-    if (!canSubmit) return;
+  async function submit({ current, password }: { current: string; password: string }) {
     setBusy(true);
     try {
       await apiFetch("/auth/change-password", token, {
@@ -45,41 +34,14 @@ export default function ChangePasswordScreen() {
           Your current password was set by an administrator, so pick one only you know.
         </p>
 
-        <form
+        <PasswordChangeForm
+          requireCurrent
           className="login-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            submit();
-          }}
-        >
-          <PasswordInput
-            placeholder="Current password"
-            autoComplete="current-password"
-            value={current}
-            onChange={setCurrent}
-            disabled={busy}
-          />
-          <PasswordInput
-            placeholder="New password"
-            autoComplete="new-password"
-            value={password}
-            onChange={setPassword}
-            disabled={busy}
-          />
-          <PasswordInput
-            placeholder="Confirm new password"
-            autoComplete="new-password"
-            value={confirm}
-            onChange={setConfirm}
-            disabled={busy}
-          />
-          <span className={`modal-field-hint${problem ? " is-error" : ""}`}>
-            {problem ?? PASSWORD_RULE}
-          </span>
-          <button className="button primary login-submit" type="submit" disabled={!canSubmit}>
-            {busy ? "Saving…" : "Set password"}
-          </button>
-        </form>
+          buttonClassName="button primary login-submit"
+          submitLabel="Set password"
+          busy={busy}
+          onSubmit={submit}
+        />
 
         <button className="link-button" onClick={logout} style={{ marginTop: "1.5rem" }}>
           Sign out instead

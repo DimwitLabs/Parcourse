@@ -6,7 +6,8 @@ import PasswordField from "../components/PasswordField";
 import { toast, useLoadingToast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { generatePassword, passwordError } from "../lib/password";
-import { API_BASE_URL, useAuth } from "../lib/auth";
+import { useAuth } from "../lib/auth";
+import { passwordsAllowed, providerEnabled, providerName, useSso } from "../lib/sso";
 import { useEscapeKey } from "../lib/useEscapeKey";
 
 type UserWithUsage = {
@@ -33,17 +34,10 @@ export default function AdminScreen() {
   const [newFirstName, setNewFirstName] = useState("");
   const [newLastName, setNewLastName] = useState("");
   const [busy, setBusy] = useState(false);
-  const [sso, setSso] = useState<{ enabled: boolean; name: string } | null>(null);
+  const sso = useSso();
 
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/auth/config`)
-      .then((res) => res.json())
-      .then((data) => setSso(data.oidc ?? null))
-      .catch(() => setSso(null));
-  }, []);
-
-  const signsInWithProvider = sso?.enabled === true;
-  const readyToAdd = signsInWithProvider ? true : passwordError(newPassword) === null;
+  const signsInWithProvider = providerEnabled(sso);
+  const canSetPassword = passwordsAllowed(sso);
 
   useEscapeKey(showAdd, () => { if (!busy) setShowAdd(false); });
 
@@ -194,9 +188,11 @@ export default function AdminScreen() {
             <button className="icon-btn tip" data-tip="Knowledge graph" aria-label="Knowledge graph" onClick={() => navigate(`/graph?user=${u.id}`)}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="6" y1="8" x2="6" y2="16"/><line x1="18" y1="8" x2="18" y2="16"/><line x1="8" y1="7.5" x2="16" y2="16.5"/></svg>
             </button>
-            <button className="icon-btn tip" data-tip="Set new password" aria-label="Set new password" onClick={() => setPwdUser(u)}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            </button>
+            {canSetPassword && (
+              <button className="icon-btn tip" data-tip="Set new password" aria-label="Set new password" onClick={() => setPwdUser(u)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </button>
+            )}
             {!isSelf && (
               <>
                 <button
@@ -279,7 +275,7 @@ export default function AdminScreen() {
               />
               {signsInWithProvider ? (
                 <p className="modal-field-hint" style={{ textAlign: "left", padding: "0 0.35rem" }}>
-                  Name is optional. They sign in with {sso?.name}, so there is no password to set or
+                  Name is optional. They sign in with {providerName(sso)}, so there is no password to set or
                   to send them. Give them one later from this screen if they ever need to sign in
                   without the provider.
                 </p>
@@ -299,7 +295,11 @@ export default function AdminScreen() {
               <button
                 className="button primary"
                 onClick={addUser}
-                disabled={busy || newEmail.length === 0 || readyToAdd === false}
+                disabled={
+                  busy ||
+                  newEmail.length === 0 ||
+                  (signsInWithProvider === false && passwordError(newPassword) !== null)
+                }
               >
                 {busy ? "Adding…" : "Add"}
               </button>

@@ -9,6 +9,7 @@ import { toast } from "../components/Toast";
 import { PASSWORD_RULE, generatePassword, passwordError } from "../lib/password";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { passwordsAllowed, providerEnabled, providerName, ssoSettled, useSso } from "../lib/sso";
 
 type Stage = "mode" | "signup" | "api-key" | "add-user";
 
@@ -16,10 +17,17 @@ export default function SetupScreen() {
   const { setSession } = useAuth();
   const navigate = useNavigate();
   const [stage, setStage] = useState<Stage>("mode");
+  const sso = useSso();
+  const settled = ssoSettled(sso);
+  // The admin's own account follows OIDC_ONLY. Everyone they add afterwards
+  // follows whether a provider exists at all, which is what the admin screen
+  // does, so the two places create the same kind of account.
+  const adminSetsPassword = passwordsAllowed(sso);
+  const learnersSignInWithProvider = providerEnabled(sso);
 
   useEffect(() => {
-    if (stage === "add-user") setNewUserPassword(generatePassword());
-  }, [stage]);
+    if (stage === "add-user" && learnersSignInWithProvider === false) setNewUserPassword(generatePassword());
+  }, [stage, learnersSignInWithProvider]);
   const [mode, setMode] = useState<"single" | "multi">("single");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,7 +44,7 @@ export default function SetupScreen() {
     try {
       const data = await apiFetch("/auth/setup", null, {
         method: "POST",
-        body: JSON.stringify({ email, password, mode }),
+        body: JSON.stringify({ email, password: adminSetsPassword ? password : null, mode }),
       });
       const me = await apiFetch("/auth/me", data.access_token);
       setPendingToken(data.access_token);
@@ -63,7 +71,10 @@ export default function SetupScreen() {
     try {
       await apiFetch("/users", pendingToken, {
         method: "POST",
-        body: JSON.stringify({ email: newUserEmail, password: newUserPassword }),
+        body: JSON.stringify({
+          email: newUserEmail,
+          password: learnersSignInWithProvider ? null : newUserPassword,
+        }),
       });
       toast(`${newUserEmail} added`, "success");
       setAddedUsers((prev) => [...prev, newUserEmail]);
@@ -136,18 +147,32 @@ export default function SetupScreen() {
                 disabled={busy}
               />
             </div>
-            <PasswordInput
-              placeholder="Password"
-              autoComplete="new-password"
-              value={password}
-              onChange={setPassword}
-              disabled={busy}
-            />
-            <span className="modal-field-hint">{PASSWORD_RULE}</span>
+            {adminSetsPassword && (
+              <>
+                <PasswordInput
+                  placeholder="Password"
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={setPassword}
+                  disabled={busy}
+                />
+                <span className="modal-field-hint">{PASSWORD_RULE}</span>
+              </>
+            )}
+            {settled && adminSetsPassword === false && (
+              <span className="modal-field-hint">
+                You will sign in through {providerName(sso)}, so there is no password to choose.
+              </span>
+            )}
             <button
               className="button primary login-submit"
               type="submit"
-              disabled={busy || !email || !!passwordError(password)}
+              disabled={
+                busy ||
+                settled === false ||
+                !email ||
+                (adminSetsPassword && passwordError(password) !== null)
+              }
             >
               {busy ? "Creating…" : "Create account"}
             </button>
@@ -196,15 +221,27 @@ export default function SetupScreen() {
                 disabled={busy}
               />
             </div>
-            <PasswordField
-              value={newUserPassword}
-              onChange={setNewUserPassword}
-              disabled={busy}
-            />
+            {settled && learnersSignInWithProvider === false && (
+              <PasswordField
+                value={newUserPassword}
+                onChange={setNewUserPassword}
+                disabled={busy}
+              />
+            )}
+            {learnersSignInWithProvider && (
+              <span className="modal-field-hint">
+                They sign in through {providerName(sso)}, so there is no password to hand out.
+              </span>
+            )}
             <button
               className="button primary login-submit"
               onClick={addUser}
-              disabled={busy || !newUserEmail || !!passwordError(newUserPassword)}
+              disabled={
+                busy ||
+                settled === false ||
+                !newUserEmail ||
+                (learnersSignInWithProvider === false && passwordError(newUserPassword) !== null)
+              }
             >
               {busy ? "Adding…" : "Add user"}
             </button>

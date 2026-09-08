@@ -5,6 +5,7 @@ import AppShell from "./components/AppShell";
 import { useLoadingToast } from "./components/Toast";
 import { API_BASE_URL, useAuth } from "./lib/auth";
 import { useOidcCallback } from "./lib/oidcCallback";
+import { passwordsAllowed, useSso } from "./lib/sso";
 import AdminScreen from "./screens/AdminScreen";
 import ChangePasswordScreen from "./screens/ChangePasswordScreen";
 import CheatsheetScreen from "./screens/CheatsheetScreen";
@@ -21,6 +22,7 @@ import SetupScreen from "./screens/SetupScreen";
 
 function RootRouter() {
   const { status, user, signInWithToken } = useAuth();
+  const sso = useSso();
   const [needsSetup, setNeedsSetup] = useState<boolean | null>(null);
   const returningFromProvider = useOidcCallback(signInWithToken);
 
@@ -43,7 +45,9 @@ function RootRouter() {
     return needsSetup ? <SetupScreen /> : <LoginScreen />;
   }
 
-  if (user?.must_change_password) return <ChangePasswordScreen />;
+  // Signing in through the provider clears the flag, and the backend refuses
+  // the form, so a stale forced change must not strand anyone here.
+  if (user?.must_change_password && passwordsAllowed(sso)) return <ChangePasswordScreen />;
 
   return (
     <Routes>

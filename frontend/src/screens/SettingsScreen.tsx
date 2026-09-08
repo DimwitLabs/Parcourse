@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 
-import PasswordInput from "../components/PasswordInput";
+import PasswordChangeForm from "../components/PasswordChangeForm";
 import ProviderForm from "../components/ProviderForm";
 import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import { PASSWORD_RULE, passwordError } from "../lib/password";
+import { passwordsAllowed, useSso } from "../lib/sso";
 
 type Tab = "api-key" | "account";
 
@@ -13,10 +13,9 @@ export default function SettingsScreen() {
   const { token, user, setUser } = useAuth();
   const [tab, setTab] = useState<Tab>("api-key");
 
+  const sso = useSso();
+  const canSetPassword = passwordsAllowed(sso);
   const hasPassword = user?.has_password !== false;
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordSaving, setPasswordSaving] = useState(false);
 
   const [firstName, setFirstName] = useState("");
@@ -32,52 +31,17 @@ export default function SettingsScreen() {
       .catch(() => {});
   }, [token, user?.role]);
 
-  useEffect(() => {
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-  }, [tab]);
-
-  const showNew = hasPassword === false || currentPassword.length > 0;
-  const showConfirm = showNew && newPassword.length > 0;
-
-  function changeCurrent(v: string) {
-    setCurrentPassword(v);
-    if (v.length === 0) {
-      setNewPassword("");
-      setConfirmPassword("");
-    }
-  }
-
-  function changeNew(v: string) {
-    setNewPassword(v);
-    if (v.length === 0) setConfirmPassword("");
-  }
-
-  const policyProblem = newPassword.length > 0 ? passwordError(newPassword) : null;
-  const mismatch = confirmPassword.length > 0 && newPassword !== confirmPassword;
-  const passwordProblem = policyProblem ?? (mismatch ? "Those passwords do not match." : null);
-  const canSavePassword =
-    passwordError(newPassword) === null &&
-    newPassword === confirmPassword &&
-    (hasPassword ? currentPassword.length > 0 : true) &&
-    passwordSaving === false;
-
-  async function savePassword() {
-    if (canSavePassword === false) return;
+  async function savePassword({ current, password }: { current: string; password: string }) {
     setPasswordSaving(true);
     try {
       await apiFetch("/auth/change-password", token, {
         method: "POST",
         body: JSON.stringify({
-          password: newPassword,
-          current_password: hasPassword ? currentPassword : null,
+          password,
+          current_password: hasPassword ? current : null,
         }),
       });
       if (user) setUser({ ...user, has_password: true, must_change_password: false });
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
       toast(hasPassword ? "Password changed" : "Password set", "success");
     } catch (err) {
       toast(errMsg(err), "error");
@@ -149,62 +113,27 @@ export default function SettingsScreen() {
                 </div>
               </div>
 
-              <div className="card settings-section">
-                <h2 className="settings-section-title">
-                  {hasPassword ? "Change Password" : "Set a Password"}
-                </h2>
-                <p className="settings-section-desc">
-                  {hasPassword
-                    ? "You will stay signed in on this device."
-                    : "You sign in through your provider. Setting a password gives you a second way in, for when the provider is unavailable."}
-                </p>
-                <form
-                  className="password-form"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    savePassword();
-                  }}
-                >
-                  {hasPassword && (
-                    <PasswordInput
-                      placeholder="Current password"
-                      autoComplete="current-password"
-                      value={currentPassword}
-                      onChange={changeCurrent}
-                      disabled={passwordSaving}
-                      boxed
-                    />
-                  )}
-                  {showNew && (
-                    <PasswordInput
-                      placeholder="New password"
-                      autoComplete="new-password"
-                      value={newPassword}
-                      onChange={changeNew}
-                      disabled={passwordSaving}
-                      boxed
-                    />
-                  )}
-                  {showConfirm && (
-                    <PasswordInput
-                      placeholder="Confirm new password"
-                      autoComplete="new-password"
-                      value={confirmPassword}
-                      onChange={setConfirmPassword}
-                      disabled={passwordSaving}
-                      boxed
-                    />
-                  )}
-                  {showNew && (
-                    <span className={`modal-field-hint${passwordProblem ? " is-error" : ""}`}>
-                      {passwordProblem ?? PASSWORD_RULE}
-                    </span>
-                  )}
-                  <button className="button primary" type="submit" disabled={canSavePassword === false}>
-                    {passwordSaving ? "Saving…" : hasPassword ? "Change password" : "Set password"}
-                  </button>
-                </form>
-              </div>
+              {canSetPassword && (
+                <div className="card settings-section">
+                  <h2 className="settings-section-title">
+                    {hasPassword ? "Change Password" : "Set a Password"}
+                  </h2>
+                  <p className="settings-section-desc">
+                    {hasPassword
+                      ? "You will stay signed in on this device."
+                      : "You sign in through your provider. Setting a password gives you a second way in, for when the provider is unavailable."}
+                  </p>
+                  <PasswordChangeForm
+                    requireCurrent={hasPassword}
+                    boxed
+                    className="password-form"
+                    buttonClassName="button primary"
+                    submitLabel={hasPassword ? "Change password" : "Set password"}
+                    busy={passwordSaving}
+                    onSubmit={savePassword}
+                  />
+                </div>
+              )}
 
               <div className="card settings-section">
                 <h2 className="settings-section-title">Account Details</h2>
