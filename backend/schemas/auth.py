@@ -91,5 +91,11 @@ class SetupStatusResponse(BaseModel):
     needs_setup: bool
 
 
+class OidcConfig(BaseModel):
+    enabled: bool
+    name: str
+
+
 class ConfigResponse(BaseModel):
     mode: InstanceMode
+    oidc: OidcConfig

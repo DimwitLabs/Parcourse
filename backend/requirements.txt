@@ -6,6 +6,9 @@ alembic==1.19.1
 psycopg[binary]==3.3.4
 bcrypt==5.0.0
 python-jose[cryptography]==3.5.0
+authlib==1.8.0
+joserfc==1.7.5
+httpx==0.28.1
 cryptography==50.0.1
 email-validator==2.3.0
 yt-dlp==2026.8.19

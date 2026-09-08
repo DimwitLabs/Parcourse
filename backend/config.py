@@ -21,6 +21,14 @@ class Settings(BaseSettings):
     jwt_secret: str
     jwt_expiry_hours: int = 24
     encryption_key: str
+    oidc_issuer: str = ""
+    oidc_client_id: str = ""
+    oidc_client_secret: str = ""
+    oidc_name: str = "SSO"
+    oidc_redirect_url: str = ""
+    oidc_post_login_url: str = ""
+    oidc_auto_provision: bool = False
+    oidc_scopes: str = "openid email profile"
 
 settings = Settings()
 
@@ -53,6 +61,26 @@ def _checked_log_level(name: str) -> str:
     return name.upper()
 
 
+def _checked_oidc(issuer: str) -> bool:
+    """Half a configuration is the state an operator cannot see: sign-in looks
+    fine until someone presses the button. Either all four are set or none is."""
+    rest = {
+        "OIDC_CLIENT_ID": settings.oidc_client_id,
+        "OIDC_CLIENT_SECRET": settings.oidc_client_secret,
+        "OIDC_REDIRECT_URL": settings.oidc_redirect_url,
+    }
+    if not issuer:
+        named = [name for name, value in rest.items() if value.strip()]
+        if named:
+            raise ValueError(f"OIDC_ISSUER is needed alongside {', '.join(named)}")
+        return False
+
+    missing = [name for name, value in rest.items() if not value.strip()]
+    if missing:
+        raise ValueError(f"OIDC_ISSUER is set, so these are needed too: {', '.join(missing)}")
+    return True
+
+
 def _checked_secret(name: str, value: str, published: str, generate: str) -> str:
     """An instance that kept the published value has none of the protection it
     thinks it has: its tokens can be forged and its stored keys read. Refusing
@@ -83,4 +111,19 @@ ENCRYPTION_KEY = _checked_secret(
     settings.encryption_key,
     _PUBLISHED_ENCRYPTION_KEY,
     'python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"',
+)
+
+OIDC_ISSUER = settings.oidc_issuer.strip().rstrip("/")
+OIDC_ENABLED = _checked_oidc(OIDC_ISSUER)
+OIDC_CLIENT_ID = settings.oidc_client_id.strip()
+OIDC_CLIENT_SECRET = settings.oidc_client_secret.strip()
+OIDC_NAME = settings.oidc_name.strip() or "SSO"
+OIDC_REDIRECT_URL = settings.oidc_redirect_url.strip()
+OIDC_SCOPES = settings.oidc_scopes.strip()
+OIDC_AUTO_PROVISION = settings.oidc_auto_provision
+# Where the browser is sent once sign-in worked. The app is served from the
+# first allowed origin in every deployment the docs describe, so that is the
+# default rather than a fifth thing to set.
+OIDC_POST_LOGIN_URL = settings.oidc_post_login_url.strip() or (
+    settings.cors_origins[0] if settings.cors_origins else ""
 )

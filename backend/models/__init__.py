@@ -10,6 +10,7 @@ from models.knowledge_graph import (
     UserKnowledgeProgress,
 )
 from models.note import CourseNote
+from models.oidc_login import OidcLogin
 from models.quiz_attempt import QuizAttempt
 from models.quiz_draft import QuizDraft
 from models.section_progress import SectionProgress
@@ -26,6 +27,7 @@ __all__ = [
     "InstanceMode",
     "KnowledgeEdge",
     "KnowledgeNode",
+    "OidcLogin",
     "NodeTier",
     "QuizAttempt",
     "QuizDraft",
