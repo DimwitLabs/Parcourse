@@ -1,16 +1,26 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import PasswordInput from "../components/PasswordInput";
 import ThemeSwitch from "../components/ThemeSwitch";
 import { toast } from "../components/Toast";
 import { errMsg } from "../lib/api";
-import { useAuth } from "../lib/auth";
+import { API_BASE_URL, useAuth } from "../lib/auth";
+
+type Sso = { enabled: boolean; name: string };
 
 export default function LoginScreen() {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [sso, setSso] = useState<Sso | null>(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/auth/config`)
+      .then((res) => res.json())
+      .then((data) => setSso(data.oidc ?? null))
+      .catch(() => setSso(null));
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -61,6 +71,15 @@ export default function LoginScreen() {
             {busy ? "Logging in…" : "Log in"}
           </button>
         </form>
+
+        {sso?.enabled && (
+          <div className="login-sso">
+            <div className="login-divider"><span>or</span></div>
+            <a className="button secondary login-submit" href={`${API_BASE_URL}/auth/oidc/start`}>
+              Continue with {sso.name}
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );

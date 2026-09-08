@@ -620,6 +620,40 @@ body {
   margin-top: 0.25rem;
 }
 
+.login-sso {
+  display: flex;
+  flex-direction: column;
+  max-width: 33rem;
+  width: 100%;
+  margin: 1.25rem auto 0;
+}
+
+.login-divider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+  color: var(--color-ink-soft);
+  font-size: 0.85rem;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: "";
+  height: 1.5px;
+  background: var(--color-surface-high);
+}
+
+.login-sso .login-submit {
+  margin-top: 0;
+  text-align: center;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .link-button {
   appearance: none;
   border: none;

@@ -4,6 +4,7 @@ import { Navigate, Route, BrowserRouter, Routes } from "react-router-dom";
 import AppShell from "./components/AppShell";
 import { useLoadingToast } from "./components/Toast";
 import { API_BASE_URL, useAuth } from "./lib/auth";
+import { useOidcCallback } from "./lib/oidcCallback";
 import AdminScreen from "./screens/AdminScreen";
 import ChangePasswordScreen from "./screens/ChangePasswordScreen";
 import CheatsheetScreen from "./screens/CheatsheetScreen";
@@ -19,8 +20,9 @@ import SettingsScreen from "./screens/SettingsScreen";
 import SetupScreen from "./screens/SetupScreen";
 
 function RootRouter() {
-  const { status, user } = useAuth();
+  const { status, user, signInWithToken } = useAuth();
   const [needsSetup, setNeedsSetup] = useState<boolean | null>(null);
+  const returningFromProvider = useOidcCallback(signInWithToken);
 
   useEffect(() => {
     if (status !== "signed-out") return;
@@ -30,10 +32,11 @@ function RootRouter() {
       .catch(() => setNeedsSetup(false));
   }, [status]);
 
-  const settling = status === "loading" || (status === "signed-out" && needsSetup === null);
+  const settling =
+    status === "loading" || returningFromProvider || (status === "signed-out" && needsSetup === null);
   useLoadingToast(settling, "Loading…");
 
-  if (status === "loading") return null;
+  if (status === "loading" || returningFromProvider) return null;
 
   if (status === "signed-out") {
     if (needsSetup === null) return null;

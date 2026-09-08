@@ -18,6 +18,7 @@ type AuthState = {
   token: string | null;
   user: UserInfo | null;
   login: (email: string, password: string) => Promise<void>;
+  signInWithToken: (token: string) => Promise<void>;
   logout: () => void;
   setSession: (token: string, user: UserInfo) => void;
   setUser: (user: UserInfo) => void;
@@ -74,6 +75,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(data.access_token, me);
   }
 
+  async function signInWithToken(newToken: string) {
+    const me = await fetchMe(newToken);
+    setSession(newToken, me);
+  }
+
   function logout() {
     localStorage.removeItem(TOKEN_KEY);
     setToken(null);
@@ -82,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ status, token, user, login, logout, setSession, setUser }}>
+    <AuthContext.Provider value={{ status, token, user, login, signInWithToken, logout, setSession, setUser }}>
       {children}
     </AuthContext.Provider>
   );
