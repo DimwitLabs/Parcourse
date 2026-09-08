@@ -1,6 +1,13 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+declare global {
+  interface Window {
+    __PARCOURSE_CONFIG__?: { apiBaseUrl?: string };
+  }
+}
+
+export const API_BASE_URL =
+  window.__PARCOURSE_CONFIG__?.apiBaseUrl || import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 const TOKEN_KEY = "parcourse_token";
 

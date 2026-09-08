@@ -46,7 +46,10 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+      # The published image serves built files and carries no toolchain, so
+      # development stops at the stage that still has one.
+      target: build
+    command: npm run dev -- --host 0.0.0.0
     ports:
       - "${FRONTEND_PORT:-5173}:5173"
     volumes:

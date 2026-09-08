@@ -45,6 +45,12 @@ Leave `DATABASE_URL` unset when using the bundled database. Setting it as well a
 
 `VITE_API_BASE_URL` and `CORS_ORIGINS` have to agree with wherever the app is actually reached from. They are the two that catch people out behind a reverse proxy.
 
+`VITE_API_BASE_URL` is read when the frontend container starts, so changing it takes a `docker compose up -d` and nothing more. 
+
+:::note
+Till v1.6.0, `VITE_API_BASE_URL` used to be compiled into the app. This was changed to avoid rebuilding the app again and again.
+:::
+
 ## Fetching Transcripts
 
 | Variable | Default | What it does |
