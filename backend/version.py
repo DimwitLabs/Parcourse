@@ -1,5 +1,8 @@
-"""The one place the backend states its version. The tag, the changelog, the
-frontend's package.json and the extension's manifest.json carry the same
-number by hand."""
+"""The backend's version. The tag, the changelog and the frontend's
+package.json are kept in step with it by hand.
+
+The extension's manifest.json is the only exception and follows its own
+release-cycle.
+"""
 
 __version__ = "1.7.0"
