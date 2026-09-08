@@ -11,13 +11,19 @@ It works with any instance. Self-hosted on your laptop, self-hosted on a server,
 
 ## Installing It
 
-The extension is not in the Chrome Web Store yet, so it loads from the repository.
+:::tip[<img src="/img/chrome-web-store.svg" alt="" width="22" style={{verticalAlign: "-5px", marginRight: "0.4rem"}} />Get it from the Chrome Web Store]
+**[Add Parcourse to Chrome](https://chromewebstore.google.com/detail/parcourse/mfbdlecghmjmdafjfhnckjjhpjdonolg)** — it installs in Chrome, Edge, Brave, Arc, and anything else built on Chromium, and updates itself from there.
+:::
+
+### From the Repository
+
+The store copy is built from the `extension` folder in this repository, and you can load that folder directly instead. Do this when you are working on the extension, or when you would rather run what you have read:
 
 1. Clone or download [Parcourse](https://github.com/DimwitLabs/Parcourse), which brings the `extension` folder with it.
 2. Open `chrome://extensions` and turn on **Developer mode**, top right.
 3. Choose **Load unpacked** and pick the `extension` folder.
 
-It works in Chrome, Edge, Brave, Arc, and anything else built on Chromium.
+Either way it behaves the same. A version loaded this way does not update itself.
 
 ## Pointing It At Your Instance
 
