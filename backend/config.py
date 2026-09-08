@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     oidc_redirect_url: str = ""
     oidc_post_login_url: str = ""
     oidc_auto_provision: bool = False
+    oidc_only: bool = False
     oidc_scopes: str = "openid email profile"
 
 settings = Settings()
@@ -81,6 +82,26 @@ def _checked_oidc(issuer: str) -> bool:
     return True
 
 
+def _checked_oidc_only(only: bool, enabled: bool) -> bool:
+    """Taking the password form away without a provider to put in its place
+    would leave nobody a way in at all."""
+    if only and enabled is False:
+        raise ValueError("OIDC_ONLY needs single sign-on set up, starting with OIDC_ISSUER")
+    return only
+
+
+def _checked_post_login_url(url: str, origins: list[str], enabled: bool) -> str:
+    """A blank one sends the browser to the API's own origin, where the app is
+    not served, so the sign-in appears to hang on a page nobody wrote."""
+    settled = url or (origins[0] if origins else "")
+    if enabled and settled == "":
+        raise ValueError(
+            "OIDC_POST_LOGIN_URL is needed when CORS_ORIGINS is empty: "
+            "there is nowhere to send the browser after a sign-in"
+        )
+    return settled
+
+
 def _checked_secret(name: str, value: str, published: str, generate: str) -> str:
     """An instance that kept the published value has none of the protection it
     thinks it has: its tokens can be forged and its stored keys read. Refusing
@@ -121,9 +142,9 @@ OIDC_NAME = settings.oidc_name.strip() or "SSO"
 OIDC_REDIRECT_URL = settings.oidc_redirect_url.strip()
 OIDC_SCOPES = settings.oidc_scopes.strip()
 OIDC_AUTO_PROVISION = settings.oidc_auto_provision
-# Where the browser is sent once sign-in worked. The app is served from the
-# first allowed origin in every deployment the docs describe, so that is the
-# default rather than a fifth thing to set.
-OIDC_POST_LOGIN_URL = settings.oidc_post_login_url.strip() or (
-    settings.cors_origins[0] if settings.cors_origins else ""
+OIDC_ONLY = _checked_oidc_only(settings.oidc_only, OIDC_ENABLED)
+# The app is served from the first allowed origin in every deployment the docs
+# describe, so that is the default rather than a fifth thing to set.
+OIDC_POST_LOGIN_URL = _checked_post_login_url(
+    settings.oidc_post_login_url.strip(), settings.cors_origins, OIDC_ENABLED
 )

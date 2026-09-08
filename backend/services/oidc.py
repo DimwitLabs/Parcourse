@@ -5,13 +5,13 @@ issuer's discovery document names every endpoint and key, which is what lets
 the same code work against Zitadel, Keycloak, Auth0, Entra or Google.
 """
 
-import base64
-import hashlib
 import logging
 import secrets
+import time
 from urllib.parse import urlencode
 
 import httpx
+from authlib.oauth2.rfc7636 import create_s256_code_challenge
 from authlib.oidc.core import CodeIDToken
 from joserfc import jwt
 from joserfc.errors import JoseError
@@ -32,8 +32,12 @@ _SIGNING_ALGORITHMS = frozenset(
     {"RS256", "RS384", "RS512", "ES256", "ES384", "ES512", "PS256", "PS384", "PS512"}
 )
 
+_CACHE_FOR = 3600
+
 _discovery: dict | None = None
+_discovery_read_at = 0.0
 _jwks: dict | None = None
+_jwks_read_at = 0.0
 
 
 class OidcError(Exception):
@@ -41,9 +45,9 @@ class OidcError(Exception):
 
 
 def discovery() -> dict:
-    """The issuer's own description of itself, fetched once and kept."""
-    global _discovery
-    if _discovery is not None:
+    """The issuer's own description of itself, kept for _CACHE_FOR seconds."""
+    global _discovery, _discovery_read_at
+    if _discovery is not None and time.monotonic() - _discovery_read_at < _CACHE_FOR:
         return _discovery
 
     url = f"{OIDC_ISSUER}/.well-known/openid-configuration"
@@ -63,6 +67,7 @@ def discovery() -> dict:
             raise OidcError(f"{url} does not name {field}")
 
     _discovery = document
+    _discovery_read_at = time.monotonic()
     logger.info("[oidc]: discovered %s", OIDC_ISSUER)
     return document
 
@@ -70,15 +75,18 @@ def discovery() -> dict:
 def _keys(refresh: bool = False) -> dict:
     """The provider's public keys. A signature naming a key we have not seen
     means they rotated, so the set is fetched again before giving up."""
-    global _jwks
-    if _jwks is None or refresh:
+    global _jwks, _jwks_read_at
+    stale = time.monotonic() - _jwks_read_at >= _CACHE_FOR
+    if _jwks is None or refresh or stale:
         url = discovery()["jwks_uri"]
         try:
             response = httpx.get(url, timeout=_TIMEOUT)
             response.raise_for_status()
             _jwks = response.json()
+            _jwks_read_at = time.monotonic()
         except (httpx.HTTPError, ValueError) as exc:
-            raise OidcError(f"Could not read the signing keys at {url}: {exc}") from exc
+            logger.warning("[oidc]: cannot read the signing keys at %s: %s", url, exc)
+            raise OidcError("Your provider could not be reached. Please try again.") from exc
     return _jwks
 
 
@@ -97,7 +105,7 @@ def start(state: str, nonce: str) -> tuple[str, str]:
     in transit is then useless, because whoever took it cannot produce the
     verifier the provider will ask for."""
     verifier = secrets.token_urlsafe(64)
-    challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b"=").decode()
+    challenge = create_s256_code_challenge(verifier)
 
     query = urlencode({
         "response_type": "code",
@@ -132,10 +140,12 @@ def _token_request(code: str, verifier: str) -> dict:
     try:
         response = httpx.post(document["token_endpoint"], data=form, auth=auth, timeout=_TIMEOUT)
     except httpx.HTTPError as exc:
-        raise OidcError(f"Could not reach the token endpoint: {exc}") from exc
+        logger.warning("[oidc]: token endpoint unreachable: %s", exc)
+        raise OidcError("Your provider could not be reached. Please try again.") from exc
 
     if response.status_code != 200:
-        raise OidcError(f"The provider refused the sign-in: {response.text[:200]}")
+        logger.warning("[oidc]: token endpoint said %s: %s", response.status_code, response.text[:200])
+        raise OidcError("The provider refused this sign-in. Please try again.")
     return response.json()
 
 
@@ -160,7 +170,8 @@ def claims(code: str, verifier: str, nonce: str) -> dict:
             break
         except (JoseError, ValueError, KeyError) as exc:
             if refresh:
-                raise OidcError(f"The id token did not check out: {exc}") from exc
+                logger.warning("[oidc]: id token signature refused: %s", exc)
+                raise OidcError("This sign-in could not be verified. Please try again.") from exc
 
     verified = CodeIDToken(
         token.claims,

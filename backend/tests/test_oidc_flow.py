@@ -89,8 +89,7 @@ class Answer:
 
 class OidcTestCase(unittest.TestCase):
     def setUp(self):
-        oidc._discovery = None
-        oidc._jwks = None
+        self._forget_caches()
         patches = [
             mock.patch.object(oidc, "OIDC_ISSUER", ISSUER),
             mock.patch.object(oidc, "OIDC_CLIENT_ID", CLIENT_ID),
@@ -103,8 +102,14 @@ class OidcTestCase(unittest.TestCase):
             self.addCleanup(patch.stop)
 
     def tearDown(self):
+        self._forget_caches()
+
+    @staticmethod
+    def _forget_caches():
         oidc._discovery = None
+        oidc._discovery_read_at = 0.0
         oidc._jwks = None
+        oidc._jwks_read_at = 0.0
 
 
 class Discovery(OidcTestCase):
@@ -215,13 +220,17 @@ class Claims(OidcTestCase):
             self._exchange(an_id_token(sub=""))
         self.assertIn("sub", str(caught.exception.__cause__))
 
-    def test_a_refusal_from_the_provider_is_passed_on(self):
+    def test_a_refusal_from_the_provider_is_logged_not_shown(self):
+        """The body can carry our own client credentials back at us, so it
+        belongs in the operator's log and nowhere near the browser."""
         with mock.patch.object(oidc.httpx, "get", side_effect=self._fetch), mock.patch.object(
             oidc.httpx, "post", return_value=Answer({"error": "invalid_grant"}, status_code=400)
         ):
-            with self.assertRaises(oidc.OidcError) as caught:
-                oidc.claims("used-already", "v", "the-nonce")
-        self.assertIn("invalid_grant", str(caught.exception))
+            with self.assertLogs("services.oidc", level="WARNING") as logged:
+                with self.assertRaises(oidc.OidcError) as caught:
+                    oidc.claims("used-already", "v", "the-nonce")
+        self.assertNotIn("invalid_grant", str(caught.exception))
+        self.assertIn("invalid_grant", "\n".join(logged.output))
 
     def test_no_id_token_is_refused(self):
         with mock.patch.object(oidc.httpx, "get", side_effect=self._fetch), mock.patch.object(
