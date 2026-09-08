@@ -192,6 +192,29 @@ class Claims(OidcTestCase):
         self.assertEqual(verified["sub"], "subject-1")
         self.assertEqual(verified["email"], "someone@example.com")
 
+    def test_an_issuer_with_a_trailing_slash_is_accepted(self):
+        """Auth0 names itself with a trailing slash in both its discovery
+        document and its tokens, while OIDC_ISSUER is stored tidied up. The
+        token has to be judged against what the document says, or every
+        sign-in against such a provider is turned away."""
+        slashed = ISSUER + "/"
+        document = dict(DISCOVERY, issuer=slashed)
+
+        def fetch(url, **_):
+            if url.endswith("/jwks"):
+                return Answer({"keys": [SIGNING_JWK]})
+            return Answer(document)
+
+        with mock.patch.object(oidc.httpx, "get", side_effect=fetch), mock.patch.object(
+            oidc.httpx, "post", return_value=Answer({"id_token": an_id_token(iss=slashed)})
+        ):
+            verified = oidc.claims("the-code", "the-verifier", "the-nonce")
+        self.assertEqual(verified["sub"], "subject-1")
+
+    def test_a_token_from_another_issuer_is_still_refused(self):
+        with self.assertRaises(oidc.OidcError):
+            self._exchange(an_id_token(iss="https://somewhere.else"))
+
     def test_another_key_is_refused(self):
         """Signed by someone who is not the provider."""
         with self.assertRaises(oidc.OidcError):

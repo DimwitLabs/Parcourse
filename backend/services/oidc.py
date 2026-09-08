@@ -173,11 +173,14 @@ def claims(code: str, verifier: str, nonce: str) -> dict:
                 logger.warning("[oidc]: id token signature refused: %s", exc)
                 raise OidcError("This sign-in could not be verified. Please try again.") from exc
 
+    # The token's issuer has to equal the discovery document's own `issuer`
+    # exactly, punctuation and all. Auth0 writes it with a trailing slash, so
+    # comparing against the tidied-up setting would turn every sign-in away.
     verified = CodeIDToken(
         token.claims,
         token.header,
         options={
-            "iss": {"essential": True, "value": OIDC_ISSUER},
+            "iss": {"essential": True, "value": discovery()["issuer"]},
             "aud": {"essential": True, "value": OIDC_CLIENT_ID},
             "sub": {"essential": True},
         },
