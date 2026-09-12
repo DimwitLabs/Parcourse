@@ -40,7 +40,7 @@ const config: Config = {
   tagline: "Turn curiosity into knowledge",
   favicon: "img/parcourse.svg",
 
-  url: "https://docs.parcourse.dimwit.me",
+  url: "https://docs.parcourse.study",
   baseUrl: "/",
 
   organizationName: "DimwitLabs",
@@ -158,7 +158,7 @@ const config: Config = {
         {
           title: "Elsewhere",
           items: [
-            { label: "Parcourse", href: "https://parcourse.dimwit.me" },
+            { label: "Parcourse", href: "https://parcourse.study" },
             { label: "Dimwit Labs", href: "https://dimwit.me" },
           ],
         },

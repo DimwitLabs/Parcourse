@@ -7,7 +7,7 @@
 
 <p align="center"><img src="landing/og.png" alt="Parcourse. Turn curiosity into knowledge." width="100%" /></p>
 
-<p align="center"><a href="https://parcourse.dimwit.me">parcourse.dimwit.me</a></p>
+<p align="center"><a href="https://parcourse.study">parcourse.study</a></p>
 
 > [!NOTE]
 > This project is backed by the [Dimwit Pledge](https://dimwit.me/pledge).
@@ -39,7 +39,7 @@ The app is on http://localhost:5173 and the API on http://localhost:8000. The fi
 
 ## Documentation
 
-[docs.parcourse.dimwit.me](https://docs.parcourse.dimwit.me)
+[docs.parcourse.study](https://docs.parcourse.study)
 
 Running it on a VPS, using your own Postgres, connecting a provider, managing accounts, upgrading, and every setting it reads are all documented there.
 
