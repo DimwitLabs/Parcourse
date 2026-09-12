@@ -2,14 +2,14 @@
 # YouTube refuses. Everything else matches docker-compose.ghcr.yml.
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: parcourse
       POSTGRES_USER: parcourse
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-parcourse}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U parcourse"]
       interval: 5s

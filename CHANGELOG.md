@@ -19,6 +19,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 
+- **Postgres 18:** The bundled database moves from Postgres 16 to 18, and the volume now mounts at `/var/lib/postgresql` instead of `/var/lib/postgresql/data`, which is where the 18 images keep it. If you are using the bundled database, consider reading [Upgrading](https://docs.parcourse.study/self-hosting/upgrading) before you upgrade.
 - **Pre-built Frontend Image:** It used to compile itself on every start, which made each restart slow and kept a full toolchain in the runtime image; the image is `64 MB`, dropping from a whopping `469 MB`. `VITE_API_BASE_URL` is read when the container starts, so changing it needs a restart rather than a rebuild.
 - Containers now run as an unprivileged user instead of privileged.
 - **Signing Moved Off An Abandoned Library:** `python-jose` has not been maintained for some time, and everything that reads a token now goes through `joserfc` and `authlib` instead. Sessions issued before the upgrade keep working, so nobody is signed out by it.

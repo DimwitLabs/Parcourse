@@ -55,6 +55,24 @@ If `ENCRYPTION_KEY` changed, every stored key became unreadable, because that is
 
 If `JWT_SECRET` changed, every issued token is invalid. Everyone signs in again, and that is the whole of it.
 
+## The Database Will Not Start After Upgrading
+
+The frontend never comes up and nothing looks wrong with it. Look at the database instead:
+
+```bash
+docker compose logs db
+```
+
+Postgres 18 refusing to open a data directory written by an older version says so at length, and the part that matters is near the top:
+
+```
+Error: in 18+, these Docker images are configured to store database data in a format which is compatible with "pg_ctlcluster" ... Counter to that, there appears to be PostgreSQL data in: /var/lib/postgresql
+```
+
+Nothing has been lost. The old database is still sitting in the volume; the new Postgres will not open it in place. [Upgrading](/self-hosting/upgrading) has the dump-and-restore that moves it across.
+
+To take the backup you have to start the old Postgres one more time, so put `image: postgres:16-alpine` and `- postgres_data:/var/lib/postgresql/data` back in your compose file first. Do not delete the volume before that dump exists.
+
 ## Seeing More from the Backend
 
 ```
