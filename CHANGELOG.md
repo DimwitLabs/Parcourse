@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.1] - 2026-09-15
+
+### Fixed
+
+- **Components Keep Their Own Look:** Menus, dialogs, tooltips, toasts, dropdowns, cards and buttons in `@dimwitlabs/parcourse-brand` now set their own alignment and type instead of borrowing them from the page around them. Placed inside a centred page, the account menu used to centre its name and email, and the theme switch inside it bunched to one side. Nothing changes in how Parcourse itself looks.
+
 ## [1.7.0] - 2026-09-14
 
 ### Added
