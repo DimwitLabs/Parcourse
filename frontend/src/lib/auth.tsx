@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 
 declare global {
   interface Window {
-    __PARCOURSE_CONFIG__?: { apiBaseUrl?: string };
+    __PARCOURSE_CONFIG__?: { apiBaseUrl?: string; themeDomain?: string };
   }
 }
 

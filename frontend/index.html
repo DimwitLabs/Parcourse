@@ -21,16 +21,35 @@
       :root[data-theme="dark"] { color-scheme: dark; }
       html { background: light-dark(#fbf9f5, #14150f); }
     </style>
+    <script src="/config.js"></script>
     <script>
-      try {
-        var t = localStorage.getItem("__THEME_KEY__");
-        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
-      } catch (e) {}
+      (function () {
+        var key = "__THEME_KEY__";
+        function stored() {
+          var domain = (window.__PARCOURSE_CONFIG__ || {}).themeDomain || "";
+          if (domain !== "") {
+            var match = document.cookie.match(new RegExp("(?:^|; )" + key + "=(light|dark)"));
+            return match === null ? null : match[1];
+          }
+          try {
+            return localStorage.getItem(key);
+          } catch (e) {
+            return null;
+          }
+        }
+        function paint() {
+          var theme = stored();
+          if (theme === "light" || theme === "dark") document.documentElement.setAttribute("data-theme", theme);
+          else document.documentElement.removeAttribute("data-theme");
+        }
+        paint();
+        window.addEventListener("pageshow", paint);
+        document.addEventListener("visibilitychange", paint);
+      })();
     </script>
   </head>
   <body>
     <div id="root"></div>
-    <script src="/config.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
