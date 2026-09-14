@@ -56,6 +56,10 @@ def provisioning(allowed: bool):
     return mock.patch.object(identity, "OIDC_AUTO_PROVISION", allowed)
 
 
+def only_way_in(only: bool):
+    return mock.patch.object(identity, "OIDC_ONLY", only)
+
+
 class AnAccountAlreadyLinked(unittest.TestCase):
     def test_it_is_the_one_signed_in(self):
         session = a_session()
@@ -139,6 +143,13 @@ class AnAccountThatExistsButIsNotLinked(unittest.TestCase):
             with self.assertRaises(OidcError) as caught:
                 identity.resolve(self.session, claims(email_verified=False))
         self.assertIn("did not verify", str(caught.exception))
+
+    def test_an_unverified_address_claims_it_when_there_is_no_other_way_in(self):
+        """Nothing is at risk: every account on the instance arrived through
+        this provider, so there is no local password to take over."""
+        with provisioning(True), only_way_in(True):
+            found = identity.resolve(self.session, claims(email_verified=False))
+        self.assertEqual(found.id, self.existing.id)
 
     def test_a_missing_verified_flag_does_not_either(self):
         with provisioning(True):

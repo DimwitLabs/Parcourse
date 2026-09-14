@@ -4,7 +4,7 @@ import logging
 
 from sqlmodel import Session, select
 
-from config import OIDC_AUTO_PROVISION
+from config import OIDC_AUTO_PROVISION, OIDC_ONLY
 from models.instance_config import INSTANCE_ID, InstanceConfig, InstanceMode
 from models.user import User, UserRole
 from models.user_identity import UserIdentity
@@ -57,7 +57,7 @@ def resolve(session: Session, claims: dict) -> User:
 
     existing = session.exec(select(User).where(User.email == email)).first()
     if existing is not None:
-        if claims.get("email_verified") is not True:
+        if claims.get("email_verified") is not True and OIDC_ONLY is False:
             raise OidcError(f"An account already uses {email}, and the provider did not verify that address")
         _link(session, existing, issuer, subject)
         return existing
