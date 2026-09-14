@@ -10,6 +10,15 @@ export const API_BASE_URL =
   window.__PARCOURSE_CONFIG__?.apiBaseUrl || import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 const TOKEN_KEY = "parcourse_token";
+const STOOD_DOWN_KEY = "parcourse_sso_stood_down";
+
+export function standDown() {
+  sessionStorage.setItem(STOOD_DOWN_KEY, "1");
+}
+
+export function stoodDown(): boolean {
+  return sessionStorage.getItem(STOOD_DOWN_KEY) === "1";
+}
 
 export type UserInfo = { id: string; email: string; role: "admin" | "student"; first_name?: string; last_name?: string; must_change_password?: boolean; has_password?: boolean };
 
@@ -81,6 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function logout() {
+    standDown();
     localStorage.removeItem(TOKEN_KEY);
     setToken(null);
     setUser(null);

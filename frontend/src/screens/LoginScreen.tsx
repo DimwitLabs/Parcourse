@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import PasswordInput from "../components/PasswordInput";
 import ThemeSwitch from "../components/ThemeSwitch";
 import { toast } from "../components/Toast";
 import { errMsg } from "../lib/api";
-import { API_BASE_URL, useAuth } from "../lib/auth";
-import { passwordsAllowed, providerButton, providerEnabled, providerName, providerOnly, useSso } from "../lib/sso";
+import { API_BASE_URL, stoodDown, useAuth } from "../lib/auth";
+import { passwordsAllowed, providerButton, providerEnabled, providerName, providerOnly, ssoSettled, useSso } from "../lib/sso";
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -28,6 +28,16 @@ export default function LoginScreen() {
 
   const showPasswordForm = passwordsAllowed(sso);
   const ssoIsTheWayIn = providerOnly(sso);
+
+  const handingOver = ssoIsTheWayIn && stoodDown() === false;
+
+  useEffect(() => {
+    if (handingOver) window.location.assign(`${API_BASE_URL}/auth/oidc/start`);
+  }, [handingOver]);
+
+  // Nothing to decide until the provider has been asked about, and nothing to
+  // show when the answer is that somebody else does the asking.
+  if (ssoSettled(sso) === false || handingOver) return <div className="login-page" />;
 
   return (
     <div className="login-page">
