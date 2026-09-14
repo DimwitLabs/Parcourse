@@ -221,7 +221,7 @@ export default function NotebookScreen() {
               ? "Mark as not done"
               : "Mark all as done";
           return (
-          <div key={c.id} className={`notebook-card card${isComplete ? " completed" : ""}`}>
+          <div key={c.id} className={`notebook-card card lift${isComplete ? " completed" : ""}`}>
             <Link to={`/course/${c.id}`} className="notebook-card-link">
               <div className="notebook-thumb-wrap">
                 <img className="notebook-thumb" src={c.thumbnail_url} alt="" loading="lazy" />

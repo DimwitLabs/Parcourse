@@ -314,7 +314,7 @@ export default function HomeScreen() {
           </div>
           <div className="course-grid">
             {recentCourses.map((c) => (
-              <Link to={`/course/${c.id}`} key={c.id} className="course-card">
+              <Link to={`/course/${c.id}`} key={c.id} className="course-card lift">
                 <div className="course-card-thumb">
                   <img src={c.thumbnail_url} alt="" loading="lazy" />
                 </div>

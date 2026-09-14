@@ -1,0 +1,24 @@
+{
+  "name": "@dimwitlabs/parcourse-brand",
+  "version": "1.7.0",
+  "description": "The colours, shapes and marks Parcourse is drawn with.",
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DimwitLabs/Parcourse.git",
+    "directory": "shared"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "files": [
+    "tokens.css",
+    "styles.css",
+    "assets"
+  ],
+  "exports": {
+    "./tokens.css": "./tokens.css",
+    "./styles.css": "./styles.css",
+    "./assets/*": "./assets/*"
+  }
+}
