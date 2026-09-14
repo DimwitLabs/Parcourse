@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     oidc_label: str = ""
     oidc_redirect_url: str = ""
     oidc_post_login_url: str = ""
+    oidc_account_url: str = ""
     oidc_auto_provision: bool = False
     oidc_only: bool = False
     oidc_scopes: str = "openid email profile"
@@ -150,6 +151,7 @@ OIDC_CLIENT_SECRET = settings.oidc_client_secret.strip()
 OIDC_NAME = settings.oidc_name.strip() or "SSO"
 OIDC_BUTTON = _oidc_button(settings.oidc_label.strip(), OIDC_NAME)
 OIDC_REDIRECT_URL = settings.oidc_redirect_url.strip()
+OIDC_ACCOUNT_URL = settings.oidc_account_url.strip().rstrip("/")
 OIDC_SCOPES = settings.oidc_scopes.strip()
 OIDC_AUTO_PROVISION = settings.oidc_auto_provision
 OIDC_ONLY = _checked_oidc_only(settings.oidc_only, OIDC_ENABLED)

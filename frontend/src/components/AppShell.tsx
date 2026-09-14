@@ -4,6 +4,7 @@ import { NavLink, Outlet, useLocation, useNavigate, useNavigationType } from "re
 import Avatar from "./Avatar";
 import ThemeSwitch from "./ThemeSwitch";
 import { useAuth } from "../lib/auth";
+import { providerAccountUrl, useSso } from "../lib/sso";
 
 const NAV_LINKS = [
   { to: "/", end: true, label: "Home", desc: "Your dashboard and recent courses" },
@@ -13,6 +14,8 @@ const NAV_LINKS = [
 
 export default function AppShell() {
   const { user, logout } = useAuth();
+  const sso = useSso();
+  const accountUrl = providerAccountUrl(sso);
 
   const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(" ");
   const navigate = useNavigate();
@@ -100,6 +103,18 @@ export default function AppShell() {
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     Admin
+                  </button>
+                )}
+                {accountUrl !== "" && (
+                  <button
+                    className="user-dropdown-item"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      window.location.assign(accountUrl);
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Account
                   </button>
                 )}
                 <ThemeSwitch />

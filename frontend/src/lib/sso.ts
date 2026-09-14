@@ -7,6 +7,7 @@ export type Sso = {
   name: string;
   button: string;
   only: boolean;
+  account_url: string;
 };
 
 export type SsoState = Sso | "loading" | "unreachable";
@@ -16,6 +17,7 @@ const FALLBACK: Sso = {
   name: "SSO",
   button: "Continue with SSO",
   only: false,
+  account_url: "",
 };
 
 let pending: Promise<SsoState> | null = null;
@@ -64,6 +66,10 @@ export function providerButton(sso: SsoState): string {
 // The provider is the whole way in: no password form to fall back on.
 export function providerOnly(sso: SsoState): boolean {
   return providerEnabled(sso) && passwordsAllowed(sso) === false;
+}
+
+export function providerAccountUrl(sso: SsoState): string {
+  return sso === "loading" || sso === "unreachable" ? "" : sso.account_url;
 }
 
 export function ssoSettled(sso: SsoState): boolean {

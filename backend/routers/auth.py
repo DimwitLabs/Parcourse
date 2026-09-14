@@ -10,6 +10,7 @@ from sqlmodel import Session, delete, select
 logger = logging.getLogger(__name__)
 
 from config import (
+    OIDC_ACCOUNT_URL,
     OIDC_BUTTON,
     OIDC_ENABLED,
     OIDC_ISSUER,
@@ -133,7 +134,11 @@ def get_config(session: Session = Depends(get_session)) -> ConfigResponse:
     return ConfigResponse(
         mode=config.mode if config else None,
         oidc=OidcConfig(
-            enabled=OIDC_ENABLED, name=OIDC_NAME, button=OIDC_BUTTON, only=OIDC_ONLY
+            enabled=OIDC_ENABLED,
+            name=OIDC_NAME,
+            button=OIDC_BUTTON,
+            only=OIDC_ONLY,
+            account_url=OIDC_ACCOUNT_URL,
         ),
     )
 

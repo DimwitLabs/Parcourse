@@ -67,15 +67,11 @@ class UserResponse(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
     must_change_password: bool = False
-    # So the app knows whether to ask for a current password, and whether to
-    # offer setting one at all.
     has_password: bool = True
 
 
 class ChangePasswordRequest(BaseModel):
     password: PasswordStr
-    # Left out only by an account that has no password to prove: one that signs
-    # in through a provider and is adding a password for the first time.
     current_password: str | None = None
 
 
@@ -96,13 +92,11 @@ class SetupStatusResponse(BaseModel):
 class OidcConfig(BaseModel):
     enabled: bool
     name: str
-    # The finished button text, so the page never has to assemble it.
     button: str
     only: bool = False
+    account_url: str = ""
 
 
 class ConfigResponse(BaseModel):
-    # Absent until setup has run. How sign-in works is known from the start,
-    # because it comes from the environment rather than the database.
     mode: InstanceMode | None = None
     oidc: OidcConfig
