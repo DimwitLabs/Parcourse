@@ -180,6 +180,7 @@ body {
   flex-direction: column;
   gap: 0.35rem;
   z-index: 30;
+  text-align: left;
 }
 
 .user-dropdown {
@@ -271,7 +272,7 @@ body {
   z-index: 2;
 }
 
-.login-theme-switch .theme-switch-option {
+.theme-switch.login-theme-switch .theme-switch-option {
   flex: 0 0 auto;
   white-space: nowrap;
   padding: 0.4rem 0.6rem;
@@ -483,6 +484,10 @@ body {
   gap: 0.5rem;
   white-space: nowrap;
   transition: background 0.15s ease, transform 0.1s ease;
+  line-height: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  font-style: normal;
 }
 
 .button:active {
@@ -558,6 +563,7 @@ body {
   box-shadow: var(--shadow-lift-sm);
   border: var(--card-edge);
   transition: background 0.15s ease, box-shadow 0.2s ease;
+  text-align: left;
 }
 
 .card.muted {
@@ -1391,6 +1397,7 @@ body {
   padding: 0.9rem 1.25rem;
   font-size: 0.95rem;
   transition: border-color 0.14s ease, background 0.14s ease;
+  text-align: left;
 }
 
 .mcq-option:hover {
@@ -1590,6 +1597,8 @@ body {
   font-size: 0.8rem;
   font-weight: 700;
   white-space: nowrap;
+  line-height: normal;
+  font-style: normal;
 }
 
 .chip.correct {
@@ -1681,6 +1690,7 @@ body {
   gap: 1rem;
   padding: 0.75rem 1rem;
   border-radius: var(--radius-lg);
+  text-align: left;
 }
 
 .user-row:hover {
@@ -1700,6 +1710,8 @@ body {
   font-size: 0.85rem;
   flex-shrink: 0;
   object-fit: cover;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .user-info {
@@ -2336,6 +2348,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  text-align: left;
 }
 
 .graph-tooltip.pinned {
@@ -2571,6 +2584,8 @@ body {
   box-shadow: var(--shadow-lift);
   padding: 0.35rem;
   z-index: 200;
+  text-align: left;
+  font-weight: 400;
 }
 
 .notebook-search {
@@ -2965,6 +2980,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  text-align: left;
 }
 
 .stat-big {
@@ -2989,6 +3005,8 @@ body {
   border-radius: var(--radius-full);
   background: var(--color-secondary-container);
   color: var(--color-primary);
+  line-height: normal;
+  font-style: normal;
 }
 
 .role-pill.admin {
@@ -3116,6 +3134,7 @@ body {
   max-width: 26rem;
   display: flex;
   flex-direction: column;
+  text-align: left;
 }
 
 .modal-checkbox-pair {
@@ -3304,10 +3323,15 @@ body {
   font-size: 0.78rem;
   color: var(--color-ink-faint);
   line-height: 1.4;
+  text-align: left;
 }
 
 .modal-field-hint.is-error {
   color: var(--color-danger);
+}
+
+.hero > .modal-field-hint.is-error {
+  text-align: center;
 }
 
 .modal-textarea {
@@ -3699,6 +3723,8 @@ body {
   letter-spacing: 0.04em;
   padding: 0.2rem 0.6rem;
   border-radius: var(--radius-full);
+  line-height: normal;
+  font-style: normal;
 }
 
 .tag.sage {
@@ -3767,6 +3793,8 @@ a.tip {
   pointer-events: none;
   transform: translate(-50%, 0.35rem);
   transition: opacity 0.18s ease, transform 0.18s ease;
+  text-align: left;
+  font-style: normal;
 }
 
 .tip:hover::after,
@@ -3785,6 +3813,10 @@ a.tip {
   flex-direction: column;
   gap: 0.5rem;
   pointer-events: none;
+  text-align: left;
+  line-height: normal;
+  letter-spacing: normal;
+  font-style: normal;
 }
 
 .toast {
@@ -4127,6 +4159,7 @@ a.tip {
   gap: 0.25rem;
   z-index: 1;
   overflow-y: auto;
+  text-align: left;
 }
 
 .mobile-nav-close {
@@ -4186,6 +4219,7 @@ a.tip {
   position: relative;
   min-width: 14rem;
   user-select: none;
+  text-align: left;
 }
 
 .custom-select-trigger {
@@ -4241,6 +4275,7 @@ a.tip {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  font-weight: 400;
 }
 
 .custom-select-search {
@@ -5433,6 +5468,7 @@ a.modal-field-hint {
   border-radius: var(--radius-lg) 0 0 var(--radius-lg);
   box-shadow: var(--shadow-menu);
   animation: notes-in 0.22s ease;
+  text-align: left;
 }
 
 @keyframes notes-in {
@@ -5444,6 +5480,7 @@ a.modal-field-hint {
   background-image: radial-gradient(var(--color-dot-faint) 1.4px, transparent 1.4px);
   background-size: 26px 26px;
   background-position: 13px 13px;
+  text-align: left;
 }
 
 .notes-editor-page {
@@ -5579,6 +5616,8 @@ a.modal-field-hint {
   align-items: flex-start;
   gap: 0.7rem;
   min-width: 0;
+  font-size: 0.68rem;
+  color: var(--color-ink-faint);
 }
 
 .notes-guide-toggle {
