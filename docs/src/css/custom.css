@@ -988,3 +988,15 @@ div[class^="codeBlockTitle"] {
     display: none;
   }
 }
+
+.learning-style-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+}
+
+.learning-style-name svg {
+  flex-shrink: 0;
+  color: var(--color-primary);
+}

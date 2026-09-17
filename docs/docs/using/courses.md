@@ -52,6 +52,6 @@ Search looks at everything a course holds, not just the title: section titles an
 
 ## Regenerating and Deleting
 
-A course can be regenerated, which throws away the sections and asks the model again. Use it when the split is wrong rather than when a single summary is weak.
+A course can be regenerated, which throws away the sections and asks the model again. Use it when the split is wrong rather than when a single summary is weak, or to switch the course to another [learning style](/using/learning-styles).
 
 Deleting a course removes its sections, its progress, its quiz attempts, its [notes](/using/notes) and its cheatsheet. It also prunes the concepts it contributed to your knowledge graph, though anything another course still holds up is kept. Both actions ask first.

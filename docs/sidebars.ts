@@ -11,6 +11,7 @@ const sidebars: SidebarsConfig = {
       items: [
         "using/courses",
         "using/quizzes",
+        "using/learning-styles",
         "using/notes",
         "using/cheatsheets",
         "using/knowledge-graph",

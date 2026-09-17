@@ -17,7 +17,11 @@ Concepts sit at three levels, each belonging to the one above it:
 | Topic | A subject within a field |
 | Skill | Something specific you can do |
 
-A course contributes concepts at whichever tiers fit it, and concepts are shared between courses, so a second course on the same subject deepens what is there rather than adding a parallel copy.
+A course contributes concepts at whichever tiers fit it, and concepts are shared between your courses, so a second course on the same subject deepens what is there rather than adding a parallel copy.
+
+Your graph is yours alone. Someone else on the same instance who studies the same subject builds their own, named from their own courses, and nothing either of you does changes the other's.
+
+Fields are kept broad, named in a word or two. When a field turns out to be part of a broader one, say `Stock Valuation` once a course on `Finance` comes along, it becomes a topic under that field and keeps its mastery and its courses. The topics it held move up to sit directly under the broader field.
 
 ## Mastery
 
@@ -30,6 +34,18 @@ A concept can be dropped from your graph. Clicking one brings up the option, and
 Forgetting a concept takes everything below it that has nothing else holding it up. A topic without its field has nothing left to hang from, so it goes too. A concept that also belongs to one you are keeping stays where it is. The confirmation names everything that will go before it goes.
 
 A forgotten concept comes back if another course teaches it.
+
+## Tidying
+
+A graph built one course at a time picks up near-duplicates and labels that are too specific. **Tidy**, in the graph controls, asks your model for a cleanup and shows you what it would do before anything changes:
+
+| Change | What it does |
+| --- | --- |
+| Rename | Gives a concept a clearer label, like `Personal Money Management` to `Finance` |
+| Merge | Joins two concepts that mean the same thing into one |
+| Move | Makes a field a topic under a broader field |
+
+Merged concepts keep the better of their two mastery scores and every course that taught either of them. Untick any change you disagree with, then press **Save changes** to apply the rest, or **Leave it** to keep your graph as it is. If the list is close but not right, write a reply under it, like "keep Stock Valuation as its own field", and press **Suggest again** for a revised list. Anything you unticked is not suggested again. Tidying only ever touches your own graph.
 
 ## Exporting
 

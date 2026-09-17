@@ -42,6 +42,8 @@ Open a YouTube video. A dot appears on the extension icon in the toolbar, which 
 
 Click the icon and press **Create course**. Right-clicking the page or a video link and choosing **Learn in Parcourse** does the same thing.
 
+The popup has a **Learning style** switcher. It starts on **My default**, which uses the [learning style](/using/learning-styles) saved in your Parcourse settings. Pick another style to make just this course with it. The right-click menu always uses your default.
+
 Parcourse opens in a new tab and starts the course. Everything after that is the ordinary flow, so chapters are still offered when the creator wrote them, and the guardrail still runs.
 
 :::note[Signing in]

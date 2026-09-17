@@ -1522,6 +1522,10 @@ h1 .accent {
     gap: 0.75rem;
 }
 
+.strip.trio {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .tile {
     background: var(--color-surface-lowest);
     border: var(--card-edge);
@@ -1841,7 +1845,8 @@ h1 .accent {
         transform: none;
     }
 
-    .strip {
+    .strip,
+    .strip.trio {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
@@ -1895,7 +1900,8 @@ h1 .accent {
         display: inline-flex;
     }
 
-    .strip {
+    .strip,
+    .strip.trio {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
@@ -2668,6 +2674,92 @@ h1 .accent {
 .graph-export-controls {
     display: flex;
     gap: 0.35rem;
+}
+
+.graph-zoom-controls .button,
+.graph-export-controls .button {
+    background: var(--color-surface-low);
+}
+
+.graph-zoom-slider {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0 0.35rem;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-low);
+}
+
+.graph-zoom-divider {
+    width: 1px;
+    height: 1.1rem;
+    margin: 0 0.2rem;
+    background: var(--color-border);
+}
+
+.graph-zoom-step {
+    display: grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: var(--radius-full);
+    color: var(--color-ink-soft);
+}
+
+.m3-slider {
+    --track: 1rem;
+    --handle-gap: 6px;
+    --handle-width: 4px;
+    position: relative;
+    width: 7rem;
+    height: 2rem;
+    margin: 0 0.35rem;
+}
+
+.m3-slider-active,
+.m3-slider-inactive {
+    position: absolute;
+    top: 50%;
+    height: var(--track);
+    transform: translateY(-50%);
+}
+
+.m3-slider-active {
+    left: 0;
+    width: max(0px, calc(var(--fill) - var(--handle-width) / 2 - var(--handle-gap)));
+    border-radius: var(--radius-full) 2px 2px var(--radius-full);
+    background: var(--color-primary);
+}
+
+.m3-slider-inactive {
+    right: 0;
+    width: max(0px, calc(100% - var(--fill) - var(--handle-width) / 2 - var(--handle-gap)));
+    border-radius: 2px var(--radius-full) var(--radius-full) 2px;
+    background: var(--color-secondary-container);
+    overflow: hidden;
+}
+
+.m3-slider-inactive::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: calc((var(--track) - 4px) / 2);
+    width: 4px;
+    height: 4px;
+    border-radius: var(--radius-full);
+    background: var(--color-primary);
+    transform: translateY(-50%);
+}
+
+.m3-slider-handle {
+    position: absolute;
+    top: 0;
+    left: var(--fill);
+    width: var(--handle-width);
+    height: 100%;
+    border-radius: var(--radius-full);
+    background: var(--color-primary);
+    transform: translateX(-50%);
 }
 
 

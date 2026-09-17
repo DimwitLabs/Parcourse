@@ -5,7 +5,7 @@ title: Quizzes
 
 # Quizzes
 
-Every course has one quiz, written over the whole course rather than one per section. It mixes two kinds of question.
+Every course has one quiz, written over the whole course rather than one per section. It mixes two kinds of question, in proportions set by your [learning style](/using/learning-styles).
 
 ## The Two Kinds
 
