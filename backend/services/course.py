@@ -2,9 +2,11 @@ import logging
 import uuid
 
 
+from models.user import LearningStyle
 from schemas.course import CourseResponse, CourseSection, MCQOption, MCQQuestion, TheoryQuestion
 from schemas.transcript import Chapter, TranscriptSegment
 from services.llm import complete_json
+from services.learning_style import QUESTIONS, list_of, questions_line
 from services.transcript_text import format_transcript, sanitize_title
 from services.prompts import load
 
@@ -41,7 +43,7 @@ def thumbnail_url(video_id: str) -> str:
     return f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
 
 
-def generate(video_id: str, segments: list[TranscriptSegment], credentials: dict[str, str], model: str, video_title: str = "", feedback: str = "", chapters: list[Chapter] | None = None, channel: str = "", channel_url: str = "") -> CourseResponse:
+def generate(video_id: str, segments: list[TranscriptSegment], credentials: dict[str, str], model: str, video_title: str = "", feedback: str = "", chapters: list[Chapter] | None = None, channel: str = "", channel_url: str = "", style: LearningStyle = LearningStyle.explorer) -> CourseResponse:
     logger.info("[course]: generating course for video %s (%d segments)", video_id, len(segments))
     if segments:
         logger.info(
@@ -94,10 +96,14 @@ def generate(video_id: str, segments: list[TranscriptSegment], credentials: dict
             max_section_seconds=max_section_seconds,
         )
 
+    questions = QUESTIONS[style]
     prompt = _PROMPT.format(
         boundaries_block=boundaries_block,
         title_block=title_block,
         feedback_block=feedback_block,
+        questions=questions_line(questions),
+        mcqs=list_of(questions.mcqs),
+        theory=list_of(questions.theory),
         formatted=formatted,
         total_seconds=total_seconds,
         total_minutes=total_minutes,
@@ -123,7 +129,7 @@ def generate(video_id: str, segments: list[TranscriptSegment], credentials: dict
                 correct_label=m["correct_label"],
                 explanation=m["explanation"],
             )
-            for m in s.get("mcqs", [])
+            for m in s.get("mcqs", [])[:questions.mcqs]
         ]
         theory_questions = [
             TheoryQuestion(
@@ -131,8 +137,13 @@ def generate(video_id: str, segments: list[TranscriptSegment], credentials: dict
                 question=t["question"],
                 reference_answer=t["reference_answer"],
             )
-            for t in s.get("theory_questions", [])
+            for t in s.get("theory_questions", [])[:questions.theory]
         ]
+        if len(mcqs) < questions.mcqs or len(theory_questions) < questions.theory:
+            logger.warning(
+                "[course]: section %r came back with %d/%d multiple-choice and %d/%d theory questions",
+                s["title"], len(mcqs), questions.mcqs, len(theory_questions), questions.theory,
+            )
         sections.append(
             CourseSection(
                 title=s["title"],
@@ -161,5 +172,6 @@ def generate(video_id: str, segments: list[TranscriptSegment], credentials: dict
         channel=channel,
         channel_url=channel_url,
         thumbnail_url=thumbnail_url(video_id),
+        style=style,
         sections=sections,
     )

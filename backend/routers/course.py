@@ -15,7 +15,7 @@ from models.note import CourseNote
 from models.quiz_attempt import QuizAttempt
 from models.quiz_draft import QuizDraft
 from models.section_progress import SectionProgress
-from models.user import User
+from models.user import LearningStyle, User
 from schemas.course import (
     CheatsheetResponse,
     CheatsheetSection,
@@ -41,6 +41,7 @@ class DraftPayload(BaseModel):
 
 class RegeneratePayload(BaseModel):
     feedback: str = ""
+    style: LearningStyle | None = None
     keep_notes: bool = True
     keep_graph: bool = True
 
@@ -83,6 +84,7 @@ def generate_course(
             body.chapters,
             body.channel,
             body.channel_url,
+            body.style or user.learning_style,
         )
     except Exception as exc:
         logger.error("[course]: AI generation failed for video_id=%s: %s", body.video_id, exc)
@@ -314,6 +316,7 @@ def regenerate_course(
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from exc
 
     segments = [TranscriptSegment(**s) for s in video.segments]
+    style = body.style or CourseResponse.model_validate_json(cached.course_json).style
     try:
         course = generate(
             cached.video_id,
@@ -325,6 +328,7 @@ def regenerate_course(
             [Chapter(**c) for c in video.chapters],
             video.channel,
             video.channel_url,
+            style,
         )
     except Exception as exc:
         logger.error("[course]: AI regeneration failed for course_id=%s: %s", course_id, exc)

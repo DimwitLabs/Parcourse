@@ -9,7 +9,7 @@ Transcript (each line is a 30-second chunk prefixed with its start time in secon
 
 {boundaries_block}
 
-For each section also write 2-3 multiple-choice questions and 1-2 open-ended theory questions that test understanding of that section's content.
+{questions}
 {feedback_block}
 Return only a JSON object with exactly this field:
 - "sections": a list of objects, each with:
@@ -18,11 +18,11 @@ Return only a JSON object with exactly this field:
   - "key_takeaways": a list of 2-4 short phrases (3-6 words each) capturing the section's core points
   - "start_seconds": float
   - "end_seconds": float
-  - "mcqs": a list of 2-3 objects, each with:
+  - "mcqs": {mcqs}:
     - "question": str
     - "options": a list of 4 objects, each with "label" ("A"/"B"/"C"/"D") and "text"
     - "correct_label": the label of the correct option
     - "explanation": one sentence explaining why the correct answer is right. Never use em dashes
-  - "theory_questions": a list of 1-2 objects, each with:
+  - "theory_questions": {theory}:
     - "question": an open-ended question requiring a short written answer
     - "reference_answer": a model answer used later to grade student responses

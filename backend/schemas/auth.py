@@ -5,7 +5,7 @@ from typing import Annotated
 from pydantic import AfterValidator, BaseModel, EmailStr
 
 from models.instance_config import InstanceMode
-from models.user import UserRole
+from models.user import LearningStyle, UserRole
 
 PASSWORD_MIN_LENGTH = 8
 PASSWORD_MAX_BYTES = 72
@@ -68,6 +68,7 @@ class UserResponse(BaseModel):
     last_name: str | None = None
     must_change_password: bool = False
     has_password: bool = True
+    learning_style: LearningStyle = LearningStyle.explorer
 
 
 class ChangePasswordRequest(BaseModel):

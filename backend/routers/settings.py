@@ -15,6 +15,7 @@ from schemas.settings import (
     AiStatusResponse,
     ConnectionResponse,
     ConnectionUpdateRequest,
+    LearningStyleUpdateRequest,
     ProfileUpdateRequest,
     ProviderFieldResponse,
     ProviderResponse,
@@ -53,6 +54,20 @@ def update_profile(
     session.commit()
     session.refresh(user)
     logger.info("[settings]: profile updated for user %s", user.id)
+    return UserResponse(**user.model_dump(), has_password=user.hashed_password is not None)
+
+
+@router.put("/learning-style", response_model=UserResponse)
+def update_learning_style(
+    body: LearningStyleUpdateRequest,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> UserResponse:
+    logger.info("[settings]: learning style for user %s is now %s", user.id, body.learning_style.value)
+    user.learning_style = body.learning_style
+    session.add(user)
+    session.commit()
+    session.refresh(user)
     return UserResponse(**user.model_dump(), has_password=user.hashed_password is not None)
 
 

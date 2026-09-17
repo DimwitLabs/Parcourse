@@ -2,6 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from models.user import LearningStyle
 from schemas.transcript import Chapter, TranscriptSegment
 
 
@@ -11,6 +12,7 @@ class CourseGenerateRequest(BaseModel):
     channel: str = ""
     channel_url: str = ""
     feedback: str = ""
+    style: LearningStyle | None = None
     segments: list[TranscriptSegment]
     chapters: list[Chapter] = []
 
@@ -50,6 +52,7 @@ class CourseResponse(BaseModel):
     channel: str = ""
     channel_url: str = ""
     thumbnail_url: str
+    style: LearningStyle = LearningStyle.explorer
     sections: list[CourseSection]
 
 
@@ -86,6 +89,7 @@ class CourseResponsePublic(BaseModel):
     channel: str = ""
     channel_url: str = ""
     thumbnail_url: str
+    style: LearningStyle = LearningStyle.explorer
     sections: list[CourseSectionPublic]
 
     @classmethod
@@ -97,6 +101,7 @@ class CourseResponsePublic(BaseModel):
             channel=course.channel,
             channel_url=course.channel_url,
             thumbnail_url=course.thumbnail_url,
+            style=course.style,
             sections=[
                 CourseSectionPublic(
                     title=s.title,
@@ -126,6 +131,7 @@ class CourseListEntry(BaseModel):
     video_id: str
     video_title: str = ""
     thumbnail_url: str
+    style: LearningStyle = LearningStyle.explorer
     sections: list[CourseSectionPublic]
     completed_sections: list[int] = []
     has_passed_quiz: bool = False

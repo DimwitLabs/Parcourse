@@ -1,9 +1,15 @@
 from pydantic import BaseModel
 
+from models.user import LearningStyle
+
 
 class ProfileUpdateRequest(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
+
+
+class LearningStyleUpdateRequest(BaseModel):
+    learning_style: LearningStyle
 
 
 class ProviderFieldResponse(BaseModel):

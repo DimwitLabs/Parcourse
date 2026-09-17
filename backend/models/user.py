@@ -12,6 +12,15 @@ class UserRole(str, Enum):
     student = "student"
 
 
+class LearningStyle(str, Enum):
+    explorer = "explorer"
+    quick_study = "quick_study"
+    deep_diver = "deep_diver"
+    storyteller = "storyteller"
+    practitioner = "practitioner"
+    exam_ready = "exam_ready"
+
+
 class User(SQLModelBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     email: str = Field(unique=True, index=True)
@@ -22,3 +31,4 @@ class User(SQLModelBase, table=True):
     last_name: str | None = Field(default=None)
     connection: str | None = Field(default=None)
     must_change_password: bool = Field(default=False)
+    learning_style: LearningStyle = Field(default=LearningStyle.explorer)
