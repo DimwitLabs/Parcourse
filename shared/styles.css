@@ -1931,6 +1931,7 @@ body {
 }
 
 .graph-toolbar-right {
+  --graph-control-height: 2.55rem;
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -1994,9 +1995,125 @@ body {
   gap: 0.4rem;
 }
 
+.graph-zoom-slider {
+  display: flex;
+  align-items: center;
+  height: var(--graph-control-height);
+  gap: 0.15rem;
+  padding: 0 0.35rem;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-low);
+}
+
+.graph-zoom-divider {
+  width: 1px;
+  height: 1.1rem;
+  margin: 0 0.2rem;
+  background: var(--color-border);
+}
+
+.graph-zoom-step {
+  appearance: none;
+  border: none;
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+}
+
+.graph-zoom-step:hover {
+  background: var(--color-ink-wash);
+  color: var(--color-ink);
+}
+
+.graph-expanded .graph-zoom-slider {
+  background: none;
+}
+
+.m3-slider {
+  --track: 1rem;
+  --handle-gap: 6px;
+  --handle-width: 4px;
+  position: relative;
+  width: 7rem;
+  height: 2rem;
+  margin: 0 0.35rem;
+}
+
+.m3-slider-active,
+.m3-slider-inactive {
+  position: absolute;
+  top: 50%;
+  height: var(--track);
+  transform: translateY(-50%);
+}
+
+.m3-slider-active {
+  left: 0;
+  width: max(0px, calc(var(--fill) - var(--handle-width) / 2 - var(--handle-gap)));
+  border-radius: var(--radius-full) 2px 2px var(--radius-full);
+  background: var(--color-primary);
+}
+
+.m3-slider-inactive {
+  right: 0;
+  width: max(0px, calc(100% - var(--fill) - var(--handle-width) / 2 - var(--handle-gap)));
+  border-radius: 2px var(--radius-full) var(--radius-full) 2px;
+  background: var(--color-secondary-container);
+  overflow: hidden;
+}
+
+.m3-slider-inactive::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: calc((var(--track) - 4px) / 2);
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  transform: translateY(-50%);
+}
+
+.m3-slider-handle {
+  position: absolute;
+  top: 0;
+  left: var(--fill);
+  width: var(--handle-width);
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  transform: translateX(-50%);
+  transition: width 0.1s ease;
+}
+
+.m3-slider input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.m3-slider:active .m3-slider-handle {
+  width: 2px;
+}
+
+.m3-slider:has(input:focus-visible) .m3-slider-handle {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .graph-zoom-controls .button,
 .graph-export-controls .button {
-  padding: 0.5rem 0.9rem;
+  height: var(--graph-control-height);
+  padding: 0 1.1rem;
   font-size: 0.82rem;
   background: var(--color-surface-low);
 }
@@ -3256,7 +3373,8 @@ body {
   color: var(--color-ink);
 }
 
-.modal-checkbox-row input[type="checkbox"] {
+.modal-checkbox-row input[type="checkbox"],
+.graph-tidy-check {
   appearance: none;
   -webkit-appearance: none;
   margin: 0;
@@ -3273,13 +3391,26 @@ body {
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
-.modal-checkbox-row input[type="checkbox"]:checked {
+.modal-checkbox-row input[type="checkbox"]:checked,
+.graph-tidy-check:checked {
   background-color: var(--color-primary);
   border-color: var(--color-primary);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
 }
 
-.modal-checkbox-row input[type="checkbox"]:focus-visible {
+.graph-tidy-check:indeterminate {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round'%3E%3Cline x1='6' y1='12' x2='18' y2='12'/%3E%3C/svg%3E");
+}
+
+.graph-tidy-check:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.modal-checkbox-row input[type="checkbox"]:focus-visible,
+.graph-tidy-check:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 0.125rem;
 }
@@ -5324,6 +5455,115 @@ a.modal-field-hint {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--color-ink-faint);
+}
+
+.graph-tidy-card {
+  max-width: 34rem;
+}
+
+.graph-tidy-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: min(20rem, 45vh);
+  overflow-y: auto;
+}
+
+.graph-tidy-group {
+  background: var(--color-surface-low);
+  border-radius: var(--radius-md);
+}
+
+.graph-tidy-group-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.9rem;
+}
+
+.graph-tidy-toggle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--color-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.graph-tidy-group-name {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.graph-tidy-group-count {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.graph-tidy-toggle .notes-chevron {
+  color: var(--color-ink-faint);
+}
+
+.graph-tidy-rows {
+  margin: 0;
+  padding: 0.25rem 0.9rem 0.6rem;
+  list-style: none;
+  border-top: 1px solid var(--color-surface-high);
+}
+
+.graph-tidy-change {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.4rem 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.graph-tidy-change.skipped .graph-tidy-text {
+  color: var(--color-ink-faint);
+}
+
+.graph-tidy-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.graph-tidy-arrow {
+  margin: 0 0.4rem;
+  color: var(--color-ink-faint);
+}
+
+.graph-tidy-change .graph-confirm-tier {
+  flex-shrink: 0;
+  white-space: nowrap;
+  line-height: 1.4rem;
+}
+
+.graph-tidy-change .graph-tidy-check {
+  margin-top: 0.1rem;
+}
+
+.graph-tidy-check:not(:checked):not(:indeterminate) {
+  border-color: var(--color-ink-faint);
+}
+
+.graph-tidy-reply {
+  margin-top: 1rem;
+}
+
+.graph-tidy-reply .modal-textarea {
+  min-height: 3.5rem;
 }
 
 .graph-confirm-actions {

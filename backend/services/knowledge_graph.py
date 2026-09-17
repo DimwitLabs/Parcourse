@@ -13,11 +13,17 @@ from models.knowledge_graph import (
     NodeTier,
 )
 from schemas.course import CourseResponse
-from schemas.knowledge_graph import KnowledgeExtraction
+from schemas.knowledge_graph import KnowledgeExtraction, TidyChange, TidyProposal, TidySuggestion
 from services.llm import complete_json
 from services.prompts import load
 
 _EXTRACTION_PROMPT = load("knowledge_graph_extraction")
+_TIDY_PROMPT = load("knowledge_graph_tidy")
+_TIDY_FEEDBACK = load("knowledge_graph_tidy_feedback")
+
+_MAX_FEEDBACK_CHARS = 1000
+_TIDY_VERBS = {"rename": "Rename {tier} {label} to {to}", "merge": "Merge {tier} {label} into {to}", "demote": "Move field {label} under field {to}"}
+
 _EXPOSURE_MASTERY = 0.2
 
 
@@ -260,3 +266,140 @@ def unlink_course(session: Session, user_id: uuid.UUID, course_id: uuid.UUID, fo
                 session.delete(node)
         session.flush()
 
+
+def _graph_lines(session: Session, nodes: list[KnowledgeNode]) -> str:
+    by_id = {n.id: n for n in nodes}
+    parents: dict[uuid.UUID, list[str]] = {}
+    for edge in session.exec(
+        select(KnowledgeEdge).where(
+            KnowledgeEdge.source_id.in_(by_id), KnowledgeEdge.edge_type == EdgeType.belongs_to
+        )
+    ).all():
+        if edge.target_id in by_id:
+            parents.setdefault(edge.source_id, []).append(by_id[edge.target_id].label)
+    lines = []
+    for n in sorted(nodes, key=lambda n: (list(NodeTier).index(n.tier), n.label)):
+        above = parents.get(n.id)
+        lines.append(f"- [{n.tier.value}] {n.label}" + (f" (belongs to: {', '.join(above)})" if above else ""))
+    return "\n".join(lines)
+
+
+def _unquoted(text: str) -> str:
+    """Stops browser-supplied text from closing a quoted prompt block early."""
+    return text.replace('"""', '"')
+
+
+def _change_lines(changes: list[TidyChange]) -> str:
+    return "\n".join(
+        "- " + _TIDY_VERBS[c.kind].format(tier=c.tier.value, label=_unquoted(c.label), to=_unquoted(c.to))
+        for c in changes
+    ) or "(none)"
+
+
+def _feedback_block(feedback: str, previous: list[TidyChange], declined: list[TidyChange]) -> str:
+    note = _unquoted(feedback.strip())[:_MAX_FEEDBACK_CHARS]
+    if not note:
+        return ""
+    return _TIDY_FEEDBACK.format(previous=_change_lines(previous), declined=_change_lines(declined), feedback=note)
+
+
+def propose_tidy(
+    session: Session,
+    user_id: uuid.UUID,
+    credentials: dict[str, str],
+    model: str,
+    feedback: str = "",
+    previous: list[TidyChange] | None = None,
+    declined: list[TidyChange] | None = None,
+) -> TidyProposal:
+    """Asks the model how to tidy this user's graph and keeps only the changes
+    that name concepts they actually hold, each concept in at most one change.
+    A reply to an earlier proposal asks for a revised one. Nothing is written."""
+    nodes = list(session.exec(select(KnowledgeNode).where(KnowledgeNode.user_id == user_id)).all())
+    if not nodes:
+        return TidyProposal(summary="", changes=[])
+
+    data = complete_json(
+        model=model,
+        credentials=credentials,
+        prompt=_TIDY_PROMPT.format(
+            graph=_graph_lines(session, nodes), feedback_block=_feedback_block(feedback, previous or [], declined or [])
+        ),
+        schema=TidySuggestion,
+        temperature=0.2,
+    )
+    suggestion = TidySuggestion(**data)
+
+    index = {(n.tier, n.label): n for n in nodes}
+    touched: set[uuid.UUID] = set()
+    changes: list[TidyChange] = []
+
+    def free(*found: KnowledgeNode | None) -> bool:
+        return all(f is not None and f.id not in touched for f in found)
+
+    def claim(kind, node: KnowledgeNode, to: str, into: KnowledgeNode | None = None) -> None:
+        touched.add(node.id)
+        if into is not None:
+            touched.add(into.id)
+        changes.append(TidyChange(
+            kind=kind, node_id=str(node.id), tier=node.tier, label=node.label, to=to,
+            into_id=str(into.id) if into is not None else None,
+        ))
+
+    for r in suggestion.renames:
+        node, to = index.get((r.tier, r.label)), r.to.strip()
+        if not free(node) or not to or to == node.label:
+            continue
+        twin = index.get((node.tier, to))
+        if twin is None:
+            claim("rename", node, to)
+        elif free(twin):
+            claim("merge", node, to, twin)
+
+    for m in suggestion.merges:
+        node, into = index.get((m.tier, m.label)), index.get((m.tier, m.into))
+        if free(node, into) and node.id != into.id:
+            claim("merge", node, into.label, into)
+
+    for d in suggestion.demotions:
+        node, to = index.get((NodeTier.field, d.label)), d.field.strip()
+        broader = index.get((NodeTier.field, to))
+        if free(node) and to and to != node.label and (broader is None or free(broader)):
+            claim("demote", node, to)
+
+    logger.info("[knowledge_graph]: proposed %d tidy changes for user %s", len(changes), user_id)
+    return TidyProposal(summary=suggestion.summary.strip() if changes else "", changes=changes)
+
+
+def apply_tidy(session: Session, user_id: uuid.UUID, changes: list[TidyChange]) -> None:
+    """Applies a proposal the user accepted. Each change is checked again against
+    the graph as it is now, and one that no longer fits is skipped."""
+    def owned(raw: str | None, tier: NodeTier) -> KnowledgeNode | None:
+        try:
+            node = session.get(KnowledgeNode, uuid.UUID(raw or ""))
+        except ValueError:
+            return None
+        return node if node is not None and node.user_id == user_id and node.tier is tier else None
+
+    for change in changes:
+        node = owned(change.node_id, change.tier)
+        to = change.to.strip()
+        if node is None or not to:
+            continue
+        if change.kind == "rename":
+            twin = _find(session, user_id, node.tier, to)
+            if twin is None:
+                node.label = to
+                session.add(node)
+                session.flush()
+            elif twin.id != node.id:
+                _fold(session, twin, node)
+        elif change.kind == "merge":
+            into = owned(change.into_id, node.tier)
+            if into is not None and into.id != node.id:
+                _fold(session, into, node)
+        elif node.tier is NodeTier.field:
+            demote(session, user_id, node.label, to)
+
+    session.commit()
+    logger.info("[knowledge_graph]: applied tidy changes for user %s", user_id)

@@ -1,0 +1,24 @@
+You are tidying one learner's knowledge graph. It grew one course at a time, so it can hold near-duplicates, labels that are too long or too specific, and fields that are really topics within a broader field.
+
+The graph, one concept per line, with the concepts each one belongs to:
+"""
+{graph}
+"""
+{feedback_block}
+The three levels:
+- "field": a broad discipline, named in one or two words the way a bookshop or a university department would name it (e.g., "Finance", "Programming", "Machine Learning", "History", "Cooking").
+- "topic": a specific concept within a field. Never names a language or framework.
+- "skill": a single learnable concept, prefixed with its language or tool when it is specific to one (e.g., "Python: super() and MRO").
+
+Suggest only changes that clearly make the graph easier to read. A graph that is already tidy needs no changes, and an empty list is a good answer.
+
+Return only a JSON object with exactly these fields:
+- "summary": one or two plain sentences for the learner saying what the changes would do if they accept them, written before anything has changed (e.g., "Shortens four long topic names and joins two that mean the same thing."), or that nothing needs changing. No em dashes.
+- "renames": a list of objects, each with "tier", "label" (as written in the graph) and "to" (the better label). Use it for fields that are too long or too narrow in wording, and for labels that break the rules above.
+- "merges": a list of objects, each with "tier", "label" and "into", both exact labels at the same tier that mean the same thing. "into" is the one to keep.
+- "demotions": a list of objects, each with "label" (an existing field) and "field" (the broader field it belongs within, either an existing field or a new one).
+
+Rules:
+- Use labels exactly as they appear in the graph.
+- Each concept may appear in at most one change, on either side.
+- Never invent concepts the graph does not hold, other than a broader field for a demotion or a new label for a rename.

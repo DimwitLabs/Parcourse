@@ -5,7 +5,7 @@ import {
   forceSimulation,
 } from "d3-force";
 import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { toast, useLoadingToast } from "../components/Toast";
@@ -30,6 +30,30 @@ type Node = {
 };
 type Edge = { source_id: string; target_id: string; edge_type: string };
 type Graph = { nodes: Node[]; edges: Edge[] };
+type TidyChange = {
+  kind: "rename" | "merge" | "demote";
+  node_id: string;
+  tier: Tier;
+  label: string;
+  to: string;
+  into_id: string | null;
+};
+type TidyProposal = { summary: string; changes: TidyChange[] };
+
+const MIN_ZOOM = 0.2;
+const MAX_ZOOM = 3;
+
+const TIDY_GROUPS: [TidyChange["kind"], string][] = [
+  ["rename", "Rename"],
+  ["merge", "Merge"],
+  ["demote", "Move under a broader field"],
+];
+
+const tidyChevron = (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
 
 type Granularity = "field" | "topic" | "skill";
 
@@ -314,12 +338,20 @@ export default function KnowledgeGraphScreen() {
   const [tooltip, setTooltip] = useState<{ node: Node; x: number; y: number; pinned: boolean } | null>(null);
   const [forgetting, setForgetting] = useState<string | null>(null);
   const [confirming, setConfirming] = useState<Node | null>(null);
+  const [tidying, setTidying] = useState(false);
+  const [proposal, setProposal] = useState<TidyProposal | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [reply, setReply] = useState("");
+  const [skipped, setSkipped] = useState<Set<string>>(new Set());
+  const [openGroups, setOpenGroups] = useState<Set<TidyChange["kind"]>>(new Set());
   const [hovered, setHovered] = useState<string | null>(null);
   const [simData, setSimData] = useState<{ nodes: SimNode[]; edges: SimEdge[] } | null>(null);
   const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
   const simInstanceRef = useRef<LiveSim | null>(null);
 
   useEscapeKey(!!confirming, () => { if (!forgetting) setConfirming(null); });
+  useEscapeKey(!!proposal, () => { if (!saving && !tidying) closeTidy(); });
+  useLoadingToast(tidying, "Looking for ways to tidy your graph…");
 
   const stackRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(false);
@@ -408,6 +440,73 @@ export default function KnowledgeGraphScreen() {
     return graph.nodes.filter((n) => going.has(n.id));
   }
 
+  async function tidy(previous: TidyProposal | null = null) {
+    setTidying(true);
+    try {
+      const found: TidyProposal = await apiFetch("/knowledge-graph/tidy", token, {
+        method: "POST",
+        body: JSON.stringify(
+          previous
+            ? {
+                feedback: reply,
+                previous: previous.changes.filter((c) => !skipped.has(c.node_id)),
+                declined: previous.changes.filter((c) => skipped.has(c.node_id)),
+              }
+            : {},
+        ),
+      });
+      if (!previous && found.changes.length === 0) {
+        toast("Your graph is already tidy.", "success");
+      } else {
+        const first = TIDY_GROUPS.find(([kind]) => found.changes.some((c) => c.kind === kind));
+        setProposal(found);
+        setReply("");
+        setSkipped(new Set());
+        setOpenGroups(new Set(first ? [first[0]] : []));
+      }
+    } catch (err) {
+      toast(errMsg(err), "error");
+    } finally {
+      setTidying(false);
+    }
+  }
+
+  function closeTidy() {
+    setProposal(null);
+    setReply("");
+    setSkipped(new Set());
+    setOpenGroups(new Set());
+  }
+
+  function setTicked(changes: TidyChange[], ticked: boolean) {
+    setSkipped((current) => {
+      const next = new Set(current);
+      for (const change of changes) {
+        if (ticked) next.delete(change.node_id);
+        else next.add(change.node_id);
+      }
+      return next;
+    });
+  }
+
+  async function saveTidy(changes: TidyChange[]) {
+    setSaving(true);
+    try {
+      const tidied: Graph = await apiFetch("/knowledge-graph/tidy/apply", token, {
+        method: "POST",
+        body: JSON.stringify({ changes }),
+      });
+      setGraph(tidied);
+      closeTidy();
+      setTooltip(null);
+      toast("Your graph is tidied.", "success");
+    } catch (err) {
+      toast(errMsg(err), "error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function forget(node: Node) {
     setForgetting(node.id);
     try {
@@ -480,7 +579,7 @@ export default function KnowledgeGraphScreen() {
     function onWheel(e: WheelEvent) {
       e.preventDefault();
       const delta = e.deltaY > 0 ? -0.08 : 0.08;
-      setZoom((z) => Math.min(3, Math.max(0.2, z + delta)));
+      setZoom((z) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z + delta)));
     }
 
     let lastDist = 0;
@@ -499,7 +598,7 @@ export default function KnowledgeGraphScreen() {
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         const dist = Math.hypot(dx, dy);
         if (lastDist > 0) {
-          setZoom((z) => Math.min(3, Math.max(0.2, z * (dist / lastDist))));
+          setZoom((z) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z * (dist / lastDist))));
         }
         lastDist = dist;
       }
@@ -732,13 +831,50 @@ export default function KnowledgeGraphScreen() {
             </div>
             <div className="graph-toolbar-right">
               <div className="graph-zoom-controls">
-                <button className="button secondary tip" data-tip="Zoom in" aria-label="Zoom in" onClick={() => setZoom((z) => Math.min(3, z + 0.2))}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                </button>
-                <button className="button secondary tip" data-tip="Zoom out" aria-label="Zoom out" onClick={() => setZoom((z) => Math.max(0.2, z - 0.2))}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                </button>
-                <button className="button secondary" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>Reset</button>
+                <div className="graph-zoom-slider">
+                  <button className="graph-zoom-step" aria-label="Zoom out" onClick={() => setZoom((z) => Math.max(MIN_ZOOM, z - 0.2))}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  </button>
+                  <div
+                    className="m3-slider"
+                    style={{ "--fill": `${((zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)) * 100}%` } as CSSProperties}
+                  >
+                    <span className="m3-slider-active" />
+                    <span className="m3-slider-handle" />
+                    <span className="m3-slider-inactive" />
+                    <input
+                      type="range"
+                      aria-label="Zoom"
+                      min={MIN_ZOOM}
+                      max={MAX_ZOOM}
+                      step={0.05}
+                      value={zoom}
+                      onChange={(e) => setZoom(Number(e.target.value))}
+                    />
+                  </div>
+                  <button className="graph-zoom-step" aria-label="Zoom in" onClick={() => setZoom((z) => Math.min(MAX_ZOOM, z + 0.2))}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  </button>
+                  <span className="graph-zoom-divider" aria-hidden="true" />
+                  <button
+                    className="graph-zoom-step tip"
+                    data-tip="Reset view"
+                    aria-label="Reset view"
+                    onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                  </button>
+                </div>
+                {!viewingUserId && (
+                  <button
+                    className="button secondary"
+                    aria-busy={tidying}
+                    onClick={() => !tidying && tidy()}
+                    disabled={graph.nodes.length === 0}
+                  >
+                    {tidying ? "Tidying…" : "Tidy"}
+                  </button>
+                )}
               </div>
               <div className="graph-export-controls">
                 <button className="button secondary" onClick={() => svgRef.current && exportSvg(svgRef.current)}>SVG</button>
@@ -984,6 +1120,114 @@ export default function KnowledgeGraphScreen() {
               </svg>
             </button>
           )}
+        </div>
+      )}
+
+      {proposal && (
+        <div className="modal-overlay" onClick={() => !saving && !tidying && closeTidy()}>
+          <div className="modal-card card graph-tidy-card" onClick={(e) => e.stopPropagation()}>
+            <h2 className="graph-confirm-title">Tidy your graph?</h2>
+            <p className="graph-confirm-body">
+              {proposal.changes.length > 0 ? proposal.summary : "Nothing left to change after your reply."}
+            </p>
+            {proposal.changes.length > 0 && (
+              <div className="graph-tidy-groups">
+                {TIDY_GROUPS.map(([kind, heading]) => {
+                  const group = proposal.changes.filter((c) => c.kind === kind);
+                  if (group.length === 0) return null;
+                  const ticked = group.filter((c) => !skipped.has(c.node_id)).length;
+                  const open = openGroups.has(kind);
+                  const mixedTiers = new Set(group.map((c) => c.tier)).size > 1;
+                  return (
+                    <section key={kind} className="graph-tidy-group">
+                      <div className="graph-tidy-group-head">
+                        <input
+                          type="checkbox"
+                          className="graph-tidy-check"
+                          aria-label={`Apply every change in ${heading}`}
+                          checked={ticked === group.length}
+                          ref={(el) => { if (el) el.indeterminate = ticked > 0 && ticked < group.length; }}
+                          disabled={saving || tidying}
+                          onChange={() => setTicked(group, ticked < group.length)}
+                        />
+                        <button
+                          type="button"
+                          className="graph-tidy-toggle"
+                          aria-expanded={open}
+                          onClick={() =>
+                            setOpenGroups((current) => {
+                              const next = new Set(current);
+                              if (next.has(kind)) next.delete(kind);
+                              else next.add(kind);
+                              return next;
+                            })
+                          }
+                        >
+                          <span className="graph-tidy-group-name">{heading}</span>
+                          <span className="graph-tidy-group-count">
+                            {ticked === group.length ? group.length : `${ticked} of ${group.length}`}
+                          </span>
+                          <span className={`notes-chevron${open ? " up" : ""}`}>{tidyChevron}</span>
+                        </button>
+                      </div>
+                      {open && (
+                        <ul className="graph-tidy-rows">
+                          {group.map((change) => (
+                            <li key={change.node_id}>
+                              <label className={`graph-tidy-change${skipped.has(change.node_id) ? " skipped" : ""}`}>
+                                <input
+                                  type="checkbox"
+                                  className="graph-tidy-check"
+                                  checked={!skipped.has(change.node_id)}
+                                  disabled={saving || tidying}
+                                  onChange={() => setTicked([change], skipped.has(change.node_id))}
+                                />
+                                <span className="graph-tidy-text">
+                                  {change.label}
+                                  <span className="graph-tidy-arrow" aria-label="becomes">→</span>
+                                  {change.to}
+                                </span>
+                                {mixedTiers && <span className="graph-confirm-tier">{change.tier}</span>}
+                              </label>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </section>
+                  );
+                })}
+              </div>
+            )}
+            <label className="modal-field graph-tidy-reply">
+              <textarea
+                className="text-input boxed textarea modal-textarea"
+                value={reply}
+                onChange={(e) => setReply(e.target.value)}
+                placeholder="Optional. Reply and Tidy suggests again, like: keep ETF Costs as it is…"
+                rows={2}
+                maxLength={1000}
+                disabled={saving || tidying}
+              />
+            </label>
+            <div className="graph-confirm-actions">
+              <button className="button secondary" onClick={closeTidy} disabled={saving || tidying}>
+                Leave it
+              </button>
+              {reply.trim() ? (
+                <button className="button primary" onClick={() => tidy(proposal)} disabled={tidying}>
+                  {tidying ? "Suggesting…" : "Suggest again"}
+                </button>
+              ) : (
+                <button
+                  className="button primary"
+                  onClick={() => saveTidy(proposal.changes.filter((c) => !skipped.has(c.node_id)))}
+                  disabled={saving || proposal.changes.every((c) => skipped.has(c.node_id))}
+                >
+                  {saving ? "Saving…" : "Save changes"}
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
 

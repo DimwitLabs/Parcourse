@@ -1,3 +1,4 @@
+import logging
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -9,8 +10,20 @@ from models.course_cache import CachedCourse
 from models.knowledge_graph import CourseKnowledgeNode, KnowledgeEdge, KnowledgeNode
 from models.user import User
 from schemas.course import CourseResponse
-from schemas.knowledge_graph import CourseRef, EdgeOut, ForgottenNodes, KnowledgeGraphResponse, NodeOut
-from services.knowledge_graph import falling
+from schemas.knowledge_graph import (
+    CourseRef,
+    EdgeOut,
+    ForgottenNodes,
+    KnowledgeGraphResponse,
+    NodeOut,
+    TidyApply,
+    TidyProposal,
+    TidyReply,
+)
+from services.connection import NoConnectionError, resolve
+from services.knowledge_graph import apply_tidy, falling, propose_tidy
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/knowledge-graph", tags=["knowledge-graph"])
 
@@ -112,3 +125,33 @@ def forget_node(
     session.commit()
     return ForgottenNodes(forgotten=[str(lost) for lost in going])
 
+
+@router.post("/tidy", response_model=TidyProposal)
+def propose_graph_tidy(
+    body: TidyReply,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> TidyProposal:
+    try:
+        connection = resolve(session, user)
+    except NoConnectionError as exc:
+        raise HTTPException(status_code=status.HTTP_412_PRECONDITION_FAILED, detail=str(exc)) from exc
+    try:
+        return propose_tidy(
+            session, user.id, connection.credentials, connection.model, body.feedback, body.previous, body.declined
+        )
+    except Exception as exc:
+        logger.error("[knowledge_graph]: tidy failed for user %s: %s", user.id, exc)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY, detail=f"AI provider request failed: {exc}"
+        ) from exc
+
+
+@router.post("/tidy/apply", response_model=KnowledgeGraphResponse)
+def apply_graph_tidy(
+    body: TidyApply,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> KnowledgeGraphResponse:
+    apply_tidy(session, user.id, body.changes)
+    return _build_graph(session, user.id)

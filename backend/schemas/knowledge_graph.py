@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel
 
 from models.knowledge_graph import EdgeType, NodeTier
@@ -24,6 +26,49 @@ class KnowledgeExtraction(BaseModel):
     nodes: list[ExtractedNode]
     edges: list[ExtractedEdge]
     demotions: list[Demotion] = []
+
+
+class TidyRename(BaseModel):
+    tier: NodeTier
+    label: str
+    to: str
+
+
+class TidyMerge(BaseModel):
+    tier: NodeTier
+    label: str
+    into: str
+
+
+class TidySuggestion(BaseModel):
+    summary: str
+    renames: list[TidyRename] = []
+    merges: list[TidyMerge] = []
+    demotions: list[Demotion] = []
+
+
+class TidyChange(BaseModel):
+    kind: Literal["rename", "merge", "demote"]
+    node_id: str
+    tier: NodeTier
+    label: str
+    to: str
+    into_id: str | None = None
+
+
+class TidyProposal(BaseModel):
+    summary: str
+    changes: list[TidyChange]
+
+
+class TidyApply(BaseModel):
+    changes: list[TidyChange]
+
+
+class TidyReply(BaseModel):
+    feedback: str = ""
+    previous: list[TidyChange] = []
+    declined: list[TidyChange] = []
 
 
 class CourseRef(BaseModel):
