@@ -15,9 +15,15 @@ class ExtractedEdge(BaseModel):
     edge_type: EdgeType
 
 
+class Demotion(BaseModel):
+    label: str
+    field: str
+
+
 class KnowledgeExtraction(BaseModel):
     nodes: list[ExtractedNode]
     edges: list[ExtractedEdge]
+    demotions: list[Demotion] = []
 
 
 class CourseRef(BaseModel):

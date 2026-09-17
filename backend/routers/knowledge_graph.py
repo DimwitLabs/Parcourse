@@ -6,7 +6,7 @@ from sqlmodel import Session, select
 from database import get_session
 from dependencies import get_current_user, require_admin
 from models.course_cache import CachedCourse
-from models.knowledge_graph import CourseKnowledgeNode, KnowledgeEdge, KnowledgeNode, UserKnowledgeProgress
+from models.knowledge_graph import CourseKnowledgeNode, KnowledgeEdge, KnowledgeNode
 from models.user import User
 from schemas.course import CourseResponse
 from schemas.knowledge_graph import CourseRef, EdgeOut, ForgottenNodes, KnowledgeGraphResponse, NodeOut
@@ -16,23 +16,17 @@ router = APIRouter(prefix="/knowledge-graph", tags=["knowledge-graph"])
 
 
 def _build_graph(session: Session, user_id: uuid.UUID, with_courses: bool = True) -> KnowledgeGraphResponse:
-    progress_rows = session.exec(
-        select(UserKnowledgeProgress).where(UserKnowledgeProgress.user_id == user_id)
-    ).all()
-    if not progress_rows:
+    nodes = session.exec(select(KnowledgeNode).where(KnowledgeNode.user_id == user_id)).all()
+    if not nodes:
         return KnowledgeGraphResponse(nodes=[], edges=[])
 
-    progress_by_node = {p.node_id: p for p in progress_rows}
-    node_ids = list(progress_by_node.keys())
-
-    nodes = session.exec(select(KnowledgeNode).where(KnowledgeNode.id.in_(node_ids))).all()
+    node_ids = [n.id for n in nodes]
     edges = session.exec(
         select(KnowledgeEdge).where(
             KnowledgeEdge.source_id.in_(node_ids), KnowledgeEdge.target_id.in_(node_ids)
         )
     ).all()
 
-    node_ids = [n.id for n in nodes]
     node_courses: dict[uuid.UUID, list[CourseRef]] = {n.id: [] for n in nodes}
 
     if with_courses:
@@ -70,7 +64,7 @@ def _build_graph(session: Session, user_id: uuid.UUID, with_courses: bool = True
                 tier=n.tier,
                 label=n.label,
                 description=n.description,
-                mastery_score=progress_by_node[n.id].mastery_score,
+                mastery_score=n.mastery_score,
                 courses=node_courses.get(n.id, []),
             )
             for n in nodes
@@ -108,12 +102,7 @@ def forget_node(
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ) -> ForgottenNodes:
-    """Drops one concept from this user's graph. The node itself is shared with
-    everyone else who has met it, so only their claim on it goes."""
-    progress_rows = session.exec(
-        select(UserKnowledgeProgress).where(UserKnowledgeProgress.user_id == user.id)
-    ).all()
-    by_node = {p.node_id: p for p in progress_rows}
+    by_node = {n.id: n for n in session.exec(select(KnowledgeNode).where(KnowledgeNode.user_id == user.id)).all()}
     if node_id not in by_node:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Concept not found")
 
@@ -122,3 +111,4 @@ def forget_node(
         session.delete(by_node[lost])
     session.commit()
     return ForgottenNodes(forgotten=[str(lost) for lost in going])
+

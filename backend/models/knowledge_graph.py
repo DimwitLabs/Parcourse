@@ -21,12 +21,15 @@ class EdgeType(str, Enum):
 
 
 class KnowledgeNode(SQLModelBase, table=True):
-    __table_args__ = (UniqueConstraint("label", "tier", name="uq_knowledge_node_label_tier"),)
+    __table_args__ = (UniqueConstraint("user_id", "label", "tier", name="uq_knowledge_node_user_label_tier"),)
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(sa_column=Column(ForeignKey("user.id", ondelete="CASCADE"), index=True, nullable=False))
     tier: NodeTier
     label: str = Field(index=True)
     description: str = ""
+    mastery_score: float = 0.0
+    last_touched_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -45,12 +48,3 @@ class CourseKnowledgeNode(SQLModelBase, table=True):
     course_id: uuid.UUID = Field(sa_column=Column(ForeignKey("cached_course.id", ondelete="CASCADE"), primary_key=True))
     node_id: uuid.UUID = Field(sa_column=Column(ForeignKey("knowledge_node.id", ondelete="CASCADE"), primary_key=True))
 
-
-class UserKnowledgeProgress(SQLModelBase, table=True):
-    __table_args__ = (UniqueConstraint("user_id", "node_id", name="uq_user_knowledge_progress_user_node"),)
-
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    user_id: uuid.UUID = Field(sa_column=Column(ForeignKey("user.id", ondelete="CASCADE"), index=True, nullable=False))
-    node_id: uuid.UUID = Field(sa_column=Column(ForeignKey("knowledge_node.id", ondelete="CASCADE"), index=True, nullable=False))
-    mastery_score: float = 0.0
-    last_touched_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

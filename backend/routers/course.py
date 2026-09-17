@@ -258,7 +258,7 @@ def delete_course(
         logger.warning("[course]: course not found for deletion course_id=%s", course_id)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
 
-    unlink_course(session, user.id, course_id, prune_mastery=not keep_graph)
+    unlink_course(session, user.id, course_id, forget_concepts=not keep_graph)
     for attempt in session.exec(select(QuizAttempt).where(QuizAttempt.course_id == course_id)).all():
         session.delete(attempt)
     for sp in session.exec(select(SectionProgress).where(SectionProgress.course_id == course_id)).all():
@@ -355,7 +355,7 @@ def regenerate_course(
         if note:
             session.delete(note)
     if not body.keep_graph:
-        unlink_course(session, user.id, course_id, prune_mastery=True)
+        unlink_course(session, user.id, course_id, forget_concepts=True)
 
     cached.course_json = course.model_dump_json()
     cached.created_at = datetime.now(timezone.utc)

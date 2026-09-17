@@ -10,7 +10,7 @@ from config import OIDC_ENABLED, OIDC_NAME, OIDC_ONLY
 from database import get_session
 from dependencies import require_admin
 from models.course_cache import CachedCourse
-from models.knowledge_graph import CourseKnowledgeNode, UserKnowledgeProgress
+from models.knowledge_graph import CourseKnowledgeNode, KnowledgeNode
 from models.quiz_attempt import QuizAttempt
 from models.section_progress import SectionProgress
 from models.user import User, UserRole
@@ -21,8 +21,6 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 
 def _delete_user_data(user_id: uuid.UUID, session: Session) -> None:
-    for row in session.exec(select(UserKnowledgeProgress).where(UserKnowledgeProgress.user_id == user_id)).all():
-        session.delete(row)
     for row in session.exec(select(QuizAttempt).where(QuizAttempt.user_id == user_id)).all():
         session.delete(row)
     for row in session.exec(select(SectionProgress).where(SectionProgress.user_id == user_id)).all():
@@ -32,6 +30,9 @@ def _delete_user_data(user_id: uuid.UUID, session: Session) -> None:
         for link in session.exec(select(CourseKnowledgeNode).where(CourseKnowledgeNode.course_id == c.id)).all():
             session.delete(link)
         session.delete(c)
+    session.flush()
+    for row in session.exec(select(KnowledgeNode).where(KnowledgeNode.user_id == user_id)).all():
+        session.delete(row)
     session.flush()
 
 

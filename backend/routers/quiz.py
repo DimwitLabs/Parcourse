@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 from database import get_session
 from dependencies import get_current_user
 from models.course_cache import CachedCourse
-from models.knowledge_graph import CourseKnowledgeNode, UserKnowledgeProgress
+from models.knowledge_graph import CourseKnowledgeNode, KnowledgeNode
 from models.quiz_attempt import QuizAttempt
 from models.user import User
 from schemas.course import CourseResponse
@@ -66,20 +66,15 @@ def score_quiz(
     session.add(attempt)
 
     mastery_score = result.percentage / 100.0
-    links = session.exec(select(CourseKnowledgeNode).where(CourseKnowledgeNode.course_id == course_uuid)).all()
-    for link in links:
-        progress = session.exec(
-            select(UserKnowledgeProgress).where(
-                UserKnowledgeProgress.user_id == user.id,
-                UserKnowledgeProgress.node_id == link.node_id,
-            )
-        ).first()
-        if progress is None:
-            progress = UserKnowledgeProgress(user_id=user.id, node_id=link.node_id, mastery_score=mastery_score)
-        else:
-            progress.mastery_score = max(progress.mastery_score, mastery_score)
-            progress.last_touched_at = datetime.now(timezone.utc)
-        session.add(progress)
+    nodes = session.exec(
+        select(KnowledgeNode)
+        .join(CourseKnowledgeNode, CourseKnowledgeNode.node_id == KnowledgeNode.id)
+        .where(CourseKnowledgeNode.course_id == course_uuid)
+    ).all()
+    for node in nodes:
+        node.mastery_score = max(node.mastery_score, mastery_score)
+        node.last_touched_at = datetime.now(timezone.utc)
+        session.add(node)
 
     session.commit()
 

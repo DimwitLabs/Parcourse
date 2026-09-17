@@ -7,7 +7,6 @@ from models.knowledge_graph import (
     KnowledgeEdge,
     KnowledgeNode,
     NodeTier,
-    UserKnowledgeProgress,
 )
 from models.note import CourseNote
 from models.oidc_login import OidcLogin
@@ -35,6 +34,5 @@ __all__ = [
     "SheetStatus",
     "User",
     "UserIdentity",
-    "UserKnowledgeProgress",
     "UserRole",
 ]

@@ -14,6 +14,7 @@ from sqlmodel import Session, create_engine
 
 from models.base import SQLModelBase
 from models.knowledge_graph import EdgeType, KnowledgeEdge, KnowledgeNode, NodeTier
+from models.user import User
 from services.knowledge_graph import ancestors, falling
 
 FIELD = uuid.uuid4()
@@ -45,8 +46,11 @@ def graph(*edges, nodes=TIERS.keys()):
         )
     SQLModelBase.metadata.create_all(engine)
     session = Session(engine)
+    owner = User(email="owner@example.com", hashed_password="x")
+    session.add(owner)
+    session.flush()
     for node_id in nodes:
-        session.add(KnowledgeNode(id=node_id, tier=TIERS[node_id], label=str(node_id), description=""))
+        session.add(KnowledgeNode(id=node_id, user_id=owner.id, tier=TIERS[node_id], label=str(node_id), description=""))
     for source, target, edge_type in edges:
         session.add(KnowledgeEdge(source_id=source, target_id=target, edge_type=edge_type))
     session.commit()
