@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Parcourse",
-  "version": "1.5.3",
+  "version": "1.8.0",
   "description": "Send the YouTube video you are watching to your Parcourse instance and start a course from it.",
   "permissions": [
     "storage",

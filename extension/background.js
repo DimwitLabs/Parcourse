@@ -52,11 +52,11 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 chrome.runtime.onMessage.addListener((message, _sender, respond) => {
     if (message?.type !== "learn") return false;
-    handOver(message.videoId).then((ok) => respond({ ok }));
+    handOver(message.videoId, message.style).then((ok) => respond({ ok }));
     return true;
 });
 
-async function handOver(videoId) {
+async function handOver(videoId, style) {
     if (!videoId) return false;
 
     const instance = await readInstance();
@@ -65,6 +65,6 @@ async function handOver(videoId) {
         return false;
     }
 
-    await chrome.tabs.create({ url: courseUrl(instance, videoId) });
+    await chrome.tabs.create({ url: courseUrl(instance, videoId, style) });
     return true;
 }

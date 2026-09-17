@@ -17,10 +17,10 @@ Works in any Chromium browser. There is no build step and no dependencies.
 The extension holds no credentials. It opens a tab at:
 
 ```
-<your-instance>/?v=<videoId>
+<your-instance>/?v=<videoId>&style=<style>
 ```
 
-The app reads `v` on the home screen, rebuilds the watch URL and runs the same course creation the paste box does. Signed out, the login screen keeps the query, so the video is picked up as soon as the session exists.
+The app reads `v` on the home screen, rebuilds the watch URL and runs the same course creation the paste box does. `style` is only there when the popup's **Learning style** is set to something other than **My default**; without it the course uses the learning style saved in your Parcourse settings. The right-click menu always uses that default. Signed out, the login screen keeps the query, so the video is picked up as soon as the session exists.
 
 That is the whole contract, which is why pointing this at the hosted instance later needs no change here beyond a different address.
 

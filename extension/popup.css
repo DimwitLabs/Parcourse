@@ -38,7 +38,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    width: 19rem;
+    width: 20rem;
     background: var(--paper);
     color: var(--ink-soft);
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -53,10 +53,14 @@ body.page {
     padding: 2rem 1rem;
 }
 
-.wrap, .card { display: flex; flex-direction: column; gap: 0.6rem; padding: 1rem; }
+.wrap, .card { display: flex; flex-direction: column; }
+.wrap { gap: 0.9rem; padding: 1.1rem 1.1rem 1.2rem; }
 .card { width: min(30rem, 100%); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 2rem; gap: 0.9rem; }
 
 .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 0.1em;
@@ -118,6 +122,58 @@ h1 { font-size: 1.5rem; letter-spacing: -0.02em; }
 .note:empty { display: none; }
 .note[data-tone="good"] { color: var(--primary); }
 .note[data-tone="bad"] { color: var(--danger); }
+
+.style {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.style-tiles {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.4rem;
+}
+
+.style-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.6rem 0.25rem 0.5rem;
+    font: inherit;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    color: var(--ink-soft);
+    background: var(--surface-lowest);
+    border: 1.5px solid var(--line);
+    border-radius: 0.9rem;
+    cursor: pointer;
+    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.style-tile.default {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: var(--radius-full);
+}
+
+.style-tile:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+.style-tile.selected {
+    color: var(--primary);
+    background: var(--secondary-container);
+    border-color: var(--primary);
+}
+
+.style-tile:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
 
 .top {
     display: flex;
