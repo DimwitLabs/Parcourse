@@ -4,6 +4,28 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-09-17
+
+### Added
+
+- **Learning Styles:** Pick how you like to be asked in **Settings**: `Explorer`, `Quick Study`, `Deep Diver`, `Storyteller`, `Practitioner` or `Exam Ready`. Each sets the mix of choice-based and written questions and how hard they push.
+- **Restyle One Course:** **Regenerate course** can switch a single course's style without changing your default.
+- **Style Pills:** A course shows its style on the course page, the home screen and the notebook.
+- **Extension Style Switcher:** The [Parcourse Extension](https://chromewebstore.google.com/detail/parcourse/mfbdlecghmjmdafjfhnckjjhpjdonolg) popup can pick a style for the course it starts. The extension moves to `1.8.0`.
+- **Tidy Your Graph:** Tidy suggests renames, merges and moves for your knowledge graph. Untick what you disagree with, or reply for a new suggestion, before saving.
+- **Brand Package:** `@dimwitlabs/parcourse-brand` includes the new styles, and its dropdown can show icons.
+
+### Changed
+
+- **Your Knowledge Graph Is _Truly_ Yours:** Each person now has their own graph instead of sharing concepts across the instance. Upgrading copies each person's concepts, mastery and courses.
+- **Fields Stay Broad:** Fields are named in a word or two, like `Finance`, and a narrower field becomes a topic once a broader one turns up.
+- **Tidier Graph Toolbar:** Zoom is now one slider with its reset built in, and the graph controls share the height and colour of the view switcher beside them.
+- **Exact Question Counts:** Courses ask for an exact number of questions per section instead of a range models kept rounding down.
+
+### Fixed
+
+- **Regenerated Courses Show Straight Away:** No more reloading to see a regenerated course.
+
 ## [1.7.1] - 2026-09-15
 
 ### Fixed
