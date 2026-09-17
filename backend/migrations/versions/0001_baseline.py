@@ -173,3 +173,5 @@ def downgrade() -> None:
     op.drop_table('knowledge_node')
     op.drop_table('instance_config')
     op.drop_table('cached_transcript')
+    for name in ('instancemode', 'nodetier', 'userrole', 'edgetype', 'sheetstatus'):
+        sa.Enum(name=name).drop(op.get_bind(), checkfirst=True)

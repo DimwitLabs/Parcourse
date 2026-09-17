@@ -24,7 +24,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
-- **Regenerated Courses Show Straight Away:** No more reloading to see a regenerated course.
+- No more reloading to see a regenerated course.
+- Rolling the database all the way back and upgrading again no longer fails on leftover types.
 
 ## [1.7.1] - 2026-09-15
 
