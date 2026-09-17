@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, Route, BrowserRouter, Routes } from "react-router-dom";
+import { Navigate, Route, BrowserRouter, Routes, useLocation } from "react-router-dom";
 
 import AppShell from "./components/AppShell";
 import { useLoadingToast } from "./components/Toast";
@@ -19,6 +19,11 @@ import QuizHistoryScreen from "./screens/QuizHistoryScreen";
 import QuizResultsScreen from "./screens/QuizResultsScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import SetupScreen from "./screens/SetupScreen";
+
+function CourseRoute() {
+  const location = useLocation();
+  return <CourseScreen key={location.key} />;
+}
 
 function RootRouter() {
   const { status, user, signInWithToken } = useAuth();
@@ -54,7 +59,7 @@ function RootRouter() {
       <Route element={<AppShell />}>
         <Route path="/" element={<HomeScreen />} />
         <Route path="/notebook" element={<NotebookScreen />} />
-        <Route path="/course/:courseId" element={<CourseScreen />} />
+        <Route path="/course/:courseId" element={<CourseRoute />} />
         <Route path="/course/:courseId/cheatsheet" element={<CheatsheetScreen />} />
         <Route path="/course/:courseId/notes" element={<NotesScreen />} />
         <Route path="/course/:courseId/results" element={<QuizResultsScreen />} />

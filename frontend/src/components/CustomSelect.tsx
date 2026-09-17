@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
 
-type Option = { value: string; label: string; group?: string; badge?: string; tone?: "primary" | "secondary" };
+type Option = { value: string; label: string; icon?: ReactNode; group?: string; badge?: string; tone?: "primary" | "secondary" };
 
 type Props = {
   value: string;
@@ -52,7 +53,10 @@ export default function CustomSelect({ value, options, onChange, disabled }: Pro
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        <span>{selected?.label ?? value}</span>
+        <span className="custom-select-value">
+          {selected?.icon}
+          {selected?.label ?? value}
+        </span>
         <svg className="custom-select-chevron" width="12" height="7" viewBox="0 0 12 7" fill="none">
           <path d="M1 1l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
@@ -98,6 +102,7 @@ export default function CustomSelect({ value, options, onChange, disabled }: Pro
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       )}
+                      {o.icon}
                       {o.label}
                       {o.badge && <span className="custom-select-badge">{o.badge}</span>}
                     </li>

@@ -1,4 +1,5 @@
 import type { SheetStatus } from "./cheatsheet";
+import type { LearningStyle } from "./learningStyle";
 
 export type Segment = { text: string; start: number; duration: number };
 export type Chapter = { title: string; start_seconds: number; end_seconds: number };
@@ -18,6 +19,7 @@ export type CourseEntry = {
   channel: string;
   channel_url: string;
   thumbnail_url: string;
+  style: LearningStyle;
   sections: CourseEntrySection[];
   completed_sections: number[];
   has_passed_quiz: boolean;

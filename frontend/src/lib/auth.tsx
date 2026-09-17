@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
+import type { LearningStyle } from "./learningStyle";
+
 declare global {
   interface Window {
     __PARCOURSE_CONFIG__?: { apiBaseUrl?: string; themeDomain?: string };
@@ -20,7 +22,7 @@ export function stoodDown(): boolean {
   return sessionStorage.getItem(STOOD_DOWN_KEY) === "1";
 }
 
-export type UserInfo = { id: string; email: string; role: "admin" | "student"; first_name?: string; last_name?: string; must_change_password?: boolean; has_password?: boolean };
+export type UserInfo = { id: string; email: string; role: "admin" | "student"; first_name?: string; last_name?: string; must_change_password?: boolean; has_password?: boolean; learning_style?: LearningStyle };
 
 type AuthState = {
   status: "loading" | "signed-out" | "signed-in";

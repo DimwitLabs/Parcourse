@@ -4,9 +4,12 @@ import { Link, useNavigate } from "react-router-dom";
 
 import GenerationSteps, { FALLBACK_MESSAGES, useRotatingMessage } from "../components/GenerationSteps";
 import type { GenStep } from "../components/GenerationSteps";
+import LearningStylePill from "../components/LearningStylePill";
 import { toast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { LEARNING_STYLES } from "../lib/learningStyle";
+import type { LearningStyle } from "../lib/learningStyle";
 import { youTubeVideoId, youTubeWatchUrl } from "../lib/youtube";
 import type { Chapter, CourseEntry, Segment } from "../lib/types";
 
@@ -51,6 +54,7 @@ export default function HomeScreen() {
   const [aiReady, setAiReady] = useState(false);
   const [fillOrigin, setFillOrigin] = useState({ x: "50%", y: "50%" });
   const [handedOver, setHandedOver] = useState<string | null>(null);
+  const [handedStyle, setHandedStyle] = useState<LearningStyle | null>(null);
   const rejection = useRef(0);
   const typedHint = useRef(0);
   const [hint, setHint] = useState(TYPED_HINTS[0]);
@@ -68,10 +72,13 @@ export default function HomeScreen() {
   }, [token]);
 
   useEffect(() => {
-    const url = youTubeWatchUrl(new URLSearchParams(window.location.search).get("v") ?? "");
+    const params = new URLSearchParams(window.location.search);
+    const url = youTubeWatchUrl(params.get("v") ?? "");
     if (!url) return;
+    const style = LEARNING_STYLES.find((s) => s.value === params.get("style"));
     setVideoUrl(url);
     setHandedOver(url);
+    setHandedStyle(style?.value ?? null);
     window.history.replaceState(null, "", window.location.pathname);
   }, []);
 
@@ -88,6 +95,7 @@ export default function HomeScreen() {
         channel_url: video.channelUrl,
         segments: video.segments,
         chapters,
+        style: handedStyle,
       }),
     });
     toast("Course ready!", "success");
@@ -257,7 +265,7 @@ export default function HomeScreen() {
             <button
               type="button"
               className="url-form url-form-gate"
-              onClick={() => navigate("/settings")}
+              onClick={() => navigate("/settings?tab=api-key")}
               onMouseEnter={(e) => {
                 const box = e.currentTarget.getBoundingClientRect();
                 setFillOrigin({ x: `${e.clientX - box.left}px`, y: `${e.clientY - box.top}px` });
@@ -317,6 +325,7 @@ export default function HomeScreen() {
               <Link to={`/course/${c.id}`} key={c.id} className="course-card lift">
                 <div className="course-card-thumb">
                   <img src={c.thumbnail_url} alt="" loading="lazy" />
+                  <LearningStylePill style={c.style} hint={false} className="thumb-style" />
                 </div>
                 <h4 className="course-card-title">{c.video_title || c.sections[0]?.title || "Untitled course"}</h4>
                 <p className="course-card-meta">{c.sections.length} sections</p>

@@ -1,17 +1,21 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import CustomSelect from "./CustomSelect";
+import LearningStyleIcon from "./LearningStyleIcon";
 import GenerationSteps, { FALLBACK_MESSAGES, REGEN_STEPS, useRotatingMessage } from "./GenerationSteps";
 import type { RegenStep } from "./GenerationSteps";
 import { apiFetch, errMsg } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { LEARNING_STYLES } from "../lib/learningStyle";
+import type { LearningStyle } from "../lib/learningStyle";
 import { useEscapeKey } from "../lib/useEscapeKey";
 
 export type CourseAction = "delete" | "regenerate";
 
 type Props = {
   action: CourseAction | null;
-  course: { id: string; video_id: string } | null;
+  course: { id: string; video_id: string; style: LearningStyle } | null;
   onClose: () => void;
   /** Called after a successful delete, to leave the page or drop the row. */
   onDeleted: () => void;
@@ -26,6 +30,7 @@ export default function CourseActionModal({ action, course, onClose, onDeleted, 
   const [keepNotes, setKeepNotes] = useState(true);
   const [keepGraph, setKeepGraph] = useState(true);
   const [feedback, setFeedback] = useState("");
+  const [style, setStyle] = useState<LearningStyle | null>(null);
   const [step, setStep] = useState<RegenStep>("");
   const message = useRotatingMessage(step === "generating", FALLBACK_MESSAGES);
 
@@ -35,6 +40,7 @@ export default function CourseActionModal({ action, course, onClose, onDeleted, 
     setKeepNotes(true);
     setKeepGraph(true);
     setFeedback("");
+    setStyle(null);
     setStep("");
     onClose();
   }
@@ -61,7 +67,7 @@ export default function CourseActionModal({ action, course, onClose, onDeleted, 
       setStep("generating");
       const made = await apiFetch(`/courses/${course.id}/regenerate`, token, {
         method: "POST",
-        body: JSON.stringify({ feedback, keep_notes: keepNotes, keep_graph: keepGraph }),
+        body: JSON.stringify({ feedback, style: chosen, keep_notes: keepNotes, keep_graph: keepGraph }),
       });
       close();
       navigate(`/course/${made.id}`);
@@ -75,6 +81,8 @@ export default function CourseActionModal({ action, course, onClose, onDeleted, 
 
   if (!action || !course) return null;
   const deleting = action === "delete";
+  const chosen = style ?? course.style;
+  const restyled = chosen !== course.style;
 
   return (
     <div className="modal-overlay" onClick={() => !busy && close()}>
@@ -87,7 +95,7 @@ export default function CourseActionModal({ action, course, onClose, onDeleted, 
           <p style={{ margin: "0 0 1rem", color: "var(--color-ink-soft)" }}>
             {deleting
               ? "This will permanently delete this course and all associated quiz data."
-              : "This will rebuild the course from the same video. Quiz answers, scores and progress are cleared."}
+              : "This will rebuild the course from the same video. Tell us what to change, or switch the style for a different mix of questions. Quiz answers, scores and progress are cleared."}
           </p>
         )}
 
@@ -103,18 +111,37 @@ export default function CourseActionModal({ action, course, onClose, onDeleted, 
         )}
 
         {!deleting && !step && (
+          <div className="modal-field learning-style-field">
+            <span className="modal-field-label">Learning style</span>
+            <CustomSelect
+              value={chosen}
+              options={LEARNING_STYLES.map((option) => ({
+                value: option.value,
+                label: option.name,
+                icon: <LearningStyleIcon style={option.value} size={14} />,
+                badge: option.value === course.style ? "Current" : undefined,
+              }))}
+              onChange={(value) => setStyle(value as LearningStyle)}
+              disabled={busy}
+            />
+          </div>
+        )}
+
+        {!deleting && !step && (
           <label className="modal-field">
-            <span className="modal-field-label">What looks wrong?</span>
+            <span className="modal-field-label">{restyled ? "Anything else?" : "What looks wrong?"}</span>
             <textarea
               className="text-input boxed textarea modal-textarea"
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
-              placeholder="Sections were too long, the quiz missed the main argument…"
+              placeholder={restyled ? "Optional. Anything else the new course should do better…" : "Sections were too long, the quiz missed the main argument…"}
               maxLength={1000}
               disabled={busy}
             />
             <span className="modal-field-hint">
-              Required. Your feedback feeds straight into the new course generation.
+              {restyled
+                ? "Optional. The new style is reason enough."
+                : "Required unless you switch style. Your feedback feeds straight into the new course generation."}
             </span>
           </label>
         )}
@@ -142,7 +169,7 @@ export default function CourseActionModal({ action, course, onClose, onDeleted, 
             <button
               className={`button ${deleting ? "danger" : "primary"}`}
               onClick={deleting ? remove : regenerate}
-              disabled={busy || (!deleting && !feedback.trim())}
+              disabled={busy || (!deleting && !restyled && feedback.trim() === "")}
             >
               {busy ? (deleting ? "Deleting…" : "Regenerating…") : deleting ? "Delete" : "Regenerate"}
             </button>

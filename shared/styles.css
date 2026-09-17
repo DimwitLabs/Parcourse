@@ -942,6 +942,30 @@ body {
   margin-bottom: 0.25rem;
 }
 
+.sidebar-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.sidebar-heading .sidebar-label {
+  margin-bottom: 0;
+}
+
+.thumb-style {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.6rem;
+  z-index: 1;
+}
+
+.tag.style-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
 .sidebar-section-list {
   background: var(--color-surface-lowest);
   border-radius: var(--radius-lg);
@@ -1909,7 +1933,7 @@ body {
 .graph-toolbar-right {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.4rem;
   flex-wrap: wrap;
 }
 
@@ -1974,6 +1998,7 @@ body {
 .graph-export-controls .button {
   padding: 0.5rem 0.9rem;
   font-size: 0.82rem;
+  background: var(--color-surface-low);
 }
 
 @media (max-width: 640px) {
@@ -3107,6 +3132,70 @@ body {
   margin: 0;
 }
 
+.style-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.style-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.25rem 0.75rem 1.1rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: normal;
+  color: var(--color-ink-soft);
+  background: var(--color-surface-lowest);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.style-tile:hover {
+  color: var(--color-ink);
+  border-color: var(--color-ink-faint);
+}
+
+.style-tile.selected {
+  background: var(--color-secondary-container);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.style-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-low);
+  color: var(--color-primary);
+}
+
+.style-detail svg {
+  flex-shrink: 0;
+}
+
+.style-detail p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--color-ink-soft);
+}
+
+@media (max-width: 640px) {
+  .style-tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 640px) {
   .settings-layout {
     grid-template-columns: 1fr;
@@ -3332,6 +3421,10 @@ body {
 
 .hero > .modal-field-hint.is-error {
   text-align: center;
+}
+
+.learning-style-field {
+  margin-bottom: 1.25rem;
 }
 
 .modal-textarea {
@@ -3803,6 +3896,21 @@ a.tip {
   transform: translate(-50%, 0);
 }
 
+.style-tag.tip::after {
+  top: calc(100% + 0.5rem);
+  bottom: auto;
+  left: auto;
+  right: 0;
+  width: 14rem;
+  white-space: normal;
+  transform: translate(0, -0.35rem);
+}
+
+.style-tag.tip:hover::after,
+.style-tag.tip:focus-visible::after {
+  transform: translate(0, 0);
+}
+
 .toast-container {
   position: fixed;
   bottom: 1.5rem;
@@ -4239,6 +4347,13 @@ a.tip {
   justify-content: space-between;
   gap: 0.75rem;
   transition: border-color 0.15s;
+}
+
+.custom-select-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
 }
 
 .custom-select-trigger:hover,

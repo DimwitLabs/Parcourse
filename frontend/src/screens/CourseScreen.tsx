@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import CourseActionModal from "../components/CourseActionModal";
+import LearningStylePill from "../components/LearningStylePill";
 import NotesDrawer from "../components/NotesDrawer";
 import SourceCredit from "../components/SourceCredit";
 import type { CourseAction } from "../components/CourseActionModal";
@@ -12,6 +13,7 @@ import { useAuth } from "../lib/auth";
 import { CHEATSHEET_HINT, POLL_MS, stampOf } from "../lib/cheatsheet";
 import { useCopyCredit } from "../lib/copyCredit";
 import { creditOf } from "../lib/credit";
+import type { LearningStyle } from "../lib/learningStyle";
 import type { SheetStatus } from "../lib/cheatsheet";
 import { crossing } from "../lib/sections";
 import { shownScore } from "../lib/score";
@@ -49,6 +51,7 @@ type Course = {
   channel: string;
   channel_url: string;
   thumbnail_url: string;
+  style: LearningStyle;
   sections: Section[];
 };
 
@@ -448,7 +451,10 @@ export default function CourseScreen() {
       )}
       <aside className="course-sidebar">
         <nav className="sidebar-nav">
-          <span className="sidebar-label">Sections</span>
+          <div className="sidebar-heading">
+            <span className="sidebar-label">Sections</span>
+            <LearningStylePill style={course.style} />
+          </div>
           <div className="sidebar-section-list">
             {course.sections.map((s, i) => (
               <button

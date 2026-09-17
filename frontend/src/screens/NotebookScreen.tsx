@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import CourseActionModal from "../components/CourseActionModal";
+import LearningStylePill from "../components/LearningStylePill";
 import IconMenu from "../components/IconMenu";
 import { useLoadingToast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
@@ -225,6 +226,7 @@ export default function NotebookScreen() {
             <Link to={`/course/${c.id}`} className="notebook-card-link">
               <div className="notebook-thumb-wrap">
                 <img className="notebook-thumb" src={c.thumbnail_url} alt="" loading="lazy" />
+                <LearningStylePill style={c.style} hint={false} className="thumb-style" />
               </div>
               {!isComplete && total > 0 && (
                 <div className="notebook-progress-bar">
