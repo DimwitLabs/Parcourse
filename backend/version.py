@@ -5,4 +5,4 @@ The extension's manifest.json is the only exception and follows its own
 release-cycle.
 """
 
-__version__ = "1.8.0"
+__version__ = "1.8.1"
