@@ -1,6 +1,5 @@
 .git
 docs
-landing
 extension
 **/node_modules
 **/__pycache__

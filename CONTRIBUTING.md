@@ -55,9 +55,7 @@ To use anything AI-powered you need a key from a provider. The first run walks y
 
 ## Good To Know
 
-The landing page shares its palette with the app, so run `./scripts/sync-tokens.sh` before previewing `landing/index.html`.
-
-Colours live as tokens in `shared/tokens.css`, which the app, the docs and the landing page all read, each holding both its light and dark value through `light-dark()`; add a colour there rather than inline
+Colours live as tokens in `shared/tokens.css`, which the app and the docs both read, each holding both its light and dark value through `light-dark()`; add a colour there rather than inline
 
 ## Guidelines
 

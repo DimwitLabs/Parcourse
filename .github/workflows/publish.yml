@@ -52,15 +52,6 @@ jobs:
       - name: YouTube parsers agree
         run: node scripts/check-youtube-parsers.mjs
 
-      - name: Landing page parses
-        run: |
-          python -m pip install --quiet html5lib
-          python - <<'EOF'
-          import html5lib
-          with open("landing/index.html", "rb") as page:
-              html5lib.HTMLParser(strict=True).parse(page)
-          EOF
-
   publish:
     needs: test
     runs-on: ubuntu-latest
@@ -142,27 +133,6 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  site:
-    needs: test
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Deploy to server
-        env:
-          SSH_KEY: ${{ secrets.DO_SSH_KEY }}
-          DO_HOST: ${{ secrets.DO_HOST }}
-          DO_USER: ${{ secrets.DO_USER }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_KEY" | base64 -d > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "$DO_HOST" >> ~/.ssh/known_hosts
-          ssh -i ~/.ssh/deploy_key "$DO_USER@$DO_HOST" \
-            "cd /var/www/Parcourse && git pull --rebase origin main && ./scripts/sync-tokens.sh"
 
   release:
     needs: publish
