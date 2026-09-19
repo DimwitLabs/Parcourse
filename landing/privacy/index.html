@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#fbf9f5" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#14150f" media="(prefers-color-scheme: dark)">
+    <title>Privacy Policy | Parcourse</title>
+    <meta name="description" content="What the hosted Parcourse service at parcourse.study collects, why, where it lives, and how to get it deleted.">
+    <link rel="canonical" href="https://parcourse.study/privacy/">
+    <link rel="icon" type="image/svg+xml" href="../parcourse.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../tokens.css">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../legal.css">
+    <script>
+        try {
+            const theme = localStorage.getItem('parcourse_theme');
+            if (theme === 'light' || theme === 'dark') document.documentElement.setAttribute('data-theme', theme);
+        } catch (error) {}
+    </script>
+</head>
+<body>
+    <main class="legal">
+        <div class="legal-top">
+            <a href="../"><img src="../parcourse-wordmark.svg" alt="Parcourse"></a>
+            <nav>
+                <a href="../privacy/" aria-current="page">Privacy</a>
+                <a href="../terms/">Terms</a>
+            </nav>
+        </div>
+
+        <div class="legal-head">
+            <h1>Privacy Policy</h1>
+            <p class="legal-date">Last updated 19 September 2026</p>
+        </div>
+
+        <div class="legal-summary">
+            <strong>The short version</strong>
+            <ul>
+                <li>We collect what it takes to run your account and your instance, and nothing else.</li>
+                <li>No ads, no analytics, no trackers. We never sell your data.</li>
+                <li>We never train AI models on your data.</li>
+                <li>Your transcripts go to the AI provider you picked, on your own key.</li>
+                <li>Delete your account and your data is gone within 30 days.</li>
+            </ul>
+        </div>
+
+        <section>
+            <h2>Who we are</h2>
+            <p>The hosted Parcourse service at <strong>parcourse.study</strong> is run by Deepansh Khurana, an individual based in India ("we", "us"). Dimwit Labs is the label Deepansh publishes work under, not a company, and it isn't a party to anything here. Write to <a href="mailto:privacy@parcourse.study">privacy@parcourse.study</a> about anything in this policy.</p>
+            <p><strong>This policy covers only the hosted service at parcourse.study.</strong> Parcourse is open source, and if you use an instance someone else hosts, that person decides what happens to your data. We receive nothing from it.</p>
+        </section>
+
+        <section>
+            <h2>What we collect</h2>
+            <ul>
+                <li><strong>Your account:</strong> Your email, name and date of birth, and your password, which we store only as a one-way hash. We ask for your date of birth to check you're 18 or over, and keep it with a record of when that check passed. If you sign in with Google, we get your email, your name and your Google account ID.</li>
+                <li><strong>Your instance:</strong> What you make and do in it: courses, notes, quiz answers, progress, your knowledge graph, and the YouTube videos you turn into courses. It also holds the names and emails of people you invite.</li>
+                <li><strong>Your AI provider key:</strong> We encrypt it and use it only to call that provider for you.</li>
+                <li><strong>Billing:</strong> Your plan, payment status and invoices. Your card details go straight to our payment processor; we never see or store them.</li>
+                <li><strong>The waitlist:</strong> If you leave your email on the home page, we keep it to send one email when sign-ups open.</li>
+                <li><strong>Server logs:</strong> Your IP address, the page requested and the time. We keep these briefly, to keep the service secure and fix problems.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Cookies</h2>
+            <p>We use a cookie to keep you signed in, and one to remember your light or dark theme across parcourse.study. That's all. There are no advertising or analytics cookies, so there's nothing to consent to.</p>
+        </section>
+
+        <section>
+            <h2>How we use it</h2>
+            <ul>
+                <li>To run your account and your instance, and to sign you and the people you invite in.</li>
+                <li>To make courses: we fetch the video's public captions and details from YouTube, then send them to your AI provider.</li>
+                <li>To bill you, and to email you about your account, your bill or changes to these policies.</li>
+                <li>To keep the service secure and working.</li>
+            </ul>
+            <p>We don't sell your data, show you ads, profile you, or use your data to train AI models.</p>
+        </section>
+
+        <section>
+            <h2>Your AI provider</h2>
+            <p>Parcourse uses the AI provider you connect, such as OpenAI, Anthropic or Google, on your own key. When it makes a course or marks an answer, it sends that provider the transcript and your content. That provider's terms and privacy policy apply to what it receives, so check them, especially whether it trains on API data.</p>
+        </section>
+
+        <section>
+            <h2>Who else handles it</h2>
+            <div class="legal-table">
+                <table>
+                    <thead><tr><th>Provider</th><th>What for</th><th>Where</th></tr></thead>
+                    <tbody>
+                        <tr><td>Supabase</td><td>The database for accounts and every instance</td><td>Japan</td></tr>
+                        <tr><td>Fly.io</td><td>Runs each instance</td><td>Japan</td></tr>
+                        <tr><td>DigitalOcean</td><td>Runs the account app, and our DNS</td><td>Singapore</td></tr>
+                        <tr><td>Google</td><td>Sign-in, only if you choose it</td><td>Global</td></tr>
+                        <tr><td>Your AI provider</td><td>Making courses and marking answers</td><td>Depends on the provider</td></tr>
+                        <tr><td>Our payment processor</td><td>Taking payments</td><td>Named at checkout</td></tr>
+                        <tr><td>Resend</td><td>Sending account emails</td><td>Japan</td></tr>
+                        <tr><td>Oxylabs</td><td>A network we route YouTube requests through when needed. It never sees your account.</td><td>Global</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Your data is stored outside India. We only use providers that protect it at least as well as we do, and we'll update this list before adding one.</p>
+        </section>
+
+        <section>
+            <h2>The browser extension</h2>
+            <p>The extension stores one thing, your instance's address, in your browser's synced storage. It reads the YouTube page you're on only when you send that video to Parcourse, and it sends the video only to your own instance.</p>
+        </section>
+
+        <section>
+            <h2>How long we keep it</h2>
+            <ul>
+                <li><strong>While your account is open,</strong> we keep your data so the service works.</li>
+                <li><strong>When you delete your account or instance,</strong> we remove it from live systems straight away. It's gone from backups within 30 days.</li>
+                <li><strong>Invoices</strong> we keep for as long as Indian tax law requires.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Your rights</h2>
+            <p>Wherever you live, you can ask us to:</p>
+            <ul>
+                <li>show you the data we hold about you, or give you a copy of it</li>
+                <li>correct it</li>
+                <li>delete it</li>
+                <li>stop using it, where we rely on your consent</li>
+            </ul>
+            <p>Email <a href="mailto:privacy@parcourse.study">privacy@parcourse.study</a> and we'll reply within 30 days.</p>
+            <p>If you signed in to an instance someone else owns, that owner manages the data inside it, so ask them.</p>
+        </section>
+
+        <section>
+            <h2>Security</h2>
+            <p>Every connection is encrypted. Passwords are hashed and AI keys are encrypted. Each instance runs on its own machine and keeps its data in its own database schema. No system is perfectly secure. If a breach affects your data, we'll tell you and the authorities as the law requires.</p>
+        </section>
+
+        <section>
+            <h2>Age</h2>
+            <p>You need to be 18 or over to create an account. People aged 13 to 17 can use Parcourse only when an instance owner invites them. We trust owners to get a parent's or guardian's consent first, and owners are responsible for doing so. We don't knowingly hold data about anyone under 13. If you think we do, tell us and we'll delete it.</p>
+        </section>
+
+        <section>
+            <h2>Changes</h2>
+            <p>If we change this policy in a way that matters, we'll email you at least 14 days before it takes effect. The date at the top always shows the latest version.</p>
+        </section>
+
+        <section>
+            <h2>Grievance officer</h2>
+            <p>Deepansh Khurana, <a href="mailto:privacy@parcourse.study">privacy@parcourse.study</a>. We acknowledge complaints within 48 hours and resolve them within 30 days.</p>
+        </section>
+
+        <div class="footer">
+            <span>Made with love and labour, and backed by the <a href="https://dimwit.me/pledge" target="_blank" rel="noopener noreferrer">Dimwit Pledge</a></span>
+        </div>
+    </main>
+</body>
+</html>
