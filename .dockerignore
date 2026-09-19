@@ -2,7 +2,6 @@
 docs
 landing
 extension
-brand
 **/node_modules
 **/__pycache__
 **/.venv

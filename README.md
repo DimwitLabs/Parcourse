@@ -5,7 +5,7 @@
 [![AI-DECLARATION: copilot](https://img.shields.io/badge/䷼%20AI--DECLARATION-copilot-fee2e2?labelColor=fee2e2)](AI-DECLARATION.md)
 [![Dimwit Pledge](https://dimwit.me/pledge.svg)](https://dimwit.me/pledge)
 
-<p align="center"><img src="landing/og.png" alt="Parcourse. Turn curiosity into knowledge." width="100%" /></p>
+<p align="center"><img src="shared/assets/og.png" alt="Parcourse. Turn curiosity into knowledge." width="100%" /></p>
 
 <p align="center"><a href="https://parcourse.study">parcourse.study</a></p>
 
