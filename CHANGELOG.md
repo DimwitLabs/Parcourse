@@ -4,6 +4,16 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.1] - 2026-09-19
+
+### Removed
+
+- The landing page and its deploy job from the base repo to reduce bloat for self-hosters.
+
+### Changed
+
+- Brand images ship in `@dimwitlabs/parcourse-brand`.
+
 ## [1.8.0] - 2026-09-17
 
 ### Added
