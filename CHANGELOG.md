@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.2] - 2026-10-06
+
+### Changed
+
+- Dependencies updated across the backend and the frontend.
+
 ## [1.8.1] - 2026-09-19
 
 ### Removed
