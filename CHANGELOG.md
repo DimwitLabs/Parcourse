@@ -4,6 +4,22 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Design System:** `frontend/design-system.html` shows every shared component in every state, in both themes. Run it with `npm run design-system` in `frontend/`, or open `/design-system.html` while the stack runs. Click a colour to copy its hex.
+
+### Changed
+
+- **Dialogs:** Escape or a click outside closes a dialog, focus goes back to the button that opened it, and a dialog that's busy saving stays open.
+- **Dropdowns and Menus:** They open above everything, so a dialog's or card's edge no longer cuts them off, and they work from the keyboard.
+- **Toasts:** Errors stay until you dismiss them, toasts show over an open dialog, and screen readers announce them.
+- **Focus Rings:** Every text field shows a ring when you tab into it.
+- **Phone Layout:** Settings tabs stay on one line and scroll instead of squeezing into vertical letters, and stat cards sit two across.
+- **Extension:** The popup's style picker uses real radio buttons, and a failed hand-over now says so in the popup and with a red `!` on the icon.
+- **One Version:** The brand package and the extension now carry Parcourse's version, and CI fails a push where any of them disagree.
+
 ## [1.8.2] - 2026-10-06
 
 ### Changed
