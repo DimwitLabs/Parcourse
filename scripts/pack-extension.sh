@@ -10,7 +10,7 @@ mkdir -p "$root/dist"
 rm -f "$out"
 cd "$root/extension"
 zip -r -X -q "$out" . \
-    --exclude 'README.md' '.DS_Store' '*/.DS_Store' '__MACOSX/*'
+    --exclude 'README.md' 'store/*' '.DS_Store' '*/.DS_Store' '__MACOSX/*'
 
 echo "$out"
 unzip -l "$out"

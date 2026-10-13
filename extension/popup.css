@@ -129,13 +129,29 @@ h1 { font-size: 1.5rem; letter-spacing: -0.02em; }
     gap: 0.5rem;
 }
 
+.style {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+}
+
 .style-tiles {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: auto;
+    grid-auto-rows: 1fr;
     gap: 0.4rem;
 }
 
+.style-radio {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
 .style-tile {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -164,13 +180,13 @@ h1 { font-size: 1.5rem; letter-spacing: -0.02em; }
 
 .style-tile:hover { color: var(--ink); border-color: var(--ink-faint); }
 
-.style-tile.selected {
+.style-tile:has(.style-radio:checked) {
     color: var(--primary);
     background: var(--secondary-container);
     border-color: var(--primary);
 }
 
-.style-tile:focus-visible {
+.style-tile:has(.style-radio:focus-visible) {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
@@ -210,6 +226,9 @@ h1 { font-size: 1.5rem; letter-spacing: -0.02em; }
 
 /* The instance is where the course will land, so the row reads as the way there. */
 .host {
+    width: 100%;
+    background: none;
+    font-family: inherit;
     display: flex;
     align-items: center;
     justify-content: space-between;

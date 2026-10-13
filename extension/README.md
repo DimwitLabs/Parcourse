@@ -48,7 +48,7 @@ The store asks why each permission is needed:
 | Permission | Why |
 | --- | --- |
 | `storage` | Holds the one setting, the address of your instance, synced across your own Chrome profile. |
-| `contextMenus` | Adds the right-click entry on a YouTube link or page. |
+| `contextMenus` | Adds the right-click entry on a YouTube video page or a link to a video. |
 | `*://*.youtube.com/*`, `*://youtu.be/*` | Reads the address of a YouTube tab to find the video id. Nothing is injected and the page is never read. |
 
 There is no `tabs` permission, so the extension cannot see the address of any tab that is not YouTube.

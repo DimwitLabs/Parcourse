@@ -14,10 +14,10 @@
             Nothing is sent anywhere else, and the extension never sees your password.
         </p>
         <form class="pill" id="form">
-            <input class="input" id="instance" placeholder="parcourse.example.com" spellcheck="false" autocomplete="off">
+            <input class="input" id="instance" aria-label="Parcourse address" placeholder="parcourse.example.com" inputmode="url" spellcheck="false" autocomplete="off">
             <button class="button" type="submit">Save</button>
         </form>
-        <p class="note" id="note"></p>
+        <p class="note" id="note" role="status"></p>
     </main>
     <script type="module" src="options.js"></script>
 </body>

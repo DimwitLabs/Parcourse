@@ -1,17 +1,23 @@
 import { youTubeVideoId } from "./lib/youtube.js";
 import { courseUrl, readInstance } from "./lib/config.js";
 
-const MENU_ID = "learn-in-parcourse";
+const VIDEO_PAGES = ["*://*.youtube.com/watch*", "*://*.youtube.com/shorts/*", "*://*.youtube.com/live/*"];
+const VIDEO_LINKS = [...VIDEO_PAGES, "*://youtu.be/*"];
 
 chrome.runtime.onInstalled.addListener(async () => {
-    chrome.contextMenus.removeAll(() => {
-        chrome.contextMenus.create({
-            id: MENU_ID,
-            title: "Learn in Parcourse",
-            contexts: ["page", "link", "video"],
-            documentUrlPatterns: ["*://*.youtube.com/*"],
-            targetUrlPatterns: ["*://*.youtube.com/*", "*://youtu.be/*"]
-        });
+    await chrome.contextMenus.removeAll();
+    chrome.contextMenus.create({
+        id: "learn-this-video",
+        title: "Learn in Parcourse",
+        contexts: ["page", "video"],
+        documentUrlPatterns: VIDEO_PAGES
+    });
+    chrome.contextMenus.create({
+        id: "learn-linked-video",
+        title: "Learn in Parcourse",
+        contexts: ["link"],
+        documentUrlPatterns: ["*://*.youtube.com/*"],
+        targetUrlPatterns: VIDEO_LINKS
     });
 
     if (!(await readInstance())) chrome.runtime.openOptionsPage();
@@ -45,14 +51,35 @@ chrome.tabs.onUpdated.addListener((tabId, change) => {
     if (change.url || change.status === "complete") markTab(tabId);
 });
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+const FLAG_MS = 3000;
+
+async function flag(tabId) {
+    await chrome.action.setBadgeText({ tabId, text: "!" });
+    await chrome.action.setBadgeBackgroundColor({ tabId, color: "#b3261e" });
+    setTimeout(() => markTab(tabId), FLAG_MS);
+}
+
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     const source = info.linkUrl || info.pageUrl || tab?.url || "";
-    handOver(youTubeVideoId(source));
+    let ok = false;
+    try {
+        ok = await handOver(youTubeVideoId(source));
+    } catch (error) {
+        console.error("Parcourse: the hand-over failed", error);
+    }
+    if (!ok && tab?.id !== undefined) await flag(tab.id);
 });
 
 chrome.runtime.onMessage.addListener((message, _sender, respond) => {
     if (message?.type !== "learn") return false;
-    handOver(message.videoId, message.style).then((ok) => respond({ ok }));
+    (async () => {
+        try {
+            respond({ ok: await handOver(message.videoId, message.style) });
+        } catch (error) {
+            console.error("Parcourse: the hand-over failed", error);
+            respond({ ok: false });
+        }
+    })();
     return true;
 });
 

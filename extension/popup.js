@@ -10,27 +10,24 @@ const tiles = document.getElementById("style");
 let style = "";
 
 for (const option of STYLES) {
-    const tile = document.createElement("button");
-    tile.type = "button";
+    const tile = document.createElement("label");
     tile.className = option.value ? "style-tile" : "style-tile default";
-    tile.setAttribute("role", "radio");
-    tile.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${option.icon}</svg>`;
+    const radio = document.createElement("input");
+    radio.type = "radio";
+    radio.name = "style";
+    radio.className = "style-radio";
+    radio.checked = option.value === "";
+    radio.addEventListener("change", () => {
+        style = option.value;
+    });
+    tile.append(radio);
+    tile.insertAdjacentHTML(
+        "beforeend",
+        `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${option.icon}</svg>`
+    );
     tile.append(option.name);
-    tile.addEventListener("click", () => pick(option.value));
-    tile.dataset.value = option.value;
     tiles.append(tile);
 }
-
-function pick(value) {
-    style = value;
-    for (const tile of tiles.children) {
-        const on = tile.dataset.value === value;
-        tile.classList.toggle("selected", on);
-        tile.setAttribute("aria-checked", String(on));
-    }
-}
-
-pick("");
 
 document.getElementById("settings").addEventListener("click", () => {
     chrome.runtime.openOptionsPage();
@@ -64,6 +61,17 @@ if (!instance) {
 go.addEventListener("click", async () => {
     go.disabled = true;
     go.textContent = "Opening…";
-    await chrome.runtime.sendMessage({ type: "learn", videoId, style });
-    window.close();
+    try {
+        const reply = await chrome.runtime.sendMessage({ type: "learn", videoId, style });
+        if (reply?.ok) {
+            window.close();
+            return;
+        }
+    } catch (error) {
+        console.error("Parcourse: the hand-over failed", error);
+    }
+    go.disabled = false;
+    go.textContent = "Create course";
+    note.dataset.tone = "bad";
+    note.textContent = "Parcourse did not open. Check its address in settings and try again.";
 });
