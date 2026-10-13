@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 
-/** Runs `onEscape` when Escape is pressed while `active` is true.
- *  Shared by every modal so dismissal behaves the same everywhere. */
+/** Runs `onEscape` when Escape is pressed while `active` is true, for overlays that are not dialogs. */
 export function useEscapeKey(active: boolean, onEscape: () => void) {
   const handler = useRef(onEscape);
   handler.current = onEscape;

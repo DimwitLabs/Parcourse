@@ -7,6 +7,8 @@ import ToastContainer from "./components/Toast";
 import { AuthProvider } from "./lib/auth";
 import "./styles.css";
 
+if (!("popover" in HTMLElement.prototype)) await import("@oddbird/popover-polyfill");
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <CanvasBackground />

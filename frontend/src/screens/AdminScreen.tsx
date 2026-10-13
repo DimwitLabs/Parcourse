@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Avatar from "../components/Avatar";
+import Modal from "../components/Modal";
 import PasswordField from "../components/PasswordField";
 import { toast, useLoadingToast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { generatePassword, passwordError } from "../lib/password";
 import { useAuth } from "../lib/auth";
 import { passwordsAllowed, providerEnabled, providerName, useSso } from "../lib/sso";
-import { useEscapeKey } from "../lib/useEscapeKey";
 
 type UserWithUsage = {
   id: string;
@@ -39,15 +39,11 @@ export default function AdminScreen() {
   const signsInWithProvider = providerEnabled(sso);
   const canSetPassword = passwordsAllowed(sso);
 
-  useEscapeKey(showAdd, () => { if (!busy) setShowAdd(false); });
-
   const [confirm, setConfirm] = useState<ConfirmAction | null>(null);
   const [actionBusy, setActionBusy] = useState(false);
 
   const [pwdUser, setPwdUser] = useState<UserWithUsage | null>(null);
   const [newUserPwd, setNewUserPwd] = useState("");
-
-  useEscapeKey(!!pwdUser, () => { if (!actionBusy) setPwdUser(null); });
 
   useEffect(() => {
     setNewUserPwd(pwdUser ? generatePassword() : "");
@@ -245,91 +241,87 @@ export default function AdminScreen() {
       </div>
 
       {showAdd && (
-        <div className="modal-overlay" onClick={() => setShowAdd(false)}>
-          <div className="modal-card card" onClick={(e) => e.stopPropagation()}>
-            <h2 style={{ margin: "0 0 1rem", fontSize: "1.25rem", fontWeight: 800 }}>Add user</h2>
-            <div className="modal-form">
-              <div className="modal-form-row">
-                <input
-                  className="text-input boxed"
-                  placeholder="First name"
-                  autoComplete="off"
-                  value={newFirstName}
-                  onChange={(e) => setNewFirstName(e.target.value)}
-                />
-                <input
-                  className="text-input boxed"
-                  placeholder="Last name"
-                  autoComplete="off"
-                  value={newLastName}
-                  onChange={(e) => setNewLastName(e.target.value)}
-                />
-              </div>
+        <Modal label="Add user" onClose={() => setShowAdd(false)} locked={busy}>
+          <h2 style={{ margin: "0 0 1rem", fontSize: "1.25rem", fontWeight: 800 }}>Add user</h2>
+          <div className="modal-form">
+            <div className="modal-form-row">
               <input
                 className="text-input boxed"
-                placeholder="Email"
-                type="email"
+                placeholder="First name"
                 autoComplete="off"
-                value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
+                value={newFirstName}
+                onChange={(e) => setNewFirstName(e.target.value)}
               />
-              {signsInWithProvider ? (
-                <p className="modal-field-hint" style={{ textAlign: "left", padding: "0 0.35rem" }}>
-                  Name is optional. They sign in with {providerName(sso)}, so there is no password to set or
-                  to send them. Give them one later from this screen if they ever need to sign in
-                  without the provider.
-                </p>
-              ) : (
-                <PasswordField
-                  value={newPassword}
-                  onChange={setNewPassword}
-                  disabled={busy}
-                  hint="Name is optional. Share this password with the user. They will be asked to change it on first sign in."
-                />
-              )}
+              <input
+                className="text-input boxed"
+                placeholder="Last name"
+                autoComplete="off"
+                value={newLastName}
+                onChange={(e) => setNewLastName(e.target.value)}
+              />
             </div>
-            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "1.25rem" }}>
-              <button className="button secondary" onClick={() => setShowAdd(false)}>
-                Cancel
-              </button>
-              <button
-                className="button primary"
-                onClick={addUser}
-                disabled={
-                  busy ||
-                  newEmail.length === 0 ||
-                  (signsInWithProvider === false && passwordError(newPassword) !== null)
-                }
-              >
-                {busy ? "Adding…" : "Add"}
-              </button>
-            </div>
+            <input
+              className="text-input boxed"
+              placeholder="Email"
+              type="email"
+              autoComplete="off"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+            />
+            {signsInWithProvider ? (
+              <p className="modal-field-hint" style={{ textAlign: "left", padding: "0 0.35rem" }}>
+                Name is optional. They sign in with {providerName(sso)}, so there is no password to set or
+                to send them. Give them one later from this screen if they ever need to sign in
+                without the provider.
+              </p>
+            ) : (
+              <PasswordField
+                value={newPassword}
+                onChange={setNewPassword}
+                disabled={busy}
+                hint="Name is optional. Share this password with the user. They will be asked to change it on first sign in."
+              />
+            )}
           </div>
-        </div>
+          <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "1.25rem" }}>
+            <button className="button secondary" onClick={() => setShowAdd(false)}>
+              Cancel
+            </button>
+            <button
+              className="button primary"
+              onClick={addUser}
+              disabled={
+                busy ||
+                newEmail.length === 0 ||
+                (signsInWithProvider === false && passwordError(newPassword) !== null)
+              }
+            >
+              {busy ? "Adding…" : "Add"}
+            </button>
+          </div>
+        </Modal>
       )}
 
       {pwdUser && (
-        <div className="modal-overlay" onClick={() => !actionBusy && setPwdUser(null)}>
-          <div className="modal-card card" onClick={(e) => e.stopPropagation()}>
-            <h2 style={{ margin: "0 0 0.5rem", fontSize: "1.25rem", fontWeight: 800 }}>Set new password</h2>
-            <p style={{ margin: "0 0 1rem", color: "var(--color-ink-soft)" }}>
-              Sets a new password for {pwdUser.email}. Their courses, progress and quiz history are untouched.
-            </p>
-            <PasswordField value={newUserPwd} onChange={setNewUserPwd} disabled={actionBusy} />
-            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "1.5rem" }}>
-              <button className="button secondary" onClick={() => setPwdUser(null)} disabled={actionBusy}>
-                Cancel
-              </button>
-              <button
-                className="button primary"
-                onClick={resetPassword}
-                disabled={actionBusy || !!passwordError(newUserPwd)}
-              >
-                {actionBusy ? "Saving…" : "Set password"}
-              </button>
-            </div>
+        <Modal label="Set new password" onClose={() => setPwdUser(null)} locked={actionBusy}>
+          <h2 style={{ margin: "0 0 0.5rem", fontSize: "1.25rem", fontWeight: 800 }}>Set new password</h2>
+          <p style={{ margin: "0 0 1rem", color: "var(--color-ink-soft)" }}>
+            Sets a new password for {pwdUser.email}. Their courses, progress and quiz history are untouched.
+          </p>
+          <PasswordField value={newUserPwd} onChange={setNewUserPwd} disabled={actionBusy} />
+          <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "1.5rem" }}>
+            <button className="button secondary" onClick={() => setPwdUser(null)} disabled={actionBusy}>
+              Cancel
+            </button>
+            <button
+              className="button primary"
+              onClick={resetPassword}
+              disabled={actionBusy || !!passwordError(newUserPwd)}
+            >
+              {actionBusy ? "Saving…" : "Set password"}
+            </button>
           </div>
-        </div>
+        </Modal>
       )}
 
       <span className="user-group-label">Admin</span>

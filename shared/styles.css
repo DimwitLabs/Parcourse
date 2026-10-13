@@ -435,8 +435,23 @@ body {
   background: transparent;
   font-family: inherit;
   font-size: 1rem;
-  outline: none;
   color: var(--color-ink);
+}
+
+.text-input:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.login-input-pill:has(.text-input:focus-visible),
+.password-input-boxed:has(.text-input:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.login-input-pill .text-input:focus-visible,
+.password-input-boxed .text-input:focus-visible {
+  outline: none;
 }
 
 .text-input::placeholder {
@@ -2714,20 +2729,20 @@ body {
 }
 
 .icon-menu-panel {
-  position: absolute;
-  top: calc(100% + 0.4rem);
-  right: 0;
+  position-area: block-end span-inline-start;
   min-width: 11rem;
-  margin: 0;
-  list-style: none;
   background: var(--color-paper);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lift);
   padding: 0.35rem;
-  z-index: 200;
   text-align: left;
   font-weight: 400;
+}
+
+.icon-menu-panel:popover-open {
+  display: flex;
+  flex-direction: column;
 }
 
 .notebook-search {
@@ -3325,22 +3340,26 @@ body {
   }
 }
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--color-scrim-modal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-}
-
 .modal-card {
   width: 100%;
-  max-width: 26rem;
+  max-width: min(26rem, calc(100% - 2rem));
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  color: inherit;
   display: flex;
   flex-direction: column;
   text-align: left;
+  overscroll-behavior: contain;
+}
+
+.modal-card:not([open]) {
+  display: none;
+}
+
+.modal-card::backdrop {
+  background: var(--color-scrim-modal);
+  overflow: hidden;
+  overscroll-behavior: contain;
 }
 
 .modal-checkbox-pair {
@@ -3971,11 +3990,6 @@ body {
   color: var(--color-danger);
 }
 
-.text-input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-}
-
 .eyebrow {
   font-size: 0.7rem;
   font-weight: 700;
@@ -4044,10 +4058,13 @@ a.tip {
 
 .toast-container {
   position: fixed;
-  bottom: 1.5rem;
-  left: 50%;
+  inset: auto auto 1.5rem 50%;
   transform: translateX(-50%);
-  z-index: 100;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -4058,7 +4075,16 @@ a.tip {
   font-style: normal;
 }
 
+.toast-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .toast {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   padding: 0.75rem 1.5rem;
   border-radius: var(--radius-full);
   font-size: 0.9rem;
@@ -4067,6 +4093,18 @@ a.tip {
   pointer-events: auto;
   animation: toast-in 0.25s ease;
   white-space: nowrap;
+}
+
+.toast-close {
+  display: grid;
+  place-items: center;
+  margin: -0.35rem -0.9rem -0.35rem 0;
+  padding: 0.35rem;
+  border: none;
+  border-radius: var(--radius-full);
+  background: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 .toast-success {
@@ -4085,9 +4123,6 @@ a.tip {
 }
 
 .toast-loading {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
   background: var(--color-surface-lowest);
   color: var(--color-ink);
 }
@@ -4508,20 +4543,34 @@ a.tip {
 }
 
 .custom-select-panel {
-  position: absolute;
-  top: calc(100% + 0.4rem);
-  left: 0;
-  right: 0;
+  position-area: block-end span-inline-end;
+  width: anchor-size(width);
+  max-height: min(22rem, 60dvh);
   background: var(--color-paper);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lift);
   padding: 0.35rem;
-  z-index: 200;
-  display: flex;
   flex-direction: column;
   gap: 0.35rem;
   font-weight: 400;
+}
+
+.custom-select-panel:popover-open {
+  display: flex;
+}
+
+.anchored-panel {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  margin-block-start: 0.4rem;
+  overflow: auto;
+  position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+}
+
+.anchored-panel.is-placed {
+  margin: 0;
 }
 
 .custom-select-search {
@@ -4606,7 +4655,12 @@ a.tip {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  width: 100%;
   padding: 0.55rem 0.85rem;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: left;
   border-radius: var(--radius-sm);
   font-size: 0.88rem;
   cursor: pointer;
@@ -4614,7 +4668,8 @@ a.tip {
   transition: background 0.12s, color 0.12s;
 }
 
-.custom-select-item:hover {
+.custom-select-item:hover,
+.custom-select-item:focus-visible {
   background: var(--color-surface-high);
   color: var(--color-ink);
 }
@@ -5458,7 +5513,7 @@ a.modal-field-hint {
 }
 
 .graph-tidy-card {
-  max-width: 34rem;
+  max-width: min(34rem, calc(100% - 2rem));
 }
 
 .graph-tidy-groups {

@@ -8,6 +8,7 @@ import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } fro
 import type { CSSProperties, ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
+import Modal from "../components/Modal";
 import { toast, useLoadingToast } from "../components/Toast";
 import { apiFetch, errMsg } from "../lib/api";
 import { compactCount } from "../lib/count";
@@ -349,8 +350,6 @@ export default function KnowledgeGraphScreen() {
   const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
   const simInstanceRef = useRef<LiveSim | null>(null);
 
-  useEscapeKey(!!confirming, () => { if (!forgetting) setConfirming(null); });
-  useEscapeKey(!!proposal, () => { if (!saving && !tidying) closeTidy(); });
   useLoadingToast(tidying, "Looking for ways to tidy your graph…");
 
   const stackRef = useRef<HTMLDivElement>(null);
@@ -1124,147 +1123,143 @@ export default function KnowledgeGraphScreen() {
       )}
 
       {proposal && (
-        <div className="modal-overlay" onClick={() => !saving && !tidying && closeTidy()}>
-          <div className="modal-card card graph-tidy-card" onClick={(e) => e.stopPropagation()}>
-            <h2 className="graph-confirm-title">Tidy your graph?</h2>
-            <p className="graph-confirm-body">
-              {proposal.changes.length > 0 ? proposal.summary : "Nothing left to change after your reply."}
-            </p>
-            {proposal.changes.length > 0 && (
-              <div className="graph-tidy-groups">
-                {TIDY_GROUPS.map(([kind, heading]) => {
-                  const group = proposal.changes.filter((c) => c.kind === kind);
-                  if (group.length === 0) return null;
-                  const ticked = group.filter((c) => !skipped.has(c.node_id)).length;
-                  const open = openGroups.has(kind);
-                  const mixedTiers = new Set(group.map((c) => c.tier)).size > 1;
-                  return (
-                    <section key={kind} className="graph-tidy-group">
-                      <div className="graph-tidy-group-head">
-                        <input
-                          type="checkbox"
-                          className="graph-tidy-check"
-                          aria-label={`Apply every change in ${heading}`}
-                          checked={ticked === group.length}
-                          ref={(el) => { if (el) el.indeterminate = ticked > 0 && ticked < group.length; }}
-                          disabled={saving || tidying}
-                          onChange={() => setTicked(group, ticked < group.length)}
-                        />
-                        <button
-                          type="button"
-                          className="graph-tidy-toggle"
-                          aria-expanded={open}
-                          onClick={() =>
-                            setOpenGroups((current) => {
-                              const next = new Set(current);
-                              if (next.has(kind)) next.delete(kind);
-                              else next.add(kind);
-                              return next;
-                            })
-                          }
-                        >
-                          <span className="graph-tidy-group-name">{heading}</span>
-                          <span className="graph-tidy-group-count">
-                            {ticked === group.length ? group.length : `${ticked} of ${group.length}`}
-                          </span>
-                          <span className={`notes-chevron${open ? " up" : ""}`}>{tidyChevron}</span>
-                        </button>
-                      </div>
-                      {open && (
-                        <ul className="graph-tidy-rows">
-                          {group.map((change) => (
-                            <li key={change.node_id}>
-                              <label className={`graph-tidy-change${skipped.has(change.node_id) ? " skipped" : ""}`}>
-                                <input
-                                  type="checkbox"
-                                  className="graph-tidy-check"
-                                  checked={!skipped.has(change.node_id)}
-                                  disabled={saving || tidying}
-                                  onChange={() => setTicked([change], skipped.has(change.node_id))}
-                                />
-                                <span className="graph-tidy-text">
-                                  {change.label}
-                                  <span className="graph-tidy-arrow" aria-label="becomes">→</span>
-                                  {change.to}
-                                </span>
-                                {mixedTiers && <span className="graph-confirm-tier">{change.tier}</span>}
-                              </label>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </section>
-                  );
-                })}
-              </div>
-            )}
-            <label className="modal-field graph-tidy-reply">
-              <textarea
-                className="text-input boxed textarea modal-textarea"
-                value={reply}
-                onChange={(e) => setReply(e.target.value)}
-                placeholder="Optional. Reply and Tidy suggests again, like: keep ETF Costs as it is…"
-                rows={2}
-                maxLength={1000}
-                disabled={saving || tidying}
-              />
-            </label>
-            <div className="graph-confirm-actions">
-              <button className="button secondary" onClick={closeTidy} disabled={saving || tidying}>
-                Leave it
-              </button>
-              {reply.trim() ? (
-                <button className="button primary" onClick={() => tidy(proposal)} disabled={tidying}>
-                  {tidying ? "Suggesting…" : "Suggest again"}
-                </button>
-              ) : (
-                <button
-                  className="button primary"
-                  onClick={() => saveTidy(proposal.changes.filter((c) => !skipped.has(c.node_id)))}
-                  disabled={saving || proposal.changes.every((c) => skipped.has(c.node_id))}
-                >
-                  {saving ? "Saving…" : "Save changes"}
-                </button>
-              )}
+        <Modal label="Tidy your graph" onClose={closeTidy} locked={saving || tidying} className="graph-tidy-card">
+          <h2 className="graph-confirm-title">Tidy your graph?</h2>
+          <p className="graph-confirm-body">
+            {proposal.changes.length > 0 ? proposal.summary : "Nothing left to change after your reply."}
+          </p>
+          {proposal.changes.length > 0 && (
+            <div className="graph-tidy-groups">
+              {TIDY_GROUPS.map(([kind, heading]) => {
+                const group = proposal.changes.filter((c) => c.kind === kind);
+                if (group.length === 0) return null;
+                const ticked = group.filter((c) => !skipped.has(c.node_id)).length;
+                const open = openGroups.has(kind);
+                const mixedTiers = new Set(group.map((c) => c.tier)).size > 1;
+                return (
+                  <section key={kind} className="graph-tidy-group">
+                    <div className="graph-tidy-group-head">
+                      <input
+                        type="checkbox"
+                        className="graph-tidy-check"
+                        aria-label={`Apply every change in ${heading}`}
+                        checked={ticked === group.length}
+                        ref={(el) => { if (el) el.indeterminate = ticked > 0 && ticked < group.length; }}
+                        disabled={saving || tidying}
+                        onChange={() => setTicked(group, ticked < group.length)}
+                      />
+                      <button
+                        type="button"
+                        className="graph-tidy-toggle"
+                        aria-expanded={open}
+                        onClick={() =>
+                          setOpenGroups((current) => {
+                            const next = new Set(current);
+                            if (next.has(kind)) next.delete(kind);
+                            else next.add(kind);
+                            return next;
+                          })
+                        }
+                      >
+                        <span className="graph-tidy-group-name">{heading}</span>
+                        <span className="graph-tidy-group-count">
+                          {ticked === group.length ? group.length : `${ticked} of ${group.length}`}
+                        </span>
+                        <span className={`notes-chevron${open ? " up" : ""}`}>{tidyChevron}</span>
+                      </button>
+                    </div>
+                    {open && (
+                      <ul className="graph-tidy-rows">
+                        {group.map((change) => (
+                          <li key={change.node_id}>
+                            <label className={`graph-tidy-change${skipped.has(change.node_id) ? " skipped" : ""}`}>
+                              <input
+                                type="checkbox"
+                                className="graph-tidy-check"
+                                checked={!skipped.has(change.node_id)}
+                                disabled={saving || tidying}
+                                onChange={() => setTicked([change], skipped.has(change.node_id))}
+                              />
+                              <span className="graph-tidy-text">
+                                {change.label}
+                                <span className="graph-tidy-arrow" aria-label="becomes">→</span>
+                                {change.to}
+                              </span>
+                              {mixedTiers && <span className="graph-confirm-tier">{change.tier}</span>}
+                            </label>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </section>
+                );
+              })}
             </div>
+          )}
+          <label className="modal-field graph-tidy-reply">
+            <textarea
+              className="text-input boxed textarea modal-textarea"
+              value={reply}
+              onChange={(e) => setReply(e.target.value)}
+              placeholder="Optional. Reply and Tidy suggests again, like: keep ETF Costs as it is…"
+              rows={2}
+              maxLength={1000}
+              disabled={saving || tidying}
+            />
+          </label>
+          <div className="graph-confirm-actions">
+            <button className="button secondary" onClick={closeTidy} disabled={saving || tidying}>
+              Leave it
+            </button>
+            {reply.trim() ? (
+              <button className="button primary" onClick={() => tidy(proposal)} disabled={tidying}>
+                {tidying ? "Suggesting…" : "Suggest again"}
+              </button>
+            ) : (
+              <button
+                className="button primary"
+                onClick={() => saveTidy(proposal.changes.filter((c) => !skipped.has(c.node_id)))}
+                disabled={saving || proposal.changes.every((c) => skipped.has(c.node_id))}
+              >
+                {saving ? "Saving…" : "Save changes"}
+              </button>
+            )}
           </div>
-        </div>
+        </Modal>
       )}
 
       {confirming && (() => {
         const going = falling(confirming);
         const others = going.filter((n) => n.id !== confirming.id);
         return (
-          <div className="modal-overlay" onClick={() => !forgetting && setConfirming(null)}>
-            <div className="modal-card card" onClick={(e) => e.stopPropagation()}>
-              <h2 className="graph-confirm-title">Forget {confirming.label}?</h2>
-              <p className="graph-confirm-body">
-                {others.length === 0
-                  ? "This drops the concept from your graph. It comes back if another course teaches it."
-                  : others.length === 1
-                    ? "One other concept belongs to this one and to nothing else, so it goes too:"
-                    : `${others.length} other concepts belong to this one and to nothing else, so they go too:`}
-              </p>
-              {others.length > 0 && (
-                <ul className="graph-confirm-list">
-                  {others.map((n) => (
-                    <li key={n.id}>
-                      {n.label}
-                      <span className="graph-confirm-tier">{n.tier}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <div className="graph-confirm-actions">
-                <button className="button secondary" onClick={() => setConfirming(null)} disabled={!!forgetting}>
-                  {others.length === 0 ? "Keep it" : "Keep them"}
-                </button>
-                <button className="button danger" onClick={() => forget(confirming)} disabled={!!forgetting}>
-                  {forgetting ? "Forgetting…" : others.length === 0 ? "Forget it" : "Forget them"}
-                </button>
-              </div>
+          <Modal label={`Forget ${confirming.label}`} onClose={() => setConfirming(null)} locked={forgetting !== null}>
+            <h2 className="graph-confirm-title">Forget {confirming.label}?</h2>
+            <p className="graph-confirm-body">
+              {others.length === 0
+                ? "This drops the concept from your graph. It comes back if another course teaches it."
+                : others.length === 1
+                  ? "One other concept belongs to this one and to nothing else, so it goes too:"
+                  : `${others.length} other concepts belong to this one and to nothing else, so they go too:`}
+            </p>
+            {others.length > 0 && (
+              <ul className="graph-confirm-list">
+                {others.map((n) => (
+                  <li key={n.id}>
+                    {n.label}
+                    <span className="graph-confirm-tier">{n.tier}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="graph-confirm-actions">
+              <button className="button secondary" onClick={() => setConfirming(null)} disabled={!!forgetting}>
+                {others.length === 0 ? "Keep it" : "Keep them"}
+              </button>
+              <button className="button danger" onClick={() => forget(confirming)} disabled={!!forgetting}>
+                {forgetting ? "Forgetting…" : others.length === 0 ? "Forget it" : "Forget them"}
+              </button>
             </div>
-          </div>
+          </Modal>
         );
       })()}
     </div>

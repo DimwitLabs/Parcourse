@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import CourseActionModal from "../components/CourseActionModal";
 import LearningStylePill from "../components/LearningStylePill";
+import Modal from "../components/Modal";
 import NotesDrawer from "../components/NotesDrawer";
 import SourceCredit from "../components/SourceCredit";
 import type { CourseAction } from "../components/CourseActionModal";
@@ -17,7 +18,6 @@ import type { LearningStyle } from "../lib/learningStyle";
 import type { SheetStatus } from "../lib/cheatsheet";
 import { crossing } from "../lib/sections";
 import { shownScore } from "../lib/score";
-import { useEscapeKey } from "../lib/useEscapeKey";
 import { playerApi, PLAYING } from "../lib/youtubePlayer";
 import type { Player } from "../lib/youtubePlayer";
 
@@ -192,10 +192,6 @@ export default function CourseScreen() {
     observer.observe(el);
     return () => observer.disconnect();
   }, [course]);
-
-  useEscapeKey(showSkipModal, () => {
-    if (!submitting) setShowSkipModal(false);
-  });
 
   function handleSubmitClick() {
     if (!course) return;
@@ -631,24 +627,22 @@ export default function CourseScreen() {
       </div>
 
       {showSkipModal && (
-        <div className="modal-overlay" onClick={() => setShowSkipModal(false)}>
-          <div className="modal-card card" onClick={(e) => e.stopPropagation()}>
-            <h2 style={{ margin: "0 0 0.5rem", fontSize: "1.25rem", fontWeight: 800 }}>
-              Skip {totalQuestions - answeredQuestions} question{totalQuestions - answeredQuestions === 1 ? "" : "s"}?
-            </h2>
-            <p style={{ margin: "0 0 1.5rem", color: "var(--color-ink-soft)" }}>
-              You've answered {answeredQuestions} of {totalQuestions} questions. Skipped questions will be scored as zero.
-            </p>
-            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
-              <button className="button secondary" onClick={() => setShowSkipModal(false)}>
-                Go back
-              </button>
-              <button className="button primary" onClick={submitQuiz}>
-                Submit anyway
-              </button>
-            </div>
+        <Modal label="Skip unanswered questions" onClose={() => setShowSkipModal(false)} locked={submitting}>
+          <h2 style={{ margin: "0 0 0.5rem", fontSize: "1.25rem", fontWeight: 800 }}>
+            Skip {totalQuestions - answeredQuestions} question{totalQuestions - answeredQuestions === 1 ? "" : "s"}?
+          </h2>
+          <p style={{ margin: "0 0 1.5rem", color: "var(--color-ink-soft)" }}>
+            You've answered {answeredQuestions} of {totalQuestions} questions. Skipped questions will be scored as zero.
+          </p>
+          <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+            <button className="button secondary" onClick={() => setShowSkipModal(false)}>
+              Go back
+            </button>
+            <button className="button primary" onClick={submitQuiz}>
+              Submit anyway
+            </button>
           </div>
-        </div>
+        </Modal>
       )}
 
       <CourseActionModal
