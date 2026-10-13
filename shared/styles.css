@@ -398,6 +398,7 @@ body {
 .hero-subtitle {
   color: var(--color-ink-soft);
   max-width: 33rem;
+  text-wrap: pretty;
   margin: 1.25rem auto 0;
 }
 
@@ -3173,7 +3174,7 @@ body {
 
 .admin-kpi-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -3336,7 +3337,13 @@ body {
   .settings-sidebar {
     flex-direction: row;
     overflow-x: auto;
+    scrollbar-width: none;
     gap: 0.5rem;
+  }
+
+  .settings-sidebar button {
+    flex: none;
+    white-space: nowrap;
   }
 }
 
