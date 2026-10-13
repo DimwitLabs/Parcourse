@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "design-system": "vite --open /design-system.html",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview"
   },

@@ -51,6 +51,8 @@ docker compose exec frontend npm run build
 
 The app runs on http://localhost:5173, the API on http://localhost:8000, and interactive API docs on http://localhost:8000/docs. Both containers mount your working copy, so edits reload without a rebuild.
 
+The design system is at http://localhost:5173/design-system.html while the stack runs, or on its own with `npm run design-system` in `frontend/`. It shows every shared component in every state, built from the real components and `shared/` styles, so check a styling or component change there in both themes before shipping it. It is never part of a production build.
+
 To use anything AI-powered you need a key from a provider. The first run walks you through it, or you can add one later from Settings.
 
 ## Good To Know

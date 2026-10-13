@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#fbf9f5" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#14150f" media="(prefers-color-scheme: dark)" />
+    <title>Parcourse design system</title>
+    <link rel="icon" type="image/svg+xml" href="/parcourse.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root { color-scheme: light dark; }
+      :root[data-theme="light"] { color-scheme: light; }
+      :root[data-theme="dark"] { color-scheme: dark; }
+      html { background: light-dark(#fbf9f5, #14150f); }
+    </style>
+    <script>
+      (function () {
+        var key = "__THEME_KEY__";
+        function stored() {
+          var domain = (window.__PARCOURSE_CONFIG__ || {}).themeDomain || "";
+          if (domain !== "") {
+            var match = document.cookie.match(new RegExp("(?:^|; )" + key + "=(light|dark)"));
+            return match === null ? null : match[1];
+          }
+          try {
+            return localStorage.getItem(key);
+          } catch (e) {
+            return null;
+          }
+        }
+        function paint() {
+          var theme = stored();
+          if (theme === "light" || theme === "dark") document.documentElement.setAttribute("data-theme", theme);
+          else document.documentElement.removeAttribute("data-theme");
+        }
+        paint();
+        window.addEventListener("pageshow", paint);
+        document.addEventListener("visibilitychange", paint);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/design-system/main.tsx"></script>
+  </body>
+</html>
