@@ -5,7 +5,7 @@ sqlmodel==0.0.47
 alembic==1.20.0
 psycopg[binary]==3.3.6
 bcrypt==5.0.0
-authlib==1.8.0
+authlib==1.9.1
 joserfc==1.7.5
 httpx==0.28.1
 cryptography==50.0.1
