@@ -18,7 +18,7 @@
     "@codemirror/view": "^6.43.13",
     "@lezer/highlight": "^1.2.5",
     "@oddbird/popover-polyfill": "0.7.3",
-    "@zumer/snapdom": "^3.2.0",
+    "@zumer/snapdom": "^3.6.0",
     "d3-drag": "^3.0.0",
     "d3-force": "^3.0.0",
     "jspdf": "^4.2.1",
