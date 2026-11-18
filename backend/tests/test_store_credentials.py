@@ -51,6 +51,12 @@ class StoreTests(unittest.TestCase):
             _store(_request("anthropic", "claude-sonnet-4", {"api_key": ""}), existing)
         self.assertEqual(caught.exception.status_code, 400)
 
+    def test_a_field_left_out_clears_the_stored_value(self):
+        server = {"api_base": "https://ai.example.com/v1"}
+        existing = _store(_request("custom_openai", "llama3.1", {**server, "api_key": "sk-old"}), None)
+        updated = _store(_request("custom_openai", "llama3.1", {"api_base": ""}), existing)
+        self.assertEqual(deserialize(updated).credentials, server)
+
     def test_nothing_stored_and_nothing_sent_is_rejected(self):
         with self.assertRaises(HTTPException) as caught:
             _store(_request("openai", "gpt-4o", {"api_key": ""}), None)

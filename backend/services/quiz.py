@@ -6,6 +6,7 @@ from schemas.course import CourseResponse
 from schemas.quiz import MCQAnswer, QuestionResult, QuizResultResponse, TheoryAnswer, TheoryScoreBreakdown
 from services.llm import complete_json
 from services.prompts import load
+from services.providers import for_call
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,7 @@ def _generate_prose_analysis(
             model=model,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.4,
-            **credentials,
+            **for_call(model, credentials),
         )
         text = response.choices[0].message.content.strip().strip('"')
         return text.replace("—", ",").replace("–", ",")

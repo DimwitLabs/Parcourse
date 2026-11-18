@@ -18,6 +18,7 @@ class ProviderFieldResponse(BaseModel):
     placeholder: str = ""
     secret: bool = False
     default: str = ""
+    skip_label: str = ""
 
 
 class ProviderResponse(BaseModel):
@@ -33,6 +34,7 @@ class ConnectionResponse(BaseModel):
     configured: bool
     provider: str | None = None
     model: str | None = None
+    stored_fields: list[str] = []
 
 
 class ConnectionUpdateRequest(BaseModel):

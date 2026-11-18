@@ -93,7 +93,10 @@ def _connection_response(blob: str | None) -> ConnectionResponse:
     if connection is None or not connection.has_credentials:
         return ConnectionResponse(configured=False)
     return ConnectionResponse(
-        configured=True, provider=connection.provider, model=connection.model
+        configured=True,
+        provider=connection.provider,
+        model=connection.model,
+        stored_fields=sorted(connection.credentials),
     )
 
 

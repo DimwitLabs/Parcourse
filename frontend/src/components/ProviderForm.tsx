@@ -11,6 +11,7 @@ type ProviderField = {
   placeholder: string;
   secret: boolean;
   default: string;
+  skip_label: string;
 };
 
 type Provider = {
@@ -22,7 +23,12 @@ type Provider = {
   curated: boolean;
 };
 
-type ConnectionState = { configured: boolean; provider: string | null; model: string | null };
+type ConnectionState = {
+  configured: boolean;
+  provider: string | null;
+  model: string | null;
+  stored_fields: string[];
+};
 
 type TestResult = { ok: boolean; detail: string; json_mode: string };
 
@@ -69,6 +75,8 @@ export default function ProviderForm({
   const [providerKey, setProviderKey] = useState(DEFAULT_PROVIDER);
   const [model, setModel] = useState("");
   const [credentials, setCredentials] = useState<Record<string, string>>({});
+  // Fields the user has said their server does without.
+  const [skipped, setSkipped] = useState<string[]>([]);
   const [configured, setConfigured] = useState(false);
   const [busy, setBusy] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -90,9 +98,15 @@ export default function ProviderForm({
         if (cancelled) return;
         setProviders(list);
         if (connection?.configured && connection.provider) {
+          const saved = list.find((p) => p.key === connection.provider);
           setConfigured(true);
           setProviderKey(connection.provider);
           setModel(stripPrefix(connection.model ?? "", connection.provider));
+          setSkipped(
+            (saved?.fields ?? [])
+              .filter((f) => f.skip_label && !connection.stored_fields.includes(f.name))
+              .map((f) => f.name),
+          );
         } else {
           const first = list.find((p) => p.key === DEFAULT_PROVIDER) ?? list[0];
           if (first) applyDefaults(first);
@@ -109,6 +123,7 @@ export default function ProviderForm({
     setCredentials(
       Object.fromEntries(next.fields.map((f) => [f.name, f.default])),
     );
+    setSkipped([]);
     setResult(null);
   }
 
@@ -133,7 +148,22 @@ export default function ProviderForm({
     [providers],
   );
 
-  const body = () => JSON.stringify({ provider: providerKey, model, credentials });
+  // A skipped field is left out entirely, which clears whatever was saved for it.
+  const body = () =>
+    JSON.stringify({
+      provider: providerKey,
+      model,
+      credentials: Object.fromEntries(
+        (provider?.fields ?? [])
+          .filter((f) => !skipped.includes(f.name))
+          .map((f) => [f.name, credentials[f.name] ?? ""]),
+      ),
+    });
+
+  function toggleSkipped(name: string, skip: boolean) {
+    setSkipped(skip ? [...skipped, name] : skipped.filter((n) => n !== name));
+    if (skip) setCredentials({ ...credentials, [name]: "" });
+  }
 
   async function test() {
     setTesting(true);
@@ -202,24 +232,42 @@ export default function ProviderForm({
             <CustomSelect value={providerKey} options={options} onChange={selectProvider} disabled={busy} />
           </div>
 
-          {provider.fields.map((f) => (
-            <label className="modal-field" key={f.name}>
-              <span className="modal-field-label">{f.label}</span>
-              <input
-                className="text-input boxed"
-                type={f.secret ? "password" : "text"}
-                name={`connection-${f.name}`}
-                autoComplete={f.secret ? "new-password" : "off"}
-                spellCheck={false}
-                data-lpignore="true"
-                data-1p-ignore
-                placeholder={configured && f.secret ? "Leave blank to keep current" : f.placeholder}
-                value={credentials[f.name] ?? ""}
-                onChange={(e) => setCredentials({ ...credentials, [f.name]: e.target.value })}
-                disabled={busy}
-              />
-            </label>
-          ))}
+          {provider.fields.map((f) => {
+            const off = skipped.includes(f.name);
+            return (
+              <div className="modal-field" key={f.name}>
+                <label className="modal-field">
+                  <span className="modal-field-label">{f.label}</span>
+                  <input
+                    className="text-input boxed"
+                    type={f.secret ? "password" : "text"}
+                    name={`connection-${f.name}`}
+                    autoComplete={f.secret ? "new-password" : "off"}
+                    spellCheck={false}
+                    data-lpignore="true"
+                    data-1p-ignore
+                    placeholder={
+                      off ? "Not needed" : configured && f.secret ? "Leave blank to keep current" : f.placeholder
+                    }
+                    value={off ? "" : credentials[f.name] ?? ""}
+                    onChange={(e) => setCredentials({ ...credentials, [f.name]: e.target.value })}
+                    disabled={busy || off}
+                  />
+                </label>
+                {f.skip_label && (
+                  <label className="modal-checkbox-row">
+                    <input
+                      type="checkbox"
+                      checked={off}
+                      onChange={(e) => toggleSkipped(f.name, e.target.checked)}
+                      disabled={busy}
+                    />
+                    <span>{f.skip_label}</span>
+                  </label>
+                )}
+              </div>
+            );
+          })}
 
           <div className="modal-field">
             {provider.models.length > 0 ? (

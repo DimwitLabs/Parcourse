@@ -4,6 +4,7 @@ import unittest
 
 from services.connection import Connection, deserialize, serialize
 from services.crypto import encrypt
+from services.providers import for_call
 
 
 class DeserializeTests(unittest.TestCase):
@@ -43,6 +44,31 @@ class SerializeTests(unittest.TestCase):
     def test_drops_blank_values(self):
         connection = deserialize(serialize("openai", "gpt-4o", {"api_key": "k"}))
         self.assertEqual(connection.credentials, {"api_key": "k"})
+
+    def test_an_openai_compatible_server_keeps_its_address(self):
+        connection = deserialize(
+            serialize("custom_openai", "llama3.1:8b", {"api_base": "https://ai.example.com/api", "api_key": "k"})
+        )
+        self.assertEqual(connection.model, "custom_openai/llama3.1:8b")
+        self.assertEqual(connection.credentials["api_base"], "https://ai.example.com/api")
+
+    def test_openai_like_is_not_offered_because_it_cannot_chat(self):
+        with self.assertRaises(KeyError):
+            serialize("openai_like", "llama3.1:8b", {"api_key": "k"})
+
+
+
+class ForCallTests(unittest.TestCase):
+    def test_a_keyless_server_still_gets_a_key_to_send(self):
+        credentials = for_call("custom_openai/llama3.1", {"api_base": "https://ai.example.com/v1"})
+        self.assertTrue(credentials["api_key"])
+
+    def test_a_real_key_is_sent_as_it_is(self):
+        credentials = for_call("custom_openai/llama3.1", {"api_base": "https://ai.example.com/v1", "api_key": "sk-k"})
+        self.assertEqual(credentials["api_key"], "sk-k")
+
+    def test_other_providers_are_left_alone(self):
+        self.assertEqual(for_call("openai/gpt-4o", {}), {})
 
 
 if __name__ == "__main__":

@@ -4,6 +4,16 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **OpenAI-compatible Provider:** Connect any server that speaks OpenAI's API, like OpenWebUI, with its URL and a model, plus a key unless your server doesn't need one ([#79](https://github.com/DimwitLabs/Parcourse/issues/79)).
+
+### Removed
+
+- **OpenAI-like Provider:** It was in the provider list but could never answer a chat.
+
 ## [1.9.0] - 2026-10-13
 
 ### Added

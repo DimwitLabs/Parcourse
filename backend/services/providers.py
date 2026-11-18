@@ -24,6 +24,8 @@ class ProviderField:
     placeholder: str = ""
     secret: bool = False
     default: str = ""
+    # Set when a server can do without this field; the form offers it as a checkbox.
+    skip_label: str = ""
 
 
 @dataclass(frozen=True)
@@ -47,7 +49,7 @@ def _base(url: str) -> ProviderField:
 # Not chat completions, or not a real provider you can point Parcourse at.
 _SKIP = {
     "custom",
-    "custom_openai",
+    "openai_like",
     "litellm_proxy",
     "text-completion-openai",
     "text-completion-codestral",
@@ -109,6 +111,14 @@ _OVERRIDES: dict[str, dict] = {
         "docs": "https://ollama.com",
         "fields": (_base("http://localhost:11434"),),
         "models": ("llama3.1", "qwen2.5", "mistral"),
+        "curated": True,
+    },
+    "custom_openai": {
+        "label": "OpenAI-compatible",
+        "fields": (
+            ProviderField("api_base", "Server URL", placeholder="https://your-server/v1"),
+            ProviderField("api_key", "API key", secret=True, skip_label="My server doesn't need an API key"),
+        ),
         "curated": True,
     },
     "ollama_chat": {
@@ -235,6 +245,17 @@ def get(key: str) -> Provider:
     if provider is None:
         raise KeyError(f"Unknown provider: {key}")
     return provider
+
+
+# The OpenAI client refuses to send without a key, even to a server that ignores it.
+_STAND_IN_KEY = "no-key"
+
+
+def for_call(model: str, credentials: dict[str, str]) -> dict[str, str]:
+    """Credentials as LiteLLM takes them: a server that needs no key still gets one."""
+    if model.startswith(get("custom_openai").prefix) and not credentials.get("api_key", "").strip():
+        return {**credentials, "api_key": _STAND_IN_KEY}
+    return credentials
 
 
 def qualify(provider_key: str, model: str) -> str:

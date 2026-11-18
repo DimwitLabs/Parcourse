@@ -5,6 +5,8 @@ from typing import Any, Sequence
 import litellm
 from pydantic import BaseModel, ValidationError
 
+from services.providers import for_call
+
 logger = logging.getLogger(__name__)
 
 
@@ -96,7 +98,7 @@ def complete_json(
     last_error: Exception | None = None
     for attempt in (1, 2):
         response = litellm.completion(
-            model=model, messages=messages, temperature=temperature, **credentials, **kwargs
+            model=model, messages=messages, temperature=temperature, **for_call(model, credentials), **kwargs
         )
         raw = response.choices[0].message.content or ""
         usage = getattr(response, "usage", None)
