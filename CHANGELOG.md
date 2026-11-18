@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 
+- **Python 3.15:** The backend image runs on Python 3.15, and dependencies are updated across the backend and the frontend.
 - **Saved Settings Show:** A saved server address, and any other setting that isn't a key, shows in its box instead of looking empty.
 
 ### Fixed
