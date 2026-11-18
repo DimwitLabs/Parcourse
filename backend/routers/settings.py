@@ -92,11 +92,13 @@ def _connection_response(blob: str | None) -> ConnectionResponse:
     connection = deserialize(blob)
     if connection is None or not connection.has_credentials:
         return ConnectionResponse(configured=False)
+    fields = PROVIDERS[connection.provider].fields if connection.provider in PROVIDERS else ()
     return ConnectionResponse(
         configured=True,
         provider=connection.provider,
         model=connection.model,
         stored_fields=sorted(connection.credentials),
+        values={f.name: connection.credentials[f.name] for f in fields if not f.secret and f.name in connection.credentials},
     )
 
 

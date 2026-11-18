@@ -10,6 +10,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - **OpenAI-compatible Provider:** Connect any server that speaks OpenAI's API, like OpenWebUI, with its URL and a model, plus a key unless your server doesn't need one ([#79](https://github.com/DimwitLabs/Parcourse/issues/79)).
 
+### Changed
+
+- **Saved Settings Show:** A saved server address, and any other setting that isn't a key, shows in its box instead of looking empty.
+
 ### Fixed
 
 - **Testing a Saved Connection:** Changing one field and pressing **Test** uses your saved values for the rest instead of leaving them blank.

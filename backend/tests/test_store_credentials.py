@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from fastapi import HTTPException
 
 from models.user import UserRole
-from routers.settings import _credentials_for_test, _store
+from routers.settings import _connection_response, _credentials_for_test, _store
 from schemas.settings import ConnectionUpdateRequest
 from services.connection import deserialize
 
@@ -74,6 +74,18 @@ class CredentialsForTestTests(unittest.TestCase):
         retyped = {"api_key": "", "api_base": "https://new.openai.azure.com", "api_version": ""}
         credentials = _credentials_for_test(_request("azure", "gpt-4o", retyped), user, session)
         self.assertEqual(credentials, {**saved, "api_base": "https://new.openai.azure.com"})
+
+
+class ConnectionResponseTests(unittest.TestCase):
+    def test_shows_the_server_address_but_never_the_key(self):
+        blob = _store(
+            _request("custom_openai", "llama3.1", {"api_base": "https://ai.example.com/v1", "api_key": "sk-secret"}),
+            None,
+        )
+        response = _connection_response(blob)
+        self.assertEqual(response.values, {"api_base": "https://ai.example.com/v1"})
+        self.assertEqual(response.stored_fields, ["api_base", "api_key"])
+        self.assertNotIn("sk-secret", response.model_dump_json())
 
 
 if __name__ == "__main__":

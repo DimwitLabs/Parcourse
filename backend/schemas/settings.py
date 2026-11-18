@@ -35,6 +35,8 @@ class ConnectionResponse(BaseModel):
     provider: str | None = None
     model: str | None = None
     stored_fields: list[str] = []
+    # Saved values that are not secret, such as a server URL, so the form can show them.
+    values: dict[str, str] = {}
 
 
 class ConnectionUpdateRequest(BaseModel):

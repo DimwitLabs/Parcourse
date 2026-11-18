@@ -28,6 +28,7 @@ type ConnectionState = {
   provider: string | null;
   model: string | null;
   stored_fields: string[];
+  values: Record<string, string>;
 };
 
 type TestResult = { ok: boolean; detail: string; json_mode: string };
@@ -102,6 +103,7 @@ export default function ProviderForm({
           setConfigured(true);
           setProviderKey(connection.provider);
           setModel(stripPrefix(connection.model ?? "", connection.provider));
+          setCredentials(connection.values);
           setSkipped(
             (saved?.fields ?? [])
               .filter((f) => f.skip_label && !connection.stored_fields.includes(f.name))
@@ -186,7 +188,10 @@ export default function ProviderForm({
     try {
       const d: ConnectionState = await apiFetch(path, token, { method: "PUT", body: body() });
       setConfigured(d.configured);
-      setCredentials(Object.fromEntries(Object.keys(credentials).map((k) => [k, ""])));
+      // Keys are never shown again; everything else stays as the user saw it.
+      setCredentials(
+        Object.fromEntries((provider?.fields ?? []).map((f) => [f.name, f.secret ? "" : credentials[f.name] ?? ""])),
+      );
       toast("Connection saved", "success");
       onSaved?.();
     } catch (err) {
