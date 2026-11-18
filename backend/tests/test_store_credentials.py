@@ -1,10 +1,12 @@
 """_store decides what survives an edit. A blank field means "keep it", and
 getting that wrong destroys a key the user cannot retype."""
 import unittest
+from types import SimpleNamespace
 
 from fastapi import HTTPException
 
-from routers.settings import _store
+from models.user import UserRole
+from routers.settings import _credentials_for_test, _store
 from schemas.settings import ConnectionUpdateRequest
 from services.connection import deserialize
 
@@ -61,6 +63,17 @@ class StoreTests(unittest.TestCase):
         with self.assertRaises(HTTPException) as caught:
             _store(_request("openai", "gpt-4o", {"api_key": ""}), None)
         self.assertEqual(caught.exception.status_code, 400)
+
+
+
+class CredentialsForTestTests(unittest.TestCase):
+    def test_a_retyped_field_is_tested_alongside_the_saved_ones(self):
+        saved = {"api_key": "secret", "api_base": "https://old.openai.azure.com", "api_version": "2024-08-01-preview"}
+        user = SimpleNamespace(role=UserRole.student, connection=_store(_request("azure", "gpt-4o", saved), None))
+        session = SimpleNamespace(get=lambda *_: None)
+        retyped = {"api_key": "", "api_base": "https://new.openai.azure.com", "api_version": ""}
+        credentials = _credentials_for_test(_request("azure", "gpt-4o", retyped), user, session)
+        self.assertEqual(credentials, {**saved, "api_base": "https://new.openai.azure.com"})
 
 
 if __name__ == "__main__":

@@ -100,16 +100,21 @@ def _connection_response(blob: str | None) -> ConnectionResponse:
     )
 
 
-def _store(body: ConnectionUpdateRequest, existing: str | None) -> str:
+def _merged(body: ConnectionUpdateRequest, existing: str | None) -> dict[str, str]:
     """Credentials are never sent back to the client, so a blank field means
     "keep what is stored". Per field, or editing an endpoint would wipe the key
-    beside it. Clearing is an explicit DELETE."""
+    beside it. A field left out entirely is dropped."""
     current = deserialize(existing)
     stored = current.credentials if current and current.provider == body.provider else {}
-    credentials = {
+    return {
         name: value if value.strip() else stored.get(name, "")
         for name, value in body.credentials.items()
     }
+
+
+def _store(body: ConnectionUpdateRequest, existing: str | None) -> str:
+    """Clearing the whole connection is an explicit DELETE."""
+    credentials = _merged(body, existing)
     if not any(v.strip() for v in credentials.values()):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -199,19 +204,21 @@ def clear_instance_connection(
 def _credentials_for_test(
     body: ConnectionUpdateRequest, user: User, session: Session
 ) -> dict[str, str]:
-    """Blank credentials mean "test what is already saved", so the form can
-    verify a connection without making the user paste the key again. Only the
-    one that scope owns, so nobody can spend a key they cannot see."""
-    if any(v.strip() for v in body.credentials.values()):
-        return body.credentials
+    """Blank fields mean "test what is already saved", so the form can verify a
+    connection without making the user paste the key again. Only the one that
+    scope owns, so nobody can spend a key they cannot see."""
     instance = session.get(InstanceConfig, INSTANCE_ID)
     if user.role == UserRole.admin:
         blob = instance.default_connection if instance else None
     else:
         blob = user.connection
     stored = deserialize(blob)
-    if stored and stored.provider == body.provider and stored.has_credentials:
-        return stored.credentials
+    if body.credentials:
+        credentials = _merged(body, blob)
+    else:
+        credentials = stored.credentials if stored and stored.provider == body.provider else {}
+    if any(v.strip() for v in credentials.values()):
+        return credentials
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail="Credentials are required for this provider.",
