@@ -11,4 +11,4 @@ httpx==0.28.1
 cryptography==50.0.2
 email-validator==2.3.0
 yt-dlp==2026.10.26
-litellm==1.109.1
+litellm==1.110.2
