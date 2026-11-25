@@ -4,6 +4,16 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.2] - 2026-11-25
+
+### Fixed
+
+- **Every CORS Origin Counts:** An entry in `CORS_ORIGINS` with a trailing slash, a stray space or a capital letter no longer gets refused, and the backend logs the addresses it allows when it starts ([#80](https://github.com/DimwitLabs/Parcourse/issues/80)).
+
+### Changed
+
+- Backend dependencies updated.
+
 ## [1.9.1] - 2026-11-18
 
 ### Added

@@ -3,4 +3,4 @@ the brand package's package.json and the extension's manifest.json carry it
 too, set by hand; CI fails a push where they disagree.
 """
 
-__version__ = "1.9.1"
+__version__ = "1.9.2"
