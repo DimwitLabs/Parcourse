@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from config import LOG_LEVEL, settings
+from config import CORS_ORIGINS, LOG_LEVEL
 from database import init_db
 from routers import auth, course, guardrail, knowledge_graph, note, quiz, settings as settings_router, transcript, users
 from version import __version__
@@ -18,6 +18,7 @@ logging.basicConfig(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logging.getLogger(__name__).info("[cors]: the app may be opened from %s", ", ".join(CORS_ORIGINS) or "nowhere")
     init_db()
     yield
 
@@ -26,7 +27,7 @@ app = FastAPI(title="Parcourse API", version=__version__, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

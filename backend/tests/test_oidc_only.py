@@ -19,6 +19,7 @@ from sqlmodel import Session, create_engine, select  # noqa: E402
 
 from config import (  # noqa: E402
     _checked_oidc_only,
+    _browser_origins,
     _checked_post_login_url,
     _checked_secret,
     _oidc_button,
@@ -98,6 +99,21 @@ class WhereTheBrowserLandsAfterwards(unittest.TestCase):
 
     def test_it_does_not_matter_without_a_provider(self):
         self.assertEqual(_checked_post_login_url("", [], False), "")
+
+
+class TheOriginsTheAppIsOpenedFrom(unittest.TestCase):
+    def test_every_entry_is_kept_in_order(self):
+        origins = ["http://192.168.1.10:5173", "https://parcourse.example.com"]
+        self.assertEqual(_browser_origins(origins), origins)
+
+    def test_each_is_written_the_way_a_browser_sends_it(self):
+        self.assertEqual(
+            _browser_origins([" https://Parcourse.Example.com/ ", "http://localhost:5173//"]),
+            ["https://parcourse.example.com", "http://localhost:5173"],
+        )
+
+    def test_a_blank_entry_is_dropped(self):
+        self.assertEqual(_browser_origins(["", "  ", "https://app.test"]), ["https://app.test"])
 
 
 class TheSecretsThemselves(unittest.TestCase):

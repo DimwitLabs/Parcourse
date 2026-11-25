@@ -100,6 +100,13 @@ def _oidc_button(label: str, name: str) -> str:
     return label or f"Continue with {name}"
 
 
+def _browser_origins(origins: list[str]) -> list[str]:
+    """Written the way a browser sends its Origin header, since the match is
+    exact: a trailing slash, a stray space or a capital letter would otherwise
+    leave that address quietly refused."""
+    return [origin.strip().rstrip("/").lower() for origin in origins if origin.strip()]
+
+
 def _checked_post_login_url(url: str, origins: list[str], enabled: bool) -> str:
     """A blank one sends the browser to the API's own origin, where the app is
     not served, so the sign-in appears to hang on a page nobody wrote."""
@@ -144,6 +151,8 @@ ENCRYPTION_KEY = _checked_secret(
     'python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"',
 )
 
+CORS_ORIGINS = _browser_origins(settings.cors_origins)
+
 OIDC_ISSUER = settings.oidc_issuer.strip().rstrip("/")
 OIDC_ENABLED = _checked_oidc(OIDC_ISSUER)
 OIDC_CLIENT_ID = settings.oidc_client_id.strip()
@@ -158,5 +167,5 @@ OIDC_ONLY = _checked_oidc_only(settings.oidc_only, OIDC_ENABLED)
 # The app is served from the first allowed origin in every deployment the docs
 # describe, so that is the default rather than a fifth thing to set.
 OIDC_POST_LOGIN_URL = _checked_post_login_url(
-    settings.oidc_post_login_url.strip(), settings.cors_origins, OIDC_ENABLED
+    settings.oidc_post_login_url.strip(), CORS_ORIGINS, OIDC_ENABLED
 )

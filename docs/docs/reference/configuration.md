@@ -49,7 +49,7 @@ Leave `DATABASE_URL` unset when using the bundled database. Setting it as well a
 | `BACKEND_PORT` | `8000` | Port the API is served on. |
 | `FRONTEND_PORT` | `5173` | Port the app is served on. |
 | `VITE_API_BASE_URL` | `http://localhost:8000` | The API address the browser calls. Behind a proxy this must be the public one. |
-| `CORS_ORIGINS` | `["http://localhost:5173"]` | JSON array of origins allowed to call the API. |
+| `CORS_ORIGINS` | `["http://localhost:5173"]` | JSON array of origins allowed to call the API, each as the address bar shows it: scheme, host and port. Every entry counts, and the backend logs the list when it starts. |
 
 `VITE_API_BASE_URL` and `CORS_ORIGINS` have to agree with wherever the app is actually reached from. They are the two that catch people out behind a reverse proxy.
 
